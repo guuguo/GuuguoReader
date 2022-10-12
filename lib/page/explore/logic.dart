@@ -15,7 +15,7 @@ class ExploreLogic extends GetxController {
   var loadEnd = false.obs;
   SourceEntity source;
   late NetRepository repository;
-  List<BookItemBean> books=[];
+  Rx<List<BookItemBean>> books=Rx([]);
   ExploreLogic(this.source) {
     repository=NetRepository(source);
     init();
@@ -45,8 +45,7 @@ class ExploreLogic extends GetxController {
     refreshing.value = true;
     loadEnd.value = false;
     update();
-    books.clear();
-    books.addAll(await repository.exploreBookList(pageNum: page));
+    books.value=await repository.exploreBookList(pageNum: page);
     refreshing.value = false;
     update();
   }
@@ -61,7 +60,7 @@ class ExploreLogic extends GetxController {
     if (list.isEmpty) {
       loadEnd.value = true;
     }
-    books.addAll(list);
+    books.value= [...books.value..addAll(list)];
     loading = false;
     update();
     return true;

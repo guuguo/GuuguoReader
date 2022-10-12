@@ -33,7 +33,7 @@ class _ExplorePageState extends State<ExplorePage> {
           if (logic.refreshing.value) {
             return Center(child: CupertinoActivityIndicator(radius: 15));
           } else {
-            var itemCount = logic.books.length + 1;
+            var itemCount = logic.books.value.length + 1;
             return ListView.builder(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   itemBuilder: (c, i) {
@@ -47,7 +47,7 @@ class _ExplorePageState extends State<ExplorePage> {
                         child: logic.loadEnd.value?Text("已经到底了"):CupertinoActivityIndicator(),
                       );
                     }
-                    var bean = logic.books[i];
+                    var bean = logic.books.value[i];
                     return BookItemWidget(bean: bean);
                   },
                   itemCount: itemCount,
