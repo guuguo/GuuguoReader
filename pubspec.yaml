@@ -1,0 +1,64 @@
+name: read_info
+description: 阅读信息
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.15.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^4.0.0
+  crypto: ^3.0.1
+  convert: ^3.0.1
+  intl: ^0.17.0
+  syntax_highlighter: ^0.1.1
+  url_launcher: ^6.1.6
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.3
+  another_flushbar: ^1.10.24
+  path_provider: ^2.0.5
+  quiver: ^3.1.0
+  shared_preferences: ^2.0.15
+  html: ^0.15.0
+  collection: ^1.16.0
+  flutter_html: ^3.0.0-alpha.6
+  sqlite3_flutter_libs: ^0.5.10
+  sqflite_common_ffi: ^2.1.1+1
+  package_info_plus: ^2.0.0
+  get: ^4.6.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+  # assets-generator-begin
+  # assets/images/*
+    - assets/images/no_search_result.webp
+    - assets/images/real_auth_success.webp
+    - assets/images/pay_stay.webp
+    - assets/images/real_auth_fail.webp
+    - assets/images/pay_fail.webp
+    - assets/images/message_empty.webp
+  # assets-generator-end
