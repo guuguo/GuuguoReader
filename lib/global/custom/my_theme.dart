@@ -5,6 +5,89 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:read_info/global/custom/my_page_transitions.dart';
+class MyTheme{
+  static const contentMaxWidth = 600.0;
+  BuildContext context;
+
+  MyTheme.of(this.context);
+
+  MyTheme(this.context);
+
+  get isDark => Theme.of(context).brightness == Brightness.dark;
+
+  get cardColor => !isDark ? Color(0xffffffff) : Color(0xff1c1c1e);
+
+  Color get primaryColor => isDark ? Color(0xff6336e9) : Color(0xff6336e9);
+
+  Color get scaffoldBackgroundColor => isDark ? Color(0xff242540) : Colors.white;
+
+  Color get secondColor => Theme.of(context).errorColor;
+
+  Color get errorColor => Theme.of(context).errorColor;
+
+  Color get disabledColor => Theme.of(context).disabledColor;
+
+  Color get chipColor => isDark ? Color(0xff1c1c1e) : Color(0xfff2f1f2);
+
+  Color get focusBackgroundColor => isDark ? Color(0xff2f65f0) : Color(0xff2f65f0);
+
+  Color get focusTextColor => isDark ? Color(0xffffffff) : Color(0xffffffff);
+
+  Color get inputBgColor => isDark ? Color(0xfff4f5f9) : Color(0xfff4f5f9);
+
+  double get pagePadding => screenWidthValue(context, lValue: () => 80, mValue: () => 30, sValue: () => 30);
+
+  TextTheme get textTheme {
+    return Theme.of(context).textTheme;
+  }
+
+  TextStyle? get agreementTitleStyle {
+    return Theme.of(context).textTheme.headline5?.copyWith(height: 2);
+  }
+}
+
+T screenWidthValue<T>(BuildContext context, {required ValueGetter<T> lValue, ValueGetter<T>? mValue, ValueGetter<T>? sValue}) {
+  mValue = mValue ?? lValue;
+  sValue = sValue ?? mValue;
+  return MediaQuery.of(context).size.width > 1200 ? lValue() : (MediaQuery.of(context).size.width > 615 ? mValue() : sValue());
+}
+
+bool isTablet(BuildContext context) => MediaQuery.of(context).size.width > 480;
+
+class MyTextStyle {
+  BuildContext context;
+  bool forceDark;
+
+  MyTextStyle(this.context, {this.forceDark = false}) {
+    this.textTheme = forceDark ? Theme.of(context).primaryTextTheme : Theme.of(context).textTheme;
+  }
+
+  late TextTheme textTheme;
+
+  Color get color => textTheme.bodyText1!.color!;
+
+  TextStyle get body1 => textTheme.bodyText1!;
+
+  TextStyle get caption => textTheme.caption!;
+}
+
+extension TextStyleExt on TextStyle {
+  TextStyle setSize(double size) {
+    return this.copyWith(fontSize: size);
+  }
+
+  TextStyle setWeight(FontWeight fontWeight) {
+    return this.copyWith(fontWeight: fontWeight);
+  }
+
+  TextStyle setColor(Color color) {
+    return this.copyWith(color: color);
+  }
+
+  TextStyle setHeight(double height) {
+    return this.copyWith(height: height);
+  }
+}
 
 class DiaryTheme {
   const DiaryTheme._(this.name, this.themeMode, this.data);

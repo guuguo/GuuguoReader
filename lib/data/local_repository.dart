@@ -21,8 +21,6 @@ class LocalRepository {
   )
   ''');
     } catch (e) {}
-    await insertSource(SourceEntity.fromJson(json.decode(fuliba)));
-    await insertSource(SourceEntity.fromJson(json.decode(liuli)));
   }
 
   static Future<Database> _getDb() async {
@@ -34,22 +32,24 @@ class LocalRepository {
   ///
   static Future<List<SourceEntity>> getSourceList() async {
     var res = await db.query("Source", columns: ["url", "detail"]);
-    print(res);
     return res.map((e) =>
                 SourceEntity.fromJson(json.decode(e['detail'].toString())))
             .toList();
   }
 
-  static Future insertSource(SourceEntity entity) async {
+  static Future insertOrUpdateSource(SourceEntity entity) async {
     try {
-      await db.insert('Source', <String, Object?>{
+      var result = await db.insert('Source', <String, Object?>{
         'url': entity.bookSourceUrl,
-        'detail': json.encode(entity.toJson())
-      });
-    } catch (e) {
+        'detail': json.encode(entity.toJson()),
+      }, conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+    }catch (e)  {
       print(e);
     }
   }
+
   static Future deleteSource(SourceEntity entity) async {
     try {
       await db.delete('Source', where:  "url = ?",whereArgs: [entity.bookSourceUrl]);

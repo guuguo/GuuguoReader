@@ -1,9 +1,12 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:read_info/bean/entity/source_entity.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
+import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/global/constant.dart';
+import 'package:read_info/global/custom/my_theme.dart';
 import 'package:read_info/widget/container.dart';
 
 import 'logic.dart';
@@ -24,10 +27,33 @@ class _SourcePageState extends State<SourcePage> {
     final logic = Get.find<SourceLogic>();
     return Scaffold(
       appBar: CupertinoNavigationBar(
-          middle: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Text("源列表"),
-      )),
+        middle: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text("源列表"),
+        ),
+        trailing: PopupMenuButton(
+          itemBuilder: (BuildContext context) {
+            return [PopupMenuItem(child: Row(
+              children: [
+                Icon(Icons.import_contacts),
+                SizedBox(width:10),
+                      Text("获取常用源"),
+                    ],
+                  ),
+                  onTap: ()async  {
+                    final controller=Get.snackbar("提示", "正在更新源",showProgressIndicator: true,duration: Duration(seconds: 100));
+                    try {
+                      await logic.importSource();
+                      controller.close();
+                      Get.snackbar("提示", "更新源完成",duration: Duration(milliseconds: 1500));
+                    }catch (e){
+                      controller.close();
+                    }
+                  })
+            ];
+          },
+        ),
+      ),
       backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
       body: GetX<SourceLogic>(
         builder: (SourceLogic logic) {
@@ -35,10 +61,16 @@ class _SourcePageState extends State<SourcePage> {
             return Center(child: CupertinoActivityIndicator(radius: 15));
           } else {
             return SingleChildScrollView(
-              child: Wrap(
-                  children: logic.sources.value
-                      .map((e) => withContextMenu(SourceItemWidget(bean: e), e))
-                      .toList()),
+              child: Center(
+                child: Container(
+                  constraints: BoxConstraints.loose(Size(MyTheme.contentMaxWidth, double.infinity)),
+                  child: Wrap(
+                      alignment: WrapAlignment.center,
+                      children: logic.sources.value
+                          .mapIndexed((i,e) => withContextMenu(SourceItemWidget(key:Key(e.bookSourceUrl??"$i"),bean: e), e))
+                          .toList()),
+                ),
+              ),
             );
           }
         },
@@ -97,7 +129,7 @@ class SourceItemWidget extends StatelessWidget {
       child: Container(
           width: 120,
           height: 160,
-          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           padding: EdgeInsets.all(15),
           decoration: RoundedBoxDecoration(
               radius: 10, color: Theme.of(context).cardColor),

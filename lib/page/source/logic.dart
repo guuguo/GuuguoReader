@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/data/net_repository.dart';
-import 'package:read_info/route_config.dart';
+import 'package:read_info/config/route_config.dart';
 
 import '../../bean/book_item_bean.dart';
 import '../../bean/entity/source_entity.dart';
@@ -38,6 +38,15 @@ class SourceLogic extends GetxController {
     await LocalRepository.deleteSource(source);
     sources.value=[...sources.value..remove(source)];
     update();
+  }
+
+  importSource({String url = defaultSourceUrl})async{
+      var sourcesResult=await NetRepository.getSources(url);
+      for (var i=0; i<sourcesResult.length; i++){
+        await LocalRepository.insertOrUpdateSource(sourcesResult[i]);
+      }
+      sources.value=await LocalRepository.getSourceList();
+      update();
   }
   refreshList() async {
     refreshing.value = true;
