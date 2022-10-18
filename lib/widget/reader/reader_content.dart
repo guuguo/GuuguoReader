@@ -8,7 +8,6 @@ import 'package:read_info/utils/utils_screen.dart';
 
 import 'reader_content_config.dart';
 
-
 class ReaderContentDrawer {
   TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
   Paint bgPaint = Paint();
@@ -77,18 +76,12 @@ class ReaderContentDrawer {
         tempContent = paragraphs[0];
 
         /// 配置画笔 ///
-        textPainter.text = TextSpan(
-            text: tempContent,
-            style: TextStyle(
-                fontSize: fontSize.toDouble(), height: lineHeight / fontSize));
+        textPainter.text = TextSpan(text: tempContent, style: TextStyle(fontSize: fontSize.toDouble(), height: lineHeight / fontSize));
         textPainter.layout(maxWidth: width);
 
         /// 当前段落内容计算偏移量
         /// 为什么要减一个lineHeight？因为getPositionForOffset判断依据是只要能展示，即使展示不全，也在它的判定范围内，所以如需要减去一行高度
-        int endOffset = textPainter
-            .getPositionForOffset(
-                Offset(width, height - currentHeight - lineHeight))
-            .offset;
+        int endOffset = textPainter.getPositionForOffset(Offset(width, height - currentHeight - lineHeight)).offset;
 
         /// 当前展示内容
         String currentParagraphContent = tempContent;
@@ -126,85 +119,68 @@ class ReaderContentDrawer {
     return pageConfigList;
   }
 
-  ui.Picture drawContent(ReaderChapterData dataValue, int index) {
+  ui.Picture drawContent(ReaderChapterData chapterData, int index) {
     ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
     Canvas pageCanvas = new Canvas(pageRecorder);
 
-    if (dataValue.chapterContentConfigs.length == 0) {
+    if (chapterData.chapterContentConfigs.length == 0) {
       ///todo: 默认错误页面；
       return pageRecorder.endRecording();
     }
 
-    var pageContentConfig = dataValue.chapterContentConfigs[index];
+    var pageContentConfig = chapterData.chapterContentConfigs[index];
 
-    pageCanvas.drawRect(
-        Offset.zero &
-            Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight()),
-        bgPaint);
+    bgPaint.color = configEntity.currentCanvasBgColor;
+    pageCanvas.drawRect(Offset.zero & configEntity.pageSize, bgPaint);
+    // ///绘制章节名
+    // textPainter.text = TextSpan(
+    //     text: "${dataValue.chapterName}",
+    //     style: TextStyle(
+    //         color: Colors.red[700],
+    //         height: configEntity.titleHeight.toDouble() /
+    //             configEntity.titleFontSize,
+    //         fontWeight: FontWeight.bold,
+    //         fontSize: configEntity.titleFontSize.toDouble()));
+    // textPainter.layout(
+    //     maxWidth:
+    //         configEntity.pageSize.width - (2 * configEntity.contentPadding));
+    // textPainter.paint(
+    //     pageCanvas,
+    //     Offset(configEntity.contentPadding.toDouble(),
+    //         configEntity.contentPadding.toDouble()));
 
-    textPainter.text = TextSpan(
-        text: "${dataValue.chapterName}",
-        style: TextStyle(
-            color: Colors.grey[700],
-            height: configEntity.titleHeight.toDouble() /
-                configEntity.titleFontSize,
-            fontWeight: FontWeight.bold,
-            fontSize: configEntity.titleFontSize.toDouble()));
-    textPainter.layout(
-        maxWidth:
-            configEntity.pageSize.width - (2 * configEntity.contentPadding));
-    textPainter.paint(
-        pageCanvas,
-        Offset(configEntity.contentPadding.toDouble(),
-            configEntity.contentPadding.toDouble()));
-
-    Offset offset = Offset(
-        configEntity.contentPadding.toDouble(),
-        configEntity.contentPadding.toDouble() +
-            configEntity.titleHeight.toDouble());
+    ///绘制内容
+    Offset offset = Offset(configEntity.contentPadding.toDouble(), configEntity.contentPadding.toDouble());
 
     List<String> paragraphContents = pageContentConfig.paragraphContents;
+    textPainter.textAlign = TextAlign.start;
     for (String content in paragraphContents) {
       textPainter.text = TextSpan(
           text: content,
           style: TextStyle(
               color: configEntity.contentTextColor,
-              height: pageContentConfig.currentContentLineHeight /
-                  pageContentConfig.currentContentFontSize,
+              height: pageContentConfig.currentContentLineHeight / pageContentConfig.currentContentFontSize,
               fontSize: pageContentConfig.currentContentFontSize.toDouble()));
-      textPainter.layout(
-          maxWidth:
-              configEntity.pageSize.width - (2 * configEntity.contentPadding));
+      textPainter.layout(maxWidth: configEntity.pageSize.width - (2 * configEntity.contentPadding));
       textPainter.paint(pageCanvas, offset);
 
-      offset = Offset(
-          configEntity.contentPadding.toDouble(),
-          offset.dy +
-              textPainter.computeLineMetrics().length *
-                  pageContentConfig.currentContentLineHeight);
+      offset = Offset(configEntity.contentPadding.toDouble(), offset.dy + textPainter.computeLineMetrics().length * pageContentConfig.currentContentLineHeight);
 
-      offset = Offset(configEntity.contentPadding.toDouble(),
-          offset.dy + pageContentConfig.currentContentParagraphSpacing);
+      offset = Offset(configEntity.contentPadding.toDouble(), offset.dy + pageContentConfig.currentContentParagraphSpacing);
     }
+    textPainter.text = TextSpan(
+        text: "${chapterData.chapterName}(${index + 1}/${chapterData.chapterContentConfigs.length})",
+        style: TextStyle(color: configEntity.contentTextColor, height: configEntity.bottomTipHeight.toDouble() / configEntity.bottomTipFontSize, fontSize: configEntity.bottomTipFontSize.toDouble()));
+    textPainter.layout(maxWidth: configEntity.pageSize.width - (2 * configEntity.contentPadding));
+    textPainter.paint(
+        pageCanvas, Offset((configEntity.pageSize.width - textPainter.width) / 2, configEntity.pageSize.height - configEntity.contentPadding.toDouble() - configEntity.bottomTipHeight.toDouble()));
 
     textPainter.text = TextSpan(
-        text: "${index + 1}/${dataValue.chapterContentConfigs.length}",
-        style: TextStyle(
-            color: Colors.black,
-            height: configEntity.bottomTipHeight.toDouble() /
-                configEntity.bottomTipFontSize,
-            fontSize: configEntity.bottomTipFontSize.toDouble()));
-    textPainter.layout(
-        maxWidth:
-            configEntity.pageSize.width - (2 * configEntity.contentPadding));
-    textPainter.paint(
-        pageCanvas,
-        Offset(
-            configEntity.contentPadding.toDouble(),
-            configEntity.pageSize.height -
-                configEntity.contentPadding.toDouble() -
-                configEntity.bottomTipHeight.toDouble()));
-
+        text: "${chapterData.chapterIndex + 1}/${100}章",
+        style: TextStyle(color: configEntity.contentTextColor, height: configEntity.bottomTipHeight.toDouble() / configEntity.bottomTipFontSize, fontSize: configEntity.bottomTipFontSize.toDouble()));
+    textPainter.layout(maxWidth: configEntity.pageSize.width - (2 * configEntity.contentPadding));
+    textPainter.paint(pageCanvas,
+        Offset(configEntity.pageSize.width - configEntity.contentPadding.toDouble() - textPainter.width, configEntity.pageSize.height - configEntity.contentPadding.toDouble() - textPainter.height));
     return pageRecorder.endRecording();
   }
 }
@@ -218,27 +194,38 @@ class ReaderChapterData {
   int chapterIndex = 0;
 
   int currentPageIndex = 0;
-  bool canToNextPage(){
-    return chapterIndex<chapterContentConfigs.length-1;
+
+  bool canToNextPage() {
+    return currentPageIndex < chapterContentConfigs.length - 1;
   }
-  bool toNextPage(){
-    if(canToNextPage()){
-      chapterIndex++;
+
+  bool toNextPage() {
+    if (canToNextPage()) {
+      currentPageIndex++;
       return true;
     }
     return false;
   }
-  // ContentState contentState = ContentState.STATE_NORMAL;
 
-  // bool isSameChapter(ReaderContentDataValue target) {
-  //   return target?.chapterIndex!=null&&target.chapterIndex==this.chapterIndex&&target?.novelId!=null&&target.novelId==this.novelId;
-  // }
+  bool canToPrePage() {
+    return currentPageIndex > 0;
+  }
+
+  bool toPrePage() {
+    if (canToPrePage()) {
+      currentPageIndex--;
+      return true;
+    }
+    return false;
+  }
+
   ReaderContentPageData currentPageData() => chapterContentConfigs[currentPageIndex];
+
   ReaderContentPageData? pageDate(int page) {
-    if(page>=chapterContentConfigs.length)
-      return null;
+    if (page >= chapterContentConfigs.length) return null;
     return chapterContentConfigs[page];
   }
+
   void clearCalculateResult() {
     chapterContentConfigs.clear();
     // chapterCanvasDataMap.clear();
@@ -277,6 +264,7 @@ class ReaderContentPageData {
 
   List<String> paragraphContents;
   ui.Picture? pagePicture;
+
   // ui.Image? pageImage;
 
   ReaderContentPageData({
@@ -295,8 +283,7 @@ class ReaderContentPageData {
           runtimeType == other.runtimeType &&
           currentContentFontSize == other.currentContentFontSize &&
           currentContentLineHeight == other.currentContentLineHeight &&
-          currentContentParagraphSpacing ==
-              other.currentContentParagraphSpacing &&
+          currentContentParagraphSpacing == other.currentContentParagraphSpacing &&
           currentPageIndex == other.currentPageIndex &&
           currentChapterId == other.currentChapterId &&
           paragraphContents == other.paragraphContents;
@@ -328,10 +315,7 @@ class ReaderContentPageData {
       currentContentParagraphSpacing: map['currentContentParagraphSpacing'],
       currentPageIndex: map['currentPageIndex'],
       currentChapterId: map['currentChapterId'],
-      paragraphContents: (map['paragraphConfigs'] as List?)
-              ?.map((e) => e?.toString() ?? "")
-              .toList() ??
-          [],
+      paragraphContents: (map['paragraphConfigs'] as List?)?.map((e) => e?.toString() ?? "").toList() ?? [],
     );
     return chapterConfig;
   }

@@ -5,7 +5,7 @@ import 'package:read_info/widget/reader/reader_viewmodel.dart';
 
 class NovelPagePainter extends CustomPainter {
   ReaderViewModel viewModel;
-  NovelPagePainter(this.viewModel);
+  NovelPagePainter(this.viewModel):super(repaint: viewModel);
   @override
   void paint(Canvas canvas, Size size) {
     viewModel.drawCurrentPage(canvas);

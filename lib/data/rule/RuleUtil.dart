@@ -1,5 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:html/dom.dart';
+extension ElementListExt on List<Element>{
+  List<Element> querySelectorAllFix(String selector) {
+    return fold(
+        [],
+        (List previousValue, element) =>
+            [...(previousValue), ...element.querySelectorAllFix(selector)]);
+  }
+}
 
 extension ElementExt on Element{
   String? parseRule(String? rule) {
@@ -32,22 +40,23 @@ extension ElementExt on Element{
     attr = tags.last;
     tags.removeLast();
 
-    Element? resultElement = this;
+    List<Element>? resultElement = [this];
     tags.where((element) => element.isNotEmpty).forEach((selector) {
-      resultElement = resultElement?.querySelectorFix(selector);
+      resultElement = resultElement?.querySelectorAllFix(selector);
     });
     String? resultStr;
     if (attr == "html") {
-      resultStr = resultElement?.innerHtml;
+      resultStr = resultElement?.map((e) => e.innerHtml).whereNotNull().join('\n');
     } else if (attr == "text") {
-      resultStr = resultElement?.text;
+      resultStr = resultElement?.map((e) => e.text).whereNotNull().join('\n');
     } else {
-      resultStr = resultElement?.attributes[attr];
+      resultStr = resultElement?.map((e) => e.attributes[attr]).whereNotNull().join('\n');
     }
 
     if (regex != null) {
       resultStr = resultStr?.replaceAll(RegExp(regex), replace ?? "");
     }
+     if(resultStr?.isEmpty==true) return null;
     return resultStr;
   }
   List<Element> parseRuleWithoutAttr(String? rule){
@@ -64,13 +73,13 @@ extension ElementExt on Element{
     });
     return  resultElement??[];
   }
-  Element? querySelectorFix(String selector){
-    if(selector.contains("nth-of-type")) {
-      return querySelectorAllFix(selector).firstOrNull;
-    }else{
-      return querySelector(selector);
-    }
-  }
+  // Element? querySelectorFix(String selector){
+  //   if(selector.contains("nth-of-type")) {
+  //     return querySelectorAllFix(selector).firstOrNull;
+  //   }else{
+  //     return querySelector(selector);
+  //   }
+  // }
   List<Element> querySelectorAllFix(String selector){
     if(selector.contains("nth-of-type")){
       final split=selector.split(':');

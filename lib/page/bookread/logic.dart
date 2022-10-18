@@ -39,6 +39,12 @@ class ContentLogic extends GetxController {
   int currentChapterIndex() {
     return bookDetail.tocs!.indexOf(bookToc);
   }
+
+  Future loadChapterContent(BookChapterBean? chapter) async {
+    if(chapter==null) return;
+    await repository.queryBookContent(chapter);
+  }
+
   loadContent() async {
     refreshing.value = true;
     update();

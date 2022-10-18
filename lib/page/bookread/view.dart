@@ -44,6 +44,8 @@ class _BookContentPageState extends State<BookContentPage> {
             return NovelReader(
               chapterProvider: (i) async {
                 var chapter = logic.getChapterByIndex(i);
+                if(chapter?.content==null)
+                  await logic.loadChapterContent(chapter);
                 return ReaderChapterData()
                   ..content = chapter?.content?.content
                   ..chapterName = chapter?.chapterName

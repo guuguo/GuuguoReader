@@ -22,17 +22,17 @@ class ReaderConfigEntity {
   int fontSize = 20;
   int lineHeight = 30;
   int paragraphSpacing = 10;
-  Color contentTextColor = Colors.white;
+  Color contentTextColor = Colors.red;
 
 
   Size pageSize= Size(MediaQueryData.fromWindow(window).size.width, MediaQueryData.fromWindow(window).size.height);
 
-  int contentPadding=10;
+  int contentPadding=20;
   int titleHeight=25;
   int bottomTipHeight=20;
 
   int titleFontSize=20;
-  int bottomTipFontSize=20;
+  int bottomTipFontSize=12;
   ReaderConfigEntity();
   ReaderConfigEntity.New({
     required this.currentAnimationMode,
@@ -84,4 +84,41 @@ class ReaderConfigEntity {
       bottomTipFontSize: bottomTipFontSize ?? this.bottomTipFontSize,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReaderConfigEntity &&
+          runtimeType == other.runtimeType &&
+          currentAnimationMode == other.currentAnimationMode &&
+          currentCanvasBgColor == other.currentCanvasBgColor &&
+          currentPageIndex == other.currentPageIndex &&
+          currentChapterIndex == other.currentChapterIndex &&
+          fontSize == other.fontSize &&
+          lineHeight == other.lineHeight &&
+          paragraphSpacing == other.paragraphSpacing &&
+          contentTextColor == other.contentTextColor &&
+          pageSize == other.pageSize &&
+          contentPadding == other.contentPadding &&
+          titleHeight == other.titleHeight &&
+          bottomTipHeight == other.bottomTipHeight &&
+          titleFontSize == other.titleFontSize &&
+          bottomTipFontSize == other.bottomTipFontSize;
+
+  @override
+  int get hashCode =>
+      currentAnimationMode.hashCode ^
+      currentCanvasBgColor.hashCode ^
+      currentPageIndex.hashCode ^
+      currentChapterIndex.hashCode ^
+      fontSize.hashCode ^
+      lineHeight.hashCode ^
+      paragraphSpacing.hashCode ^
+      contentTextColor.hashCode ^
+      pageSize.hashCode ^
+      contentPadding.hashCode ^
+      titleHeight.hashCode ^
+      bottomTipHeight.hashCode ^
+      titleFontSize.hashCode ^
+      bottomTipFontSize.hashCode;
 }
