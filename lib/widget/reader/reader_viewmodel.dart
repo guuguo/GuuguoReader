@@ -44,7 +44,7 @@ class ReaderViewModel extends ChangeNotifier {
     if (currentChapter!.canToNextPage()) {
       preparePagePicture(currentChapter!, currentChapter!.currentPageIndex + 1);
     } else {
-      ensureNextChapter();
+      await ensureNextChapter();
       preparePagePicture(nextChapter!, 0);
     }
   }
@@ -84,13 +84,13 @@ class ReaderViewModel extends ChangeNotifier {
 
   void preparePagePicture(ReaderChapterData chapter,int pageIndex) {
     var pageConfig = chapter.pageDate(pageIndex);
-    if(pageConfig.pagePicture==null) {
+    if(pageConfig?.pagePicture!=null) {
       var picture = readerContentDrawer.drawContent(
           chapter, pageIndex);
       // ui.Image image = await picture.toImage(ScreenUtils.getScreenWidth().toInt(),
       //     ScreenUtils.getScreenHeight().toInt());
       // pageConfig.pageImage = image;
-      pageConfig.pagePicture = picture;
+      pageConfig!.pagePicture = picture;
     }
   }
 }

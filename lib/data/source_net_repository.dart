@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
+import 'package:read_info/bean/entity/source_header_entity.dart';
 import 'package:read_info/data/net/dio_helper.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
 import 'package:read_info/generated/json/base/json_convert_content.dart';
@@ -44,7 +48,17 @@ class SourceNetRepository {
     return bookList??[];
   }
 
-  Dio getDio() => DioHelper.dio(source.bookSourceUrl ?? "");
+  Dio? _dio;
+
+  Dio getDio() =>
+      _dio != null ? _dio! : DioHelper.dio(source.bookSourceUrl ?? "", (dio) {
+        var headerStr=source.header;
+        if(headerStr?.isNotEmpty!=true) return;
+        dio.interceptors.add(new InterceptorsWrapper(onRequest: (o,h){
+          o.headers.addAll(json.decode(headerStr!));
+          h.next(o);
+        }));
+      });
 
   Future<BookDetailBean?> queryBookDetail(BookItemBean bean) async {
     var res = await getDio().get<dynamic>(bean.bookUrl ?? "");
@@ -52,15 +66,17 @@ class SourceNetRepository {
     if (element == null) return null;
     var rule = source.ruleBookInfo;
     var bookBean= BookDetailBean()
-      ..name = element.parseRule(rule?.name)
-      ..author = element.parseRule(rule?.author)
-      ..coverUrl = element.parseRule(rule?.coverUrl)
+      ..name = element.parseRule(rule?.name)??bean.name
+      ..author = element.parseRule(rule?.author)??bean.author
+      ..coverUrl = element.parseRule(rule?.coverUrl)??bean.coverUrl
       ..kind = element.parseRule(rule?.kind)?.trim()
       ..lastChapter = element.parseRule(rule?.lastChapter)
       ..intro = element.parseRule(rule?.intro)?.trim()
       ..tocUrl = element.parseRule(rule?.tocUrl);
-    print("打印 tocUrl");
-    print(bookBean.tocUrl);
+
+    if (bookBean.tocUrl?.startsWith(RegExp(r'http')) != true) {
+      bookBean.tocUrl="${bean.bookUrl}${Platform.pathSeparator}${bookBean.tocUrl}";
+    }
     return bookBean;
   }
   Future<List<BookChapterBean>?> queryBookTocs(BookDetailBean bean) async {

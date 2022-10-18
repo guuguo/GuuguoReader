@@ -10,6 +10,7 @@ class SourceEntity {
 	int? bookSourceType;
 	String? bookSourceUrl;
 	String? bookSourceCoverUrl;
+	String? header;
 	int? customOrder;
 	int? from;
 	bool? enabled;

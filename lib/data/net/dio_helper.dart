@@ -58,7 +58,7 @@ class DioHelper {
 
   static final ContentType contentTypeXxxForm = ContentType.parse("application/x-www-form-urlencoded");
 
-  static Dio dio([String baseUrl = ""]) {
+  static Dio dio([String baseUrl = "",Function(Dio)? applyDio=null ]) {
     var _dio = new Dio();
     // 配置dio实例
     _dio.options
@@ -66,6 +66,7 @@ class DioHelper {
       ..connectTimeout = 20000
       ..receiveTimeout = 8000;
 
+    applyDio?.call(_dio);
     _dio.interceptors.add(LogsInterceptors(_dio));
     return _dio;
   }

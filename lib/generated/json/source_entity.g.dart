@@ -23,6 +23,10 @@ SourceEntity $SourceEntityFromJson(Map<String, dynamic> json) {
 	if (bookSourceCoverUrl != null) {
 		sourceEntity.bookSourceCoverUrl = bookSourceCoverUrl;
 	}
+	final String? header = jsonConvert.convert<String>(json['header']);
+	if (header != null) {
+		sourceEntity.header = header;
+	}
 	final int? customOrder = jsonConvert.convert<int>(json['customOrder']);
 	if (customOrder != null) {
 		sourceEntity.customOrder = customOrder;
@@ -101,6 +105,7 @@ Map<String, dynamic> $SourceEntityToJson(SourceEntity entity) {
 	data['bookSourceType'] = entity.bookSourceType;
 	data['bookSourceUrl'] = entity.bookSourceUrl;
 	data['bookSourceCoverUrl'] = entity.bookSourceCoverUrl;
+	data['header'] = entity.header;
 	data['customOrder'] = entity.customOrder;
 	data['from'] = entity.from;
 	data['enabled'] = entity.enabled;

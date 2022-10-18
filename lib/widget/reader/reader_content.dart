@@ -234,7 +234,11 @@ class ReaderChapterData {
   //   return target?.chapterIndex!=null&&target.chapterIndex==this.chapterIndex&&target?.novelId!=null&&target.novelId==this.novelId;
   // }
   ReaderContentPageData currentPageData() => chapterContentConfigs[currentPageIndex];
-  ReaderContentPageData pageDate(int page) => chapterContentConfigs[page];
+  ReaderContentPageData? pageDate(int page) {
+    if(page>=chapterContentConfigs.length)
+      return null;
+    return chapterContentConfigs[page];
+  }
   void clearCalculateResult() {
     chapterContentConfigs.clear();
     // chapterCanvasDataMap.clear();
