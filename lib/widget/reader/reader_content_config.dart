@@ -22,14 +22,15 @@ class ReaderConfigEntity {
   int fontSize = 20;
   int lineHeight = 30;
   int paragraphSpacing = 10;
-  Color contentTextColor = Colors.red;
+  Color contentTextColor = Color(0xff040604);
 
 
   Size pageSize= Size(MediaQueryData.fromWindow(window).size.width, MediaQueryData.fromWindow(window).size.height);
 
-  int contentPadding=20;
+  int contentPaddingHorizontal=20;
+  int contentPaddingVertical=50;
   int titleHeight=25;
-  int bottomTipHeight=20;
+  int bottomTipHeight=40;
 
   int titleFontSize=20;
   int bottomTipFontSize=12;
@@ -44,7 +45,8 @@ class ReaderConfigEntity {
     required this.lineHeight,
     required this.paragraphSpacing,
     required this.pageSize,
-    required this.contentPadding,
+    required this.contentPaddingHorizontal,
+    required this.contentPaddingVertical,
     required this.titleHeight,
     required this.bottomTipHeight,
     required this.titleFontSize,
@@ -61,7 +63,8 @@ class ReaderConfigEntity {
     int? lineHeight,
     int? paragraphSpacing,
     Size? pageSize,
-    int? contentPadding,
+    int? contentPaddingHorizontal,
+    int? contentPaddingVertical,
     int? titleHeight,
     int? bottomTipHeight,
     int? titleFontSize,
@@ -77,7 +80,8 @@ class ReaderConfigEntity {
       lineHeight: lineHeight ?? this.lineHeight,
       paragraphSpacing: paragraphSpacing ?? this.paragraphSpacing,
       pageSize: pageSize ?? this.pageSize,
-      contentPadding: contentPadding ?? this.contentPadding,
+      contentPaddingHorizontal: contentPaddingHorizontal ?? this.contentPaddingHorizontal,
+      contentPaddingVertical: contentPaddingVertical ?? this.contentPaddingVertical,
       titleHeight: titleHeight ?? this.titleHeight,
       bottomTipHeight: bottomTipHeight ?? this.bottomTipHeight,
       titleFontSize: titleFontSize ?? this.titleFontSize,
@@ -99,7 +103,8 @@ class ReaderConfigEntity {
           paragraphSpacing == other.paragraphSpacing &&
           contentTextColor == other.contentTextColor &&
           pageSize == other.pageSize &&
-          contentPadding == other.contentPadding &&
+          contentPaddingHorizontal == other.contentPaddingHorizontal &&
+          contentPaddingVertical == other.contentPaddingVertical &&
           titleHeight == other.titleHeight &&
           bottomTipHeight == other.bottomTipHeight &&
           titleFontSize == other.titleFontSize &&
@@ -116,7 +121,8 @@ class ReaderConfigEntity {
       paragraphSpacing.hashCode ^
       contentTextColor.hashCode ^
       pageSize.hashCode ^
-      contentPadding.hashCode ^
+      contentPaddingHorizontal.hashCode ^
+      contentPaddingVertical.hashCode ^
       titleHeight.hashCode ^
       bottomTipHeight.hashCode ^
       titleFontSize.hashCode ^

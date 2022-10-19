@@ -12,7 +12,7 @@ class ReaderContentDrawer {
   TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
   Paint bgPaint = Paint();
   Paint configData = Paint();
-  ReaderConfigEntity configEntity = ReaderConfigEntity();
+  ReaderConfigEntity config = ReaderConfigEntity();
 
   /// em…………由于大量文字计算，即Cpu计算，在UI的Isolate会阻塞后续的UI事件（例如跳转，动画啥的），所以采取新建Isolate的方式，这也是flutter中建议的&……
   /// 但是目前尴尬的是：
@@ -66,8 +66,11 @@ class ReaderContentDrawer {
         currentPageIndex: pageIndex,
         paragraphContents: [],
       );
-
-      while (currentHeight < height) {
+      var limitHeight = height;
+      if (pageIndex == 0) {
+        limitHeight= limitHeight/ 2;
+      }
+      while (currentHeight < limitHeight) {
         /// 如果最后一行再添一行比页面高度大，或者已经没有内容了，那么当前页面计算结束
         if (currentHeight + lineHeight >= height || paragraphs.length == 0) {
           break;
@@ -81,7 +84,7 @@ class ReaderContentDrawer {
 
         /// 当前段落内容计算偏移量
         /// 为什么要减一个lineHeight？因为getPositionForOffset判断依据是只要能展示，即使展示不全，也在它的判定范围内，所以如需要减去一行高度
-        int endOffset = textPainter.getPositionForOffset(Offset(width, height - currentHeight - lineHeight)).offset;
+        int endOffset = textPainter.getPositionForOffset(Offset(width, limitHeight - currentHeight)).offset;
 
         /// 当前展示内容
         String currentParagraphContent = tempContent;
@@ -130,11 +133,29 @@ class ReaderContentDrawer {
 
     var pageContentConfig = chapterData.chapterContentConfigs[index];
 
-    bgPaint.color = configEntity.currentCanvasBgColor;
-    pageCanvas.drawRect(Offset.zero & configEntity.pageSize, bgPaint);
+    bgPaint.color = config.currentCanvasBgColor;
+    pageCanvas.drawRect(Offset.zero & config.pageSize, bgPaint);
+
+    final validContentHeight = (config.pageSize.height -config.contentPaddingVertical * 2);
+
+    ///第一页画上章节名
+    if (index == 0) {
+      ///绘制  章节名（1/5)
+      textPainter.text = TextSpan(
+          text: "${chapterData.chapterName}",
+          style: TextStyle(
+            color: config.contentTextColor,
+            height: config.bottomTipHeight.toDouble() / config.bottomTipFontSize,
+            fontSize: config.bottomTipFontSize.toDouble() * 2.5,
+            fontWeight: FontWeight.bold,
+          ));
+      textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
+      textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, validContentHeight / 4 + config.contentPaddingVertical - textPainter.height / 2));
+    }
+    final startHeightOff = index == 0 ? (validContentHeight / 2 + config.contentPaddingVertical) : config.contentPaddingVertical.toDouble();
 
     ///绘制内容
-    Offset offset = Offset(configEntity.contentPadding.toDouble(), configEntity.contentPadding.toDouble());
+    Offset offset = Offset(config.contentPaddingHorizontal.toDouble(), startHeightOff);
 
     List<String> paragraphContents = pageContentConfig.paragraphContents;
     textPainter.textAlign = TextAlign.start;
@@ -142,31 +163,34 @@ class ReaderContentDrawer {
       textPainter.text = TextSpan(
           text: content,
           style: TextStyle(
-              color: configEntity.contentTextColor,
+              color: config.contentTextColor,
               height: pageContentConfig.currentContentLineHeight / pageContentConfig.currentContentFontSize,
               fontSize: pageContentConfig.currentContentFontSize.toDouble()));
-      textPainter.layout(maxWidth: configEntity.pageSize.width - (2 * configEntity.contentPadding));
+      textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
       textPainter.paint(pageCanvas, offset);
 
-      offset = Offset(configEntity.contentPadding.toDouble(), offset.dy + textPainter.computeLineMetrics().length * pageContentConfig.currentContentLineHeight);
+      offset = Offset(config.contentPaddingHorizontal.toDouble(), offset.dy + textPainter.computeLineMetrics().length * pageContentConfig.currentContentLineHeight);
 
-      offset = Offset(configEntity.contentPadding.toDouble(), offset.dy + pageContentConfig.currentContentParagraphSpacing);
+      offset = Offset(config.contentPaddingHorizontal.toDouble(), offset.dy + pageContentConfig.currentContentParagraphSpacing);
     }
+
     ///绘制  章节名（1/5)
     textPainter.text = TextSpan(
         text: "${chapterData.chapterName}(${index + 1}/${chapterData.chapterContentConfigs.length})",
-        style: TextStyle(color: configEntity.contentTextColor, height: configEntity.bottomTipHeight.toDouble() / configEntity.bottomTipFontSize, fontSize: configEntity.bottomTipFontSize.toDouble()));
-    textPainter.layout(maxWidth: configEntity.pageSize.width - (2 * configEntity.contentPadding));
-    textPainter.paint(
-        pageCanvas, Offset((configEntity.pageSize.width - textPainter.width) / 2, configEntity.pageSize.height - configEntity.contentPadding.toDouble() - configEntity.bottomTipHeight.toDouble()));
+        style: TextStyle(color: config.contentTextColor, height:1.2, fontSize: config.bottomTipFontSize.toDouble()));
+    textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
+    textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, config.pageSize.height - config.bottomTipHeight.toDouble()));
 
+    // pageCanvas.drawLine(OffSet((config.page)), p2, paint).
     ///绘制  1/100章
     textPainter.text = TextSpan(
         text: "${chapterData.chapterIndex + 1}/${chapterData.totalChapterCount}章",
-        style: TextStyle(color: configEntity.contentTextColor, height: configEntity.bottomTipHeight.toDouble() / configEntity.bottomTipFontSize, fontSize: configEntity.bottomTipFontSize.toDouble()));
-    textPainter.layout(maxWidth: configEntity.pageSize.width - (2 * configEntity.contentPadding));
-    textPainter.paint(pageCanvas,
-        Offset(configEntity.pageSize.width - configEntity.contentPadding.toDouble() - textPainter.width, configEntity.pageSize.height - configEntity.contentPadding.toDouble() - textPainter.height));
+        style: TextStyle(color: config.contentTextColor, height: 1.2, fontSize: config.bottomTipFontSize.toDouble()));
+    textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
+    textPainter.paint(pageCanvas, Offset(config.pageSize.width - config.contentPaddingHorizontal.toDouble() - textPainter.width, config.pageSize.height - config.bottomTipHeight.toDouble()));
+   //  bgPaint.color=Colors.black26;
+   // pageCanvas.drawRect(Rect.fromLTWH(0,0,config.pageSize.width,config.contentPaddingVertical.toDouble()), bgPaint);
+   // pageCanvas.drawRect(Rect.fromLTWH(0,config.pageSize.height-config.contentPaddingVertical.toDouble(),config.pageSize.width,config.contentPaddingVertical.toDouble()), bgPaint);
     return pageRecorder.endRecording();
   }
 }
@@ -180,7 +204,7 @@ class ReaderChapterData {
   int chapterIndex = 0;
 
   int currentPageIndex = 0;
-  int totalChapterCount=0;
+  int totalChapterCount = 0;
 
   bool canToNextPage() {
     return currentPageIndex < chapterContentConfigs.length - 1;

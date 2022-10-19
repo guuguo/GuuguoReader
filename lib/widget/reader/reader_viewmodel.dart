@@ -55,8 +55,10 @@ class ReaderViewModel extends ChangeNotifier {
     var currentPage = currentChapter!.currentPageData();
     if (currentPage.pagePicture != null) canvas.drawPicture(currentPage.pagePicture!);
   }
-
+var loading=false;
   toNextPage() async {
+    if(loading) return;
+    loading=true;
     await preLoadNextData();
     if (!currentChapter!.toNextPage()) {
       currentChapterIndex++;
@@ -64,12 +66,17 @@ class ReaderViewModel extends ChangeNotifier {
       currentChapter = nextChapter;
       nextChapter = null;
     }
-    readChangeCallback(currentChapterIndex,currentChapter!.currentPageIndex);
+    readChangeCallback(currentChapter!.currentPageIndex,currentChapterIndex);
     notifyListeners();
+    loading=false;
+
   }
 
   toPrePage() async {
-    await preLoadNextData();
+    if(loading) return;
+    loading=true;
+
+    await preLoadPreData();
     if (!currentChapter!.toPrePage()) {
       if (currentChapterIndex <= 0) {
         Get.snackbar("提示", "已经是第一页了", duration: Duration(milliseconds: 1000));
@@ -82,6 +89,7 @@ class ReaderViewModel extends ChangeNotifier {
     }
     readChangeCallback(currentChapterIndex,currentChapter!.currentPageIndex);
     notifyListeners();
+    loading=false;
   }
 
   setConfig(ReaderConfigEntity config) {
@@ -154,13 +162,18 @@ class ReaderViewModel extends ChangeNotifier {
       var chapterPageList = ReaderContentDrawer.getChapterPageContentConfigList(
         0,
         chapter!.content!,
-        config!.pageSize.height - config!.bottomTipHeight - config!.contentPadding * 2,
-        config!.pageSize.width - config!.contentPadding * 2,
+        config!.pageSize.height - config!.contentPaddingVertical * 2,
+        config!.pageSize.width - config!.contentPaddingHorizontal * 2,
         config!.fontSize,
         config!.lineHeight,
         config!.paragraphSpacing,
       );
       chapter.chapterContentConfigs = chapterPageList;
+      if(chapter.currentPageIndex>=chapterPageList.length){
+        chapter.currentPageIndex=chapterPageList.length-1;
+      }else if(chapter.currentPageIndex<0){
+        chapter.currentPageIndex=0;
+      }
     }
     preparePagePicture(chapter!, chapter.currentPageIndex);
   }

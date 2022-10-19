@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
 import 'package:read_info/data/source_net_repository.dart';
+import 'package:read_info/utils/developer.dart';
 
 import '../../bean/book_item_bean.dart';
 import '../../bean/entity/source_entity.dart';
@@ -37,6 +38,7 @@ class ContentLogic extends GetxController {
 
   ///更新阅读进度
   void updateReadPage(int pageIndex, int chapterIndex) {
+    debug("更新当前页面chapterIndex:${chapterIndex}  pageIndex:${pageIndex}");
     bookDetail.readPageIndex = pageIndex;
     bookDetail.readChapterIndex = chapterIndex;
     LocalRepository.updateBook(bookDetail);

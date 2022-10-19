@@ -16,11 +16,13 @@ class NovelReader extends StatefulWidget {
     required this.readChangeCallback,
     required this.startChapterIndex,
     required this.startReadPageIndex,
+   required this.pageSize,
   }) : super(key: key);
   final ChapterProvider chapterProvider;
   final ReadPageChangeCallback readChangeCallback;
   final int startChapterIndex;
   final int startReadPageIndex;
+  final Size pageSize;
 
   @override
   State<NovelReader> createState() => _NovelReaderState();
@@ -30,7 +32,7 @@ class _NovelReaderState extends State<NovelReader> {
   NovelPagePainter? mPainter;
   late ReaderViewModel viewModel;
   GlobalKey canvasKey = new GlobalKey();
-
+  @override
   initState() {
     super.initState();
     viewModel = ReaderViewModel(widget.chapterProvider,widget.readChangeCallback, widget.startChapterIndex,widget.startReadPageIndex);
@@ -38,11 +40,16 @@ class _NovelReaderState extends State<NovelReader> {
       setState(() {});
     });
     mPainter = NovelPagePainter(viewModel);
+    viewModel.setConfig(
+      ReaderConfigEntity().copyWith(
+        pageSize: widget.pageSize,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+
     return GestureDetector(
       onTap: () {},
       onTapUp: (d) {
@@ -54,16 +61,11 @@ class _NovelReaderState extends State<NovelReader> {
       },
       child: Builder(builder: (context) {
         var constrains = context.findRenderObject()?.constraints as BoxConstraints?;
-        viewModel.setConfig(
-          ReaderConfigEntity().copyWith(
-            pageSize: Size(constrains?.maxWidth ?? ScreenUtils.getScreenWidth(), constrains?.maxHeight ?? ScreenUtils.getScreenHeight()),
-          ),
-        );
         if (viewModel.currentPageReady())
           return CustomPaint(
             key: canvasKey,
             isComplex: true,
-            size: Size(constrains?.maxWidth ?? 100, constrains?.maxHeight ?? 100),
+            size: widget.pageSize,
             painter: mPainter,
           );
         else
