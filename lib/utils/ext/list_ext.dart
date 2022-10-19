@@ -12,10 +12,11 @@ extension ListExt on Iterable {
     return newList;
   }
 }
+
 extension ListTExt<E> on Iterable<E> {
-  Iterable<T> mapIndexed<T>(T toElement(int index,E e)) {
-  final list=this.toList();
-  return list.asMap().keys.map((i) => toElement(i,list[i]));
+  Iterable<T> mapIndexed<T>(T toElement(int index, E e)) {
+    final list = this.toList();
+    return list.asMap().keys.map((i) => toElement(i,list[i]));
 }
 }
 

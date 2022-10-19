@@ -31,7 +31,7 @@ class ExploreLogic extends GetxController {
       routeRouteConfig=RouteConfig.detailsms;
     }
     return await Get.toNamed(routeRouteConfig,
-        arguments: {ARG_BOOK_ITEM_BEAN: item});
+        arguments: {ARG_BOOK_ITEM_BEAN: item,ARG_ITEM_SOURCE_BEAN: source});
   }
 
   Future<void> init() async {

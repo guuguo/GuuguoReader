@@ -31,3 +31,9 @@ flutter build web --no-sound-null-safety --release
  flutter build macos --no-sound-null-safety --release
 
 ```
+
+### 4. 修改数据库实体类后，使用如下命令重新生成
+```shell
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+
+```

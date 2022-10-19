@@ -24,7 +24,6 @@ class MyHttpOverrides extends HttpOverrides {
 void main() async {
   sqfliteFfiInit();
   WidgetsFlutterBinding.ensureInitialized();
-  await LocalRepository.initTable();
   await InitLogic.initialSource();
 
 
@@ -50,7 +49,7 @@ class MyApp extends StatelessWidget {
         builder: (controller) => GetMaterialApp(
               // theme:themeMode== ,
               // themeMode: controller.themeMode,
-              initialRoute: RouteConfig.source,
+              initialRoute: RouteConfig.home,
               getPages: RouteConfig.getPages,
               title: '信息阅读',
               theme: kLightDiaryTheme.data,

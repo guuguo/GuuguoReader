@@ -132,22 +132,6 @@ class ReaderContentDrawer {
 
     bgPaint.color = configEntity.currentCanvasBgColor;
     pageCanvas.drawRect(Offset.zero & configEntity.pageSize, bgPaint);
-    // ///绘制章节名
-    // textPainter.text = TextSpan(
-    //     text: "${dataValue.chapterName}",
-    //     style: TextStyle(
-    //         color: Colors.red[700],
-    //         height: configEntity.titleHeight.toDouble() /
-    //             configEntity.titleFontSize,
-    //         fontWeight: FontWeight.bold,
-    //         fontSize: configEntity.titleFontSize.toDouble()));
-    // textPainter.layout(
-    //     maxWidth:
-    //         configEntity.pageSize.width - (2 * configEntity.contentPadding));
-    // textPainter.paint(
-    //     pageCanvas,
-    //     Offset(configEntity.contentPadding.toDouble(),
-    //         configEntity.contentPadding.toDouble()));
 
     ///绘制内容
     Offset offset = Offset(configEntity.contentPadding.toDouble(), configEntity.contentPadding.toDouble());
@@ -168,6 +152,7 @@ class ReaderContentDrawer {
 
       offset = Offset(configEntity.contentPadding.toDouble(), offset.dy + pageContentConfig.currentContentParagraphSpacing);
     }
+    ///绘制  章节名（1/5)
     textPainter.text = TextSpan(
         text: "${chapterData.chapterName}(${index + 1}/${chapterData.chapterContentConfigs.length})",
         style: TextStyle(color: configEntity.contentTextColor, height: configEntity.bottomTipHeight.toDouble() / configEntity.bottomTipFontSize, fontSize: configEntity.bottomTipFontSize.toDouble()));
@@ -175,8 +160,9 @@ class ReaderContentDrawer {
     textPainter.paint(
         pageCanvas, Offset((configEntity.pageSize.width - textPainter.width) / 2, configEntity.pageSize.height - configEntity.contentPadding.toDouble() - configEntity.bottomTipHeight.toDouble()));
 
+    ///绘制  1/100章
     textPainter.text = TextSpan(
-        text: "${chapterData.chapterIndex + 1}/${100}章",
+        text: "${chapterData.chapterIndex + 1}/${chapterData.totalChapterCount}章",
         style: TextStyle(color: configEntity.contentTextColor, height: configEntity.bottomTipHeight.toDouble() / configEntity.bottomTipFontSize, fontSize: configEntity.bottomTipFontSize.toDouble()));
     textPainter.layout(maxWidth: configEntity.pageSize.width - (2 * configEntity.contentPadding));
     textPainter.paint(pageCanvas,
@@ -194,6 +180,7 @@ class ReaderChapterData {
   int chapterIndex = 0;
 
   int currentPageIndex = 0;
+  int totalChapterCount=0;
 
   bool canToNextPage() {
     return currentPageIndex < chapterContentConfigs.length - 1;
@@ -236,6 +223,7 @@ class ReaderChapterData {
     content = null;
     chapterIndex = 0;
     currentPageIndex = 0;
+    totalChapterCount = 0;
   }
 
 // @override

@@ -76,7 +76,7 @@ class _DetailSmsPageState extends State<DetailBookPage> {
             ),
           ),
         ),
-        if (logic.detail.value?.tocs?.isNotEmpty==true)
+        if (logic.detail.value?.chapters?.isNotEmpty==true)
           SliverPadding(
             sliver: SliverGrid.count(
               mainAxisSpacing: 8,
@@ -84,7 +84,7 @@ class _DetailSmsPageState extends State<DetailBookPage> {
               childAspectRatio: 4,
               crossAxisCount: 3,
               children:
-                  logic.detail.value!.tocs!.map((e) => ChapterItem(e)).toList(),
+                  logic.detail.value!.chapters!.map((e) => ChapterItem(e)).toList(),
             ),
             padding: EdgeInsets.symmetric(
                 horizontal: max((MediaQuery.of(context).size.width -
@@ -160,7 +160,7 @@ class _DetailSmsPageState extends State<DetailBookPage> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(2),
         child: Image.network(
-            urlFix(bean?.coverUrl ?? "", logic.source.bookSourceUrl!),
+            bean?.coverUrl ?? "",
             width: 100),
       ),
     );

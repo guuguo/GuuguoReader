@@ -6,6 +6,5 @@ import 'logic.dart';
 class SourceBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => SourceLogic());
   }
 }

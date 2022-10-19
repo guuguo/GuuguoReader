@@ -7,6 +7,7 @@ import 'package:read_info/page/detailsms/binding.dart';
 import 'package:read_info/page/detailsms/view.dart';
 import 'package:read_info/page/explore/binding.dart';
 import 'package:read_info/page/explore/view.dart';
+import 'package:read_info/page/home/view.dart';
 import 'package:read_info/page/source/binding.dart';
 import 'package:read_info/page/source/view.dart';
 
@@ -16,6 +17,7 @@ class RouteConfig {
   static const String detailbook = "/detail/book";
   static const String source = "/source";
   static const String bookcontent = "/bookcontent";
+  static const String home = "/home";
 
   static final List<GetPage> getPages = [
     GetPage(
@@ -42,6 +44,10 @@ class RouteConfig {
       name: bookcontent,
       page: () => BookContentPage(),
       binding: ContentBinding(),
+    ),
+    GetPage(
+      name: home,
+      page: () => HomePage(),
     ),
   ];
 }

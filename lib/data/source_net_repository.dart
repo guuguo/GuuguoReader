@@ -7,6 +7,7 @@ import 'package:html/parser.dart';
 import 'package:read_info/bean/entity/source_header_entity.dart';
 import 'package:read_info/data/net/dio_helper.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
+import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/generated/json/base/json_convert_content.dart';
 
 import '../bean/book_item_bean.dart';
@@ -41,7 +42,7 @@ class SourceNetRepository {
           ..name = e.parseRule(rule?.name)?.trim()
           ..intro = e.parseRule(rule?.intro)?.trim()
           ..author = e.parseRule(rule?.author)
-          ..coverUrl = e.parseRule(rule?.coverUrl)
+          ..coverUrl = urlFix(e.parseRule(rule?.coverUrl),source.bookSourceUrl!)
           ..bookUrl = e.parseRule(rule?.bookUrl))
         .toList();
 
@@ -68,15 +69,12 @@ class SourceNetRepository {
     var bookBean= BookDetailBean()
       ..name = element.parseRule(rule?.name)??bean.name
       ..author = element.parseRule(rule?.author)??bean.author
-      ..coverUrl = element.parseRule(rule?.coverUrl)??bean.coverUrl
+      ..coverUrl = urlFix(element.parseRule(rule?.coverUrl)??bean.coverUrl, source.bookSourceUrl!)
       ..kind = element.parseRule(rule?.kind)?.trim()
       ..lastChapter = element.parseRule(rule?.lastChapter)
       ..intro = element.parseRule(rule?.intro)?.trim()
-      ..tocUrl = element.parseRule(rule?.tocUrl);
+      ..tocUrl = checkUrlRule(bean.bookUrl!,rule?.tocUrl)??element.parseRule(rule?.tocUrl);
 
-    if (bookBean.tocUrl?.startsWith(RegExp(r'http')) != true) {
-      bookBean.tocUrl="${bean.bookUrl}${Platform.pathSeparator}${bookBean.tocUrl}";
-    }
     return bookBean;
   }
   Future<List<BookChapterBean>?> queryBookTocs(BookDetailBean bean) async {
@@ -111,9 +109,8 @@ class SourceNetRepository {
       result = result?.replaceAll(RegExp(reg), replace);
     });
 
-    var resBean = BookContentBean()
-      ..content = dealHtmlContentResult(result);
-    bean.content = resBean;
+    result = dealHtmlContentResult(result);
+    if (result != null) bean.content = ChapterContent.FromChapter(bean, result!);
     return bean;
   }
   String? dealHtmlContentResult(String? html){

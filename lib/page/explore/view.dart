@@ -132,7 +132,7 @@ class BookItemWidget extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: Image.network(
-                          urlFix(bean.coverUrl!,logic.source.bookSourceUrl!),
+                          bean.coverUrl!,
                           fit: BoxFit.cover,
                         ),
                       )),
@@ -205,7 +205,7 @@ class SMSItemWidget extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
-                          urlFix(bean.coverUrl!,logic.source.bookSourceUrl!),
+                          bean.coverUrl!,
                           fit: BoxFit.cover,
                         ),
                       ))

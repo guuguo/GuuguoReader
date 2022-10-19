@@ -5,6 +5,7 @@ import 'package:read_info/data/source_net_repository.dart';
 
 import '../../bean/book_item_bean.dart';
 import '../../bean/entity/source_entity.dart';
+import '../../data/local_repository.dart';
 import '../../global/constant.dart';
 
 class DetailLogic extends GetxController {
@@ -25,8 +26,9 @@ class DetailLogic extends GetxController {
 
   Future toBookContentPage(BookChapterBean toc) async {
     var routeRouteConfig = RouteConfig.bookcontent;
+    detail.value?.readChapterIndex=detail.value!.chapters!.indexOf(toc);
     return await Get.toNamed(routeRouteConfig,
-        arguments: {ARG_BOOK_TOC_BEAN: toc, ARG_BOOK_DETAIL_BEAN: detail.value});
+        arguments: { ARG_BOOK_DETAIL_BEAN: detail.value,ARG_ITEM_SOURCE_BEAN: source});
   }
 
   loadMailDetail() async {
@@ -41,8 +43,8 @@ class DetailLogic extends GetxController {
   loadTocs() async {
     if (detail.value == null)
       return;
-    var tocs = await repository.queryBookTocs(detail.value!);
-    detail.value = detail.value!.copyWith(tocs:tocs);
+    var chapters = await repository.queryBookTocs(detail.value!);
+    detail.value = detail.value!.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0 );
     update();
   }
 }

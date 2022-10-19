@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class MyGradient {
 
-  static LinearGradient bgPrimary(BuildContext context) =>d
+  static LinearGradient bgPrimary(BuildContext context) =>
       LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

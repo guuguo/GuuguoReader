@@ -1,5 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:html/dom.dart';
+String? checkUrlRule(String baseUrl,String? rule){
+  final reg=RegExp(r'{{baseUrl}}');
+  if(rule?.contains(reg)==true){
+    return rule?.replaceAll(reg,baseUrl);
+  }else return null;
+}
 extension ElementListExt on List<Element>{
   List<Element> querySelectorAllFix(String selector) {
     return fold(

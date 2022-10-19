@@ -16,9 +16,11 @@ class SourcePage extends StatefulWidget {
   State<SourcePage> createState() => _SourcePageState();
 }
 
-class _SourcePageState extends State<SourcePage> {
+class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMixin{
+
   @override
   void initState() {
+    Get.lazyPut(() => SourceLogic());
     super.initState();
   }
 
@@ -31,27 +33,29 @@ class _SourcePageState extends State<SourcePage> {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text("源列表"),
         ),
-        trailing: PopupMenuButton(
-          itemBuilder: (BuildContext context) {
-            return [PopupMenuItem(child: Row(
-              children: [
-                Icon(Icons.import_contacts),
-                SizedBox(width:10),
-                      Text("获取常用源"),
-                    ],
-                  ),
-                  onTap: ()async  {
-                    final controller=Get.snackbar("提示", "正在更新源",showProgressIndicator: true,duration: Duration(seconds: 100));
-                    try {
-                      await logic.importSource();
-                      controller.close();
-                      Get.snackbar("提示", "更新源完成",duration: Duration(milliseconds: 1500));
-                    }catch (e){
-                      controller.close();
-                    }
-                  })
-            ];
-          },
+        trailing: Material(
+          child: PopupMenuButton(
+            itemBuilder: (BuildContext context) {
+              return [PopupMenuItem(child: Row(
+                children: [
+                  Icon(Icons.import_contacts),
+                  SizedBox(width:10),
+                        Text("获取常用源"),
+                      ],
+                    ),
+                    onTap: ()async  {
+                      final controller=Get.snackbar("提示", "正在更新源",showProgressIndicator: true,duration: Duration(seconds: 100));
+                      try {
+                        await logic.importSource();
+                        controller.close();
+                        Get.snackbar("提示", "更新源完成",duration: Duration(milliseconds: 1500));
+                      }catch (e){
+                        controller.close();
+                      }
+                    })
+              ];
+            },
+          ),
         ),
       ),
       backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
@@ -109,6 +113,9 @@ class _SourcePageState extends State<SourcePage> {
       child: child,
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class SourceItemWidget extends StatelessWidget {
@@ -122,28 +129,33 @@ class SourceItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<SourceLogic>();
+    var title;
+    if (bean.bookSourceCoverUrl?.isNotEmpty == true)
+      title= Image.network(
+        bean.bookSourceCoverUrl!,
+        height: 40,
+      );
+    else
+      title= Text(bean.bookSourceName ?? "", style: Theme.of(context).textTheme.titleLarge);
     return GestureDetector(
       onTap: () {
         logic.toSourcePage(bean);
       },
       child: Container(
           width: 120,
-          height: 160,
           margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          padding: EdgeInsets.all(15),
+          padding: EdgeInsets.all(10),
           decoration: RoundedBoxDecoration(
               radius: 10, color: Theme.of(context).cardColor),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (bean.bookSourceCoverUrl?.isNotEmpty == true)
-                Image.network(urlFix(bean.bookSourceCoverUrl!,bean.bookSourceUrl!)),
-              Text(bean.bookSourceName ?? "",
-                  style: Theme.of(context).textTheme.bodyLarge),
+              SizedBox(child:title,height: 40),
               SizedBox(height: 6),
               Text("${getTypeDesc(bean.bookSourceType)}",
                   style: Theme.of(context).textTheme.bodySmall),
               SizedBox(height: 8),
+
             ],
           )),
     );
