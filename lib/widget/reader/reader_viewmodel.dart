@@ -40,6 +40,7 @@ class ReaderViewModel extends ChangeNotifier {
   ReaderConfigEntity? config;
   ReaderContentDrawer readerContentDrawer = ReaderContentDrawer();
 
+  //当前页面是否已经ready
   bool currentPageReady() {
     try {
       return currentChapter
@@ -49,47 +50,53 @@ class ReaderViewModel extends ChangeNotifier {
       return false;
     }
   }
-
+  //绘制当前页面
   drawCurrentPage(Canvas canvas) {
     if (currentChapter?.chapterContentConfigs.isNotEmpty != true) return;
     var currentPage = currentChapter!.currentPageData();
     if (currentPage.pagePicture != null) canvas.drawPicture(currentPage.pagePicture!);
   }
-var loading=false;
-  toNextPage() async {
-    if(loading) return;
-    loading=true;
-    await preLoadNextData();
-    if (!currentChapter!.toNextPage()) {
-      currentChapterIndex++;
-      preChapter = currentChapter;
-      currentChapter = nextChapter;
-      nextChapter = null;
-    }
-    readChangeCallback(currentChapter!.currentPageIndex,currentChapterIndex);
-    notifyListeners();
-    loading=false;
 
+  //是否在跳转页面加载中
+  var loading = false;
+//跳转到下一页
+  Future toNextPage() async {
+    if (loading) return;
+    loading = true;
+    try {
+      await preLoadNextData();
+      if (!currentChapter!.toNextPage()) {
+        currentChapterIndex++;
+        preChapter = currentChapter;
+        currentChapter = nextChapter;
+        nextChapter = null;
+      }
+      readChangeCallback(currentChapter!.currentPageIndex, currentChapterIndex);
+      notifyListeners();
+    } catch (e) {}
+    loading = false;
   }
 
-  toPrePage() async {
-    if(loading) return;
-    loading=true;
-
-    await preLoadPreData();
-    if (!currentChapter!.toPrePage()) {
-      if (currentChapterIndex <= 0) {
-        Get.snackbar("提示", "已经是第一页了", duration: Duration(milliseconds: 1000));
-        return;
+  //跳转到前一页
+  Future toPrePage() async {
+    if (loading) return;
+    loading = true;
+    try {
+      await preLoadPreData();
+      if (!currentChapter!.toPrePage()) {
+        if (currentChapterIndex <= 0) {
+          Get.snackbar("提示", "已经是第一页了", duration: Duration(milliseconds: 1000));
+          return;
+        }
+        currentChapterIndex--;
+        nextChapter = currentChapter;
+        currentChapter = preChapter;
+        preChapter = null;
       }
-      currentChapterIndex--;
-      nextChapter = currentChapter;
-      currentChapter = preChapter;
-      preChapter = null;
-    }
-    readChangeCallback(currentChapterIndex,currentChapter!.currentPageIndex);
-    notifyListeners();
-    loading=false;
+      readChangeCallback(currentChapterIndex, currentChapter!.currentPageIndex);
+      notifyListeners();
+    } catch (e) {}
+    loading = false;
   }
 
   setConfig(ReaderConfigEntity config) {

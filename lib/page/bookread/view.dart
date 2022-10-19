@@ -22,10 +22,8 @@ class _BookContentPageState extends State<BookContentPage> {
   @override
   initState() {
     super.initState();
-    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack,overlays: [SystemUiOverlay.bottom]);
-    // SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(statusBarColor: Colors.transparent,statusBarIconBrightness:Brightness.dark);
-    // SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,overlays: [SystemUiOverlay.bottom]);
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,overlays: [SystemUiOverlay.bottom]);
 
 
     detailBean = Get.arguments[ARG_BOOK_DETAIL_BEAN];

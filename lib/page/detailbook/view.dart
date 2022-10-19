@@ -51,48 +51,52 @@ class _DetailSmsPageState extends State<DetailBookPage> {
 
   Widget buildDetailContent(
       BookDetailBean? bean, DetailLogic logic, BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverPadding(padding: EdgeInsets.all(6)),
-        SliverToBoxAdapter(
-          child: LimitWidthBox(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                SizedBox(height: 10),
-                BookCover(bean, logic),
-                SizedBox(height: 14),
-                Text(bean?.name ?? "",
-                    style: MyTheme(context).textTheme.titleLarge),
-                SizedBox(height: 4),
-                BookCaptionInfo(bean, context),
-                SizedBox(height: 14),
-                BookIntro(context, logic),
-                SizedBox(height: 20),
-                Divider(thickness: 2),
-                SizedBox(height: 20),
-              ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal:16),
+      child: CustomScrollView(
+        physics: BouncingScrollPhysics(),
+        slivers: [
+          SliverPadding(padding: EdgeInsets.all(6)),
+          SliverToBoxAdapter(
+            child: LimitWidthBox(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  SizedBox(height: 10),
+                  BookCover(bean, logic),
+                  SizedBox(height: 14),
+                  Text(bean?.name ?? "",
+                      style: MyTheme(context).textTheme.titleLarge),
+                  SizedBox(height: 4),
+                  BookCaptionInfo(bean, context),
+                  SizedBox(height: 14),
+                  BookIntro(context, logic),
+                  SizedBox(height: 20),
+                  Divider(thickness: 2),
+                  SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
-        ),
-        if (logic.detail.value?.chapters?.isNotEmpty==true)
-          SliverPadding(
-            sliver: SliverGrid.count(
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 4,
-              crossAxisCount: 3,
-              children:
-                  logic.detail.value!.chapters!.map((e) => ChapterItem(e)).toList(),
+          if (logic.detail.value?.chapters?.isNotEmpty==true)
+            SliverPadding(
+              sliver: SliverGrid.count(
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 4,
+                crossAxisCount: 3,
+                children:
+                    logic.detail.value!.chapters!.map((e) => ChapterItem(e)).toList(),
+              ),
+              padding: EdgeInsets.symmetric(
+                  horizontal: max((MediaQuery.of(context).size.width -
+                      MyTheme.contentMaxWidth) /2, 0
+                  )),
             ),
-            padding: EdgeInsets.symmetric(
-                horizontal: max((MediaQuery.of(context).size.width -
-                    MyTheme.contentMaxWidth) /2, 0
-                )),
-          ),
-        SliverPadding(padding: EdgeInsets.all(20)),
-      ],
+          SliverPadding(padding: EdgeInsets.all(20)),
+        ],
+      ),
     );
   }
 

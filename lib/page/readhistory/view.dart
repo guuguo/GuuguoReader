@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:read_info/data/rule/app_helper.dart';
@@ -16,16 +17,19 @@ class _ReadHistoryPageState extends State<ReadHistoryPage> {
   @override
   Widget build(BuildContext context) {
     Get.put(ReadHistoryLogic());
-    return GetBuilder<ReadHistoryLogic>(
-      assignId: true,
-      builder: (logic) {
-        final state=logic.state;
-        if(state.books.isEmpty){
-         return Center(child:Text("当前还没有阅读历史"));
-        }
-        return ListView(
-        children: state.books.map((e) => BookReadItemWidget(bean:e)).toList());
-      },
+    return Scaffold(
+      appBar: CupertinoNavigationBar(middle: Text("阅读历史")),
+      body: GetBuilder<ReadHistoryLogic>(
+        assignId: true,
+        builder: (logic) {
+          final state=logic.state;
+          if(state.books.isEmpty){
+           return Center(child:Text("当前还没有阅读历史"));
+          }
+          return ListView(
+          children: state.books.map((e) => BookReadItemWidget(bean:e)).toList());
+        },
+      ),
     );
   }
 }
