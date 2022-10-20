@@ -1,6 +1,5 @@
-# free
-
-财务自由之路
+# readInfo
+# 阅读信息
 
 ## 第三方插件使用说明
 
@@ -37,3 +36,8 @@ flutter build web --no-sound-null-safety --release
 fvm flutter pub run build_runner build --delete-conflicting-outputs
 
 ```
+
+# todo
+- [ ] 从发现页重复点击一本小说，可能生成多个历史记录的问题
+- [ ] 多源搜索功能
+- [ ] 阅读历史展示简化

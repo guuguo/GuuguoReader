@@ -127,7 +127,7 @@ class BookItemWidget extends StatelessWidget {
               children: [
                 if (bean.coverUrl?.isNotEmpty == true)
                   SizedBox(
-                      width: 80,
+                      width: 70,
                       height: 100,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(6),

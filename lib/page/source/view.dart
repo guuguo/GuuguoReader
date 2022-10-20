@@ -144,9 +144,9 @@ class SourceItemWidget extends StatelessWidget {
       child: Container(
           width: 120,
           margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.all(18),
           decoration: RoundedBoxDecoration(
-              radius: 10, color: Theme.of(context).cardColor),
+              radius: 10, color: Theme.of(context).chipTheme.backgroundColor),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -155,7 +155,6 @@ class SourceItemWidget extends StatelessWidget {
               Text("${getTypeDesc(bean.bookSourceType)}",
                   style: Theme.of(context).textTheme.bodySmall),
               SizedBox(height: 8),
-
             ],
           )),
     );

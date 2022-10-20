@@ -47,8 +47,6 @@ class MyApp extends StatelessWidget {
     Get.lazyPut(() => GlobalLogic());
     return GetBuilder<GlobalLogic>(
         builder: (controller) => GetMaterialApp(
-              // theme:themeMode== ,
-              // themeMode: controller.themeMode,
               initialRoute: RouteConfig.home,
               getPages: RouteConfig.getPages,
               title: '信息阅读',

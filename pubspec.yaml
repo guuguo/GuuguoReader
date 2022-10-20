@@ -57,12 +57,18 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-  # assets-generator-begin
-  # assets/images/*
-    - assets/images/no_search_result.webp
-    - assets/images/real_auth_success.webp
-    - assets/images/pay_stay.webp
-    - assets/images/real_auth_fail.webp
-    - assets/images/pay_fail.webp
-    - assets/images/message_empty.webp
-  # assets-generator-end
+    - assets/images/background/p01.jpg
+    - assets/images/background/p02.jpg
+    - assets/images/background/p03.jpg
+    - assets/images/background/p04.jpg
+    - assets/images/background/p05.jpg
+    - assets/images/background/p11.png
+    - assets/images/background/p12.png
+    - assets/images/background/p21.png
+    - assets/images/background/p22.png
+    - assets/images/background/p23.png
+    - assets/images/background/p24.png
+    - assets/images/background/p25.png
+    - assets/images/background/p26.png
+    - assets/images/background/p27.png
+

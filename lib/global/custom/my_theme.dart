@@ -16,10 +16,13 @@ class MyTheme{
   get isDark => Theme.of(context).brightness == Brightness.dark;
 
   get cardColor => !isDark ? Color(0xffffffff) : Color(0xff1c1c1e);
+  get searchBarColor => !isDark ? Color(0xfff1f2f2) : Color(0xff474747);
+  get searchTextColor => Theme.of(context).textTheme.bodySmall?.color;
+  get hintTextColor =>  Color(0xfffa8abaa) ;
 
-  Color get primaryColor => isDark ? Color(0xff6336e9) : Color(0xff6336e9);
+  Color get primaryColor => Theme.of(context).primaryColor;
 
-  Color get scaffoldBackgroundColor => isDark ? Color(0xff242540) : Colors.white;
+  Color get scaffoldBackgroundColor => Theme.of(context).scaffoldBackgroundColor;
 
   Color get secondColor => Theme.of(context).errorColor;
 
@@ -136,7 +139,7 @@ CupertinoThemeData _buildCupertinoDarkTheme() {
 }
 
 ThemeData _buildDarkTheme() {
-  const primaryColor = Color(0xFF202124);
+  const primaryColor = Color(0xFFFFFFFF);
   const secondaryColor = Color(0xFF13B9FD);
   final base = ThemeData.dark();
   final colorScheme = const ColorScheme.dark().copyWith(
@@ -154,7 +157,18 @@ ThemeData _buildDarkTheme() {
     pageTransitionsTheme: MyPageTransitionsTheme(),
     canvasColor: const Color(0xFF202124),
     backgroundColor: const Color(0xFF202124),
+    scaffoldBackgroundColor:Color(0xff434444),
+    navigationBarTheme: NavigationBarThemeData(backgroundColor:Color(0xff343636)),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor:Color(0xff343636)),
     errorColor: const Color(0xFFB00020),
+    appBarTheme:AppBarTheme(backgroundColor:const Color(0xFF333634)),
+    chipTheme: ChipThemeData.fromDefaults(
+      brightness: Brightness.light,
+      secondaryColor: primaryColor,
+      labelStyle: _buildTextTheme(base.textTheme).bodyText2!,
+    ).copyWith(
+      backgroundColor:Colors.white12,
+    ),
     buttonTheme: ButtonThemeData(
       colorScheme: colorScheme,
       textTheme: ButtonTextTheme.primary,
@@ -166,7 +180,7 @@ ThemeData _buildDarkTheme() {
 }
 
 ThemeData _buildLightTheme() {
-  const primaryColor = Color(0xFF0175c2);
+  const primaryColor = Color(0xff52a874);
   const secondaryColor = Color(0xFF13B9FD);
   final colorScheme = const ColorScheme.light()
       .copyWith(primary: primaryColor, secondary: secondaryColor, surface: Colors.white, onPrimary: Colors.white, onSecondary: primaryColor, background: const Color(0xFFF8F9FA));
@@ -176,18 +190,21 @@ ThemeData _buildLightTheme() {
     appBarTheme: base.appBarTheme.copyWith(color: Colors.white, iconTheme: base.iconTheme, textTheme: base.textTheme, brightness: Brightness.light),
     primaryColor: primaryColor,
     buttonColor: primaryColor,
+    scaffoldBackgroundColor:Colors.white,
     cupertinoOverrideTheme: _buildCupertinoLightTheme(),
     indicatorColor: Colors.white,
     pageTransitionsTheme: MyPageTransitionsTheme(),
     splashColor: Colors.black12,
-    splashFactory: InkRipple.splashFactory,
+    navigationBarTheme: NavigationBarThemeData(backgroundColor:Colors.white),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor:Colors.white),
+    splashFactory: NoSplash.splashFactory,
     accentColor: secondaryColor,
-    scaffoldBackgroundColor: const Color(0xFFF4F5F5),
     errorColor: const Color(0xFFB00020),
     buttonTheme: ButtonThemeData(
       colorScheme: colorScheme,
       textTheme: ButtonTextTheme.primary,
     ),
+    iconTheme: IconThemeData(color:base.textTheme.caption?.color),
     textTheme: _buildTextTheme(base.textTheme, Color(0xff333333)),
     primaryTextTheme: _buildTextTheme(base.primaryTextTheme),
     accentTextTheme: _buildTextTheme(base.accentTextTheme),

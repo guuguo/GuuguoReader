@@ -22,9 +22,7 @@ class _BookContentPageState extends State<BookContentPage> {
   @override
   initState() {
     super.initState();
-
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,overlays: [SystemUiOverlay.bottom]);
-
 
     detailBean = Get.arguments[ARG_BOOK_DETAIL_BEAN];
     Get.find<ContentLogic>().init(detailBean);

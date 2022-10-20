@@ -17,6 +17,10 @@ class ReadHistoryLogic extends GetxController {
     update();
   }
 
+  Future toSearchPage() async {
+    await Get.toNamed(RouteConfig.search);
+  }
+
   Future toReadPage(BookDetailBean item) async {
     var routeRouteConfig = RouteConfig.bookcontent;
     var source = await LocalRepository.findSource(item.sourceUrl);

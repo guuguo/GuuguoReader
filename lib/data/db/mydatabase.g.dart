@@ -91,7 +91,7 @@ class _$MyDataBase extends MyDataBase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `BookDetailBean` (`id` TEXT, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, `kind` TEXT, `lastChapter` TEXT, `tocUrl` TEXT, `sourceUrl` TEXT, `readChapterIndex` INTEGER NOT NULL, `readPageIndex` INTEGER NOT NULL, `totalChapterCount` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, `chapterIndex` INTEGER, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ChapterContent` (`id` TEXT NOT NULL, `chapter_id` TEXT NOT NULL, `content` TEXT NOT NULL, FOREIGN KEY (`chapter_id`) REFERENCES `BookChapterBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
 
@@ -201,7 +201,8 @@ class _$BookDao extends BookDao {
                   'id': item.id,
                   'bookId': item.bookId,
                   'chapterName': item.chapterName,
-                  'chapterUrl': item.chapterUrl
+                  'chapterUrl': item.chapterUrl,
+                  'chapterIndex': item.chapterIndex
                 }),
         _chapterContentInsertionAdapter = InsertionAdapter(
             database,
@@ -219,7 +220,8 @@ class _$BookDao extends BookDao {
                   'id': item.id,
                   'bookId': item.bookId,
                   'chapterName': item.chapterName,
-                  'chapterUrl': item.chapterUrl
+                  'chapterUrl': item.chapterUrl,
+                  'chapterIndex': item.chapterIndex
                 }),
         _bookDetailBeanUpdateAdapter = UpdateAdapter(
             database,
@@ -302,7 +304,8 @@ class _$BookDao extends BookDao {
             id: row['id'] as String,
             bookId: row['bookId'] as String?,
             chapterName: row['chapterName'] as String?,
-            chapterUrl: row['chapterUrl'] as String?),
+            chapterUrl: row['chapterUrl'] as String?,
+            chapterIndex: row['chapterIndex'] as int?),
         arguments: [bookId]);
   }
 
@@ -325,7 +328,8 @@ class _$BookDao extends BookDao {
             id: row['id'] as String,
             bookId: row['bookId'] as String?,
             chapterName: row['chapterName'] as String?,
-            chapterUrl: row['chapterUrl'] as String?),
+            chapterUrl: row['chapterUrl'] as String?,
+            chapterIndex: row['chapterIndex'] as int?),
         arguments: [bookId]);
   }
 

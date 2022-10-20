@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:collection/collection.dart';
 
 import 'package:floor/floor.dart';
 import 'package:read_info/data/db/mydatabase.dart';
@@ -65,8 +66,9 @@ class LocalRepository {
     }
     final insertCode = await myDataBase.bookDao.insertBookDetail(bean);
     if (insertCode == 0) return;
-    bean.chapters?.forEach((e) {
+    bean.chapters?.forEachIndexed((i,e) {
       e.bookId = bean.id;
+      e.chapterIndex = i;
       e.id = uuid.v1();
     });
     await myDataBase.bookDao.insertBookChapters(bean.chapters ?? []);
