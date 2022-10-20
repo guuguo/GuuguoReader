@@ -1,17 +1,17 @@
 import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
+import 'package:read_info/data/source_manager.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/data/net_repository.dart';
 import 'package:read_info/config/route_config.dart';
 
-import '../../bean/book_item_bean.dart';
 import '../../bean/entity/source_entity.dart';
 
 class SourceLogic extends GetxController {
 
   var query = "";
   var refreshing = true.obs;
-  Rx<List<SourceEntity>> sources=Rx([]);
+  Rx<List<SourceEntity>> sources=SourceManager.instance.sourcesRx;
   SourceLogic() {
     init();
   }
@@ -35,23 +35,20 @@ class SourceLogic extends GetxController {
     }
   }
   Future<void> deleteSource(SourceEntity source) async {
-    await LocalRepository.deleteSource(source);
-    sources.value=[...sources.value..remove(source)];
+    await SourceManager.instance.deleteSource(source);
+    // sources.value=[...sources.value..remove(source)];
     update();
   }
 
   importSource({String url = defaultSourceUrl})async{
       var sourcesResult=await NetRepository.getSources(url);
-      for (var i=0; i<sourcesResult.length; i++){
-        await LocalRepository.insertOrUpdateSource(sourcesResult[i]);
-      }
-      sources.value=await LocalRepository.getSourceList();
+      await SourceManager.instance.insertOrUpdateSources(sourcesResult);
       update();
   }
   refreshList() async {
     refreshing.value = true;
     update();
-    sources.value=await LocalRepository.getSourceList();
+    sources.value=await SourceManager.instance.ensureSources();
     refreshing.value = false;
     update();
   }

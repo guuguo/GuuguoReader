@@ -54,7 +54,12 @@ class LogsInterceptors extends InterceptorsWrapper {
       String top = topBorder;
       String url = formatContent('url: ${options.uri.toString()}');
       String headers = formatContent('headers: ${options.headers.toString()}');
-      String data = formatContent('data: ${(options.data as FormData?)?.fields.join(',')}');
+      String data ;
+      try {
+        data = formatContent('data: ${(options.data as FormData?)?.fields.join(',')}');
+      } catch (e) {
+        data = formatContent('data: ${options.data.toString()}');
+      }
       String query = formatContent('query: ${options.queryParameters.toString()}');
       String bottom = bottomBorder;
       if (color != null) {

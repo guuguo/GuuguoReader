@@ -24,7 +24,7 @@ class SourceEntity {
 	SourceRuleContent? ruleContent;
 	SourceRuleExplore? ruleExplore;
 	SourceRuleReview? ruleReview;
-	SourceRuleSearch? ruleSearch;
+  SourceRuleExplore? ruleSearch;
 	SourceRuleToc? ruleToc;
 	String? searchUrl;
 	int? weight;
@@ -124,11 +124,13 @@ class SourceRuleExplore {
 
 	String? author;
 	String? bookList;
-	String? bookUrl;
-	String? coverUrl;
-	String? intro;
-	String? name;
-  
+  String? bookUrl;
+  String? coverUrl;
+  String? intro;
+  String? name;
+  String? lastChapter;
+	String? kind;
+
   SourceRuleExplore();
 
   factory SourceRuleExplore.fromJson(Map<String, dynamic> json) => $SourceRuleExploreFromJson(json);
@@ -151,28 +153,6 @@ class SourceRuleReview {
   factory SourceRuleReview.fromJson(Map<String, dynamic> json) => $SourceRuleReviewFromJson(json);
 
   Map<String, dynamic> toJson() => $SourceRuleReviewToJson(this);
-
-  @override
-  String toString() {
-    return jsonEncode(this);
-  }
-}
-
-@JsonSerializable()
-class SourceRuleSearch {
-
-	String? author;
-	String? bookList;
-	String? bookUrl;
-	String? kind;
-	String? lastChapter;
-	String? name;
-  
-  SourceRuleSearch();
-
-  factory SourceRuleSearch.fromJson(Map<String, dynamic> json) => $SourceRuleSearchFromJson(json);
-
-  Map<String, dynamic> toJson() => $SourceRuleSearchToJson(this);
 
   @override
   String toString() {

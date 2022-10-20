@@ -29,6 +29,11 @@ class LocalRepository {
     await myDataBase.sourceDao.insertSource(Source(bookSourceUrl: entity.bookSourceUrl!, detail: json.encode(entity.toJson())));
   }
 
+  static Future insertOrUpdateSources(List<SourceEntity> sources) async {
+    var myDataBase = await database();
+    await myDataBase.sourceDao.insertSources(sources.map((entity) => Source(bookSourceUrl: entity.bookSourceUrl!, detail: json.encode(entity.toJson()))).toList());
+  }
+
   static Future deleteSource(SourceEntity entity) async {
     var myDataBase = await database();
     await myDataBase.sourceDao.deleteSource(Source(bookSourceUrl: entity.bookSourceUrl!));

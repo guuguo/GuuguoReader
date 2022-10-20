@@ -1,4 +1,6 @@
 import 'package:floor/floor.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:read_info/bean/entity/source_entity.dart';
 
 class BookItemBean {
   String? name = "";
@@ -6,6 +8,9 @@ class BookItemBean {
   String? coverUrl = "";
   String? bookUrl = "";
   String? author = "";
+  SourceEntity? source;
+
+  BookItemBean({this.name, this.intro, this.coverUrl, this.bookUrl, this.author,required this.source});
 }
 
 @entity

@@ -16,7 +16,18 @@ extension ElementListExt on List<Element>{
 }
 
 extension ElementExt on Element{
-  String? parseRule(String? rule) {
+  ///[rule] 匹配规则
+  ///当前支持
+  /// - && 连接多个不同的匹配结果
+  /// - @ 分割css 选择器匹配
+  /// - ## 后面跟随正则表达式
+  /// 比如ol.am-breadcrumb@li:nth-of-type(2)@text
+  ///[urlReplace] 是否处理图片url等需要替换的值
+  ///比如  dt@a@href##.*/(\\d+)/(\\d+)/##https://style.31xs.net/img/$1/$2/$2s.jpg
+  ///从 https://m.31xs.com/201/201996/ url中提取出 两个数字关键词 201， 201996
+  ///将其作为$1和$2替换到结果中
+  ///
+  String? parseRule(String? rule,[bool urlReplace = false]) {
     if(rule==null) return null;
     ///正则 处理 ##分割
     var regexSpan = rule.split('##');
@@ -33,13 +44,13 @@ extension ElementExt on Element{
     var rules = regexSpan[0].split('&&');
     String? resultStr;
     for (var i = 0; i < rules.length; i++) {
-      resultStr = _selectElement(rules[i], regex,replace);
+      resultStr = _selectElement(rules[i], regex,replace,urlReplace);
       if (resultStr != null) break;
     }
     return resultStr;
   }
 
-  String? _selectElement(String rule,String? regex,String? replace){
+  String? _selectElement(String rule,String? regex,String? replace,bool urlReplace){
     ///css selector 处理 @ 分割
     var tags = rule.split('@');
     var attr;
@@ -60,7 +71,19 @@ extension ElementExt on Element{
     }
 
     if (regex != null) {
-      resultStr = resultStr?.replaceAll(RegExp(regex), replace ?? "");
+      if (urlReplace) {
+        final reg = RegExp(r'(?<=/)\d+(?=/)');
+        List<String?> params = reg.allMatches(resultStr ?? "").map((e) => e[0]).toList();
+        resultStr = resultStr?.replaceAll(RegExp(regex), replace ?? "");
+        if (params.length >= 1 && params[0] != null) {
+          resultStr = resultStr?.replaceAll(RegExp(r"\$1"), params[0]!);
+        }
+        if (params.length >= 2 && params[1] != null) {
+          resultStr = resultStr?.replaceAll(RegExp(r"\$2"), params[1]!);
+        }
+      } else {
+        resultStr = resultStr?.replaceAll(RegExp(regex), replace ?? "");
+      }
     }
      if(resultStr?.isEmpty==true) return null;
     return resultStr;
@@ -79,13 +102,7 @@ extension ElementExt on Element{
     });
     return  resultElement??[];
   }
-  // Element? querySelectorFix(String selector){
-  //   if(selector.contains("nth-of-type")) {
-  //     return querySelectorAllFix(selector).firstOrNull;
-  //   }else{
-  //     return querySelector(selector);
-  //   }
-  // }
+
   List<Element> querySelectorAllFix(String selector){
     if(selector.contains("nth-of-type")){
       final split=selector.split(':');

@@ -20,7 +20,6 @@ class JsonConvert {
 		(SourceRuleContent).toString(): SourceRuleContent.fromJson,
 		(SourceRuleExplore).toString(): SourceRuleExplore.fromJson,
 		(SourceRuleReview).toString(): SourceRuleReview.fromJson,
-		(SourceRuleSearch).toString(): SourceRuleSearch.fromJson,
 		(SourceRuleToc).toString(): SourceRuleToc.fromJson,
 		(SourceHeaderEntity).toString(): SourceHeaderEntity.fromJson,
 		(TestEntity).toString(): TestEntity.fromJson,
@@ -119,9 +118,6 @@ class JsonConvert {
 		}
 		if(<SourceRuleReview>[] is M){
 			return data.map<SourceRuleReview>((Map<String, dynamic> e) => SourceRuleReview.fromJson(e)).toList() as M;
-		}
-		if(<SourceRuleSearch>[] is M){
-			return data.map<SourceRuleSearch>((Map<String, dynamic> e) => SourceRuleSearch.fromJson(e)).toList() as M;
 		}
 		if(<SourceRuleToc>[] is M){
 			return data.map<SourceRuleToc>((Map<String, dynamic> e) => SourceRuleToc.fromJson(e)).toList() as M;

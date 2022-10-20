@@ -11,6 +11,9 @@ abstract class SourceDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<int> insertSource(Source bean);
 
+  @Insert(onConflict: OnConflictStrategy.replace)
+  Future<List<int>> insertSources(List<Source> bean);
+
   @delete
   Future<int> deleteSource(Source bean);
 

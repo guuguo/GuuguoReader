@@ -167,6 +167,12 @@ class _$SourceDao extends SourceDao {
   }
 
   @override
+  Future<List<int>> insertSources(List<Source> bean) {
+    return _sourceInsertionAdapter.insertListAndReturnIds(
+        bean, OnConflictStrategy.replace);
+  }
+
+  @override
   Future<int> deleteSource(Source bean) {
     return _sourceDeletionAdapter.deleteAndReturnChangedRows(bean);
   }

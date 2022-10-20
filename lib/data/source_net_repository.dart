@@ -20,7 +20,7 @@ class SourceNetRepository {
 
   SourceNetRepository(this.source);
 
-  ///
+  ///发现页
   Future<List<BookItemBean>> exploreBookList(
       {String? title, pageNum = 1}) async {
     SourceExploreUrl? explore;
@@ -38,11 +38,11 @@ class SourceNetRepository {
     var rule = source.ruleExplore;
     var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
     var bookList = list
-        ?.map((e) => BookItemBean()
+        ?.map((e) => BookItemBean(source: source)
           ..name = e.parseRule(rule?.name)?.trim()
           ..intro = e.parseRule(rule?.intro)?.trim()
           ..author = e.parseRule(rule?.author)
-          ..coverUrl = urlFix(e.parseRule(rule?.coverUrl),source.bookSourceUrl!)
+          ..coverUrl = urlFix(e.parseRule(rule?.coverUrl,true),source.bookSourceUrl!)
           ..bookUrl = e.parseRule(rule?.bookUrl))
         .toList();
 
@@ -61,6 +61,52 @@ class SourceNetRepository {
         }));
       });
 
+  ///发现页
+  Future<List<BookItemBean>> searchBookList(String? searchKey) async {
+    if (searchKey?.isNotEmpty != true) return [];
+    String? searchUrl = source.searchUrl;
+    if (searchUrl?.isNotEmpty != true) return [];
+
+    final index=searchUrl!.indexOf(',');
+
+    var method="get";
+    var contentType=Headers.jsonContentType;
+    dynamic body;
+    if (index >= 0) {
+      final methodJson = json.decode(searchUrl.substring(index + 1));
+      searchUrl = searchUrl.substring(0, index);
+      method = methodJson['method'] ?? "get";
+      body = methodJson['body'] ?? "";
+      try {
+        body = json.decode(body);
+        contentType = Headers.jsonContentType;
+      } catch (e) {
+        body=body.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
+        contentType=Headers.formUrlEncodedContentType;
+
+      }
+    } else {
+      searchUrl = searchUrl.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
+    }
+
+    Response<String?> res= await getDio().fetch<String>(RequestOptions(path: searchUrl,method:method,data:body,contentType: contentType ));
+
+    var document = parse(res.data);
+    //header.title@a@text
+    var rule = source.ruleSearch;
+    var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
+    var bookList = list
+        ?.map((e) => BookItemBean(source:source)
+          ..name = e.parseRule(rule?.name)?.trim()
+          ..intro = e.parseRule(rule?.intro)?.trim()
+          ..author = e.parseRule(rule?.author)
+          ..coverUrl = urlFix(e.parseRule(rule?.coverUrl,true), source.bookSourceUrl!)
+          ..bookUrl = e.parseRule(rule?.bookUrl))
+        .toList();
+
+    return bookList ?? [];
+  }
+
   Future<BookDetailBean?> queryBookDetail(BookItemBean bean) async {
     var res = await getDio().get<dynamic>(bean.bookUrl ?? "");
     var element = parse(res.data).documentElement;
@@ -69,7 +115,7 @@ class SourceNetRepository {
     var bookBean= BookDetailBean()
       ..name = element.parseRule(rule?.name)??bean.name
       ..author = element.parseRule(rule?.author)??bean.author
-      ..coverUrl = urlFix(element.parseRule(rule?.coverUrl)??bean.coverUrl, source.bookSourceUrl!)
+      ..coverUrl = urlFix(element.parseRule(rule?.coverUrl,true)??bean.coverUrl, source.bookSourceUrl!)
       ..kind = element.parseRule(rule?.kind)?.trim()
       ..lastChapter = element.parseRule(rule?.lastChapter)
       ..intro = element.parseRule(rule?.intro)?.trim()

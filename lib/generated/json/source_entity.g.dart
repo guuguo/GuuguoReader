@@ -1,5 +1,7 @@
 import 'package:read_info/generated/json/base/json_convert_content.dart';
 import 'package:read_info/bean/entity/source_entity.dart';
+import 'package:floor/floor.dart';
+
 
 SourceEntity $SourceEntityFromJson(Map<String, dynamic> json) {
 	final SourceEntity sourceEntity = SourceEntity();
@@ -79,7 +81,7 @@ SourceEntity $SourceEntityFromJson(Map<String, dynamic> json) {
 	if (ruleReview != null) {
 		sourceEntity.ruleReview = ruleReview;
 	}
-	final SourceRuleSearch? ruleSearch = jsonConvert.convert<SourceRuleSearch>(json['ruleSearch']);
+	final SourceRuleExplore? ruleSearch = jsonConvert.convert<SourceRuleExplore>(json['ruleSearch']);
 	if (ruleSearch != null) {
 		sourceEntity.ruleSearch = ruleSearch;
 	}
@@ -257,6 +259,14 @@ SourceRuleExplore $SourceRuleExploreFromJson(Map<String, dynamic> json) {
 	if (name != null) {
 		sourceRuleExplore.name = name;
 	}
+	final String? lastChapter = jsonConvert.convert<String>(json['lastChapter']);
+	if (lastChapter != null) {
+		sourceRuleExplore.lastChapter = lastChapter;
+	}
+	final String? kind = jsonConvert.convert<String>(json['kind']);
+	if (kind != null) {
+		sourceRuleExplore.kind = kind;
+	}
 	return sourceRuleExplore;
 }
 
@@ -268,6 +278,8 @@ Map<String, dynamic> $SourceRuleExploreToJson(SourceRuleExplore entity) {
 	data['coverUrl'] = entity.coverUrl;
 	data['intro'] = entity.intro;
 	data['name'] = entity.name;
+	data['lastChapter'] = entity.lastChapter;
+	data['kind'] = entity.kind;
 	return data;
 }
 
@@ -278,46 +290,6 @@ SourceRuleReview $SourceRuleReviewFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> $SourceRuleReviewToJson(SourceRuleReview entity) {
 	final Map<String, dynamic> data = <String, dynamic>{};
-	return data;
-}
-
-SourceRuleSearch $SourceRuleSearchFromJson(Map<String, dynamic> json) {
-	final SourceRuleSearch sourceRuleSearch = SourceRuleSearch();
-	final String? author = jsonConvert.convert<String>(json['author']);
-	if (author != null) {
-		sourceRuleSearch.author = author;
-	}
-	final String? bookList = jsonConvert.convert<String>(json['bookList']);
-	if (bookList != null) {
-		sourceRuleSearch.bookList = bookList;
-	}
-	final String? bookUrl = jsonConvert.convert<String>(json['bookUrl']);
-	if (bookUrl != null) {
-		sourceRuleSearch.bookUrl = bookUrl;
-	}
-	final String? kind = jsonConvert.convert<String>(json['kind']);
-	if (kind != null) {
-		sourceRuleSearch.kind = kind;
-	}
-	final String? lastChapter = jsonConvert.convert<String>(json['lastChapter']);
-	if (lastChapter != null) {
-		sourceRuleSearch.lastChapter = lastChapter;
-	}
-	final String? name = jsonConvert.convert<String>(json['name']);
-	if (name != null) {
-		sourceRuleSearch.name = name;
-	}
-	return sourceRuleSearch;
-}
-
-Map<String, dynamic> $SourceRuleSearchToJson(SourceRuleSearch entity) {
-	final Map<String, dynamic> data = <String, dynamic>{};
-	data['author'] = entity.author;
-	data['bookList'] = entity.bookList;
-	data['bookUrl'] = entity.bookUrl;
-	data['kind'] = entity.kind;
-	data['lastChapter'] = entity.lastChapter;
-	data['name'] = entity.name;
 	return data;
 }
 

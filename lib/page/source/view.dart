@@ -146,7 +146,7 @@ class SourceItemWidget extends StatelessWidget {
           margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           padding: EdgeInsets.all(18),
           decoration: RoundedBoxDecoration(
-              radius: 10, color: Theme.of(context).chipTheme.backgroundColor),
+              radius: 10, color: Theme.of(context).cardColor),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

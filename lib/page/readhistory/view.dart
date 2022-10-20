@@ -21,6 +21,7 @@ class _ReadHistoryPageState extends State<ReadHistoryPage> {
   Widget build(BuildContext context) {
     Get.put(ReadHistoryLogic());
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: MyAppBar(leading: SearchItem(), trail: [
         PrimaryIconButton(Icons.light_mode_outlined),
         PrimaryIconButton(Icons.more_vert),

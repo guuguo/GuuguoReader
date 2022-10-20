@@ -15,7 +15,7 @@ class MyTheme{
 
   get isDark => Theme.of(context).brightness == Brightness.dark;
 
-  get cardColor => !isDark ? Color(0xffffffff) : Color(0xff1c1c1e);
+  // get cardColor => !isDark ? Color(0xffffffff) : Color(0xff1c1c1e);
   get searchBarColor => !isDark ? Color(0xfff1f2f2) : Color(0xff474747);
   get searchTextColor => Theme.of(context).textTheme.bodySmall?.color;
   get hintTextColor =>  Color(0xfffa8abaa) ;
@@ -190,7 +190,7 @@ ThemeData _buildLightTheme() {
     appBarTheme: base.appBarTheme.copyWith(color: Colors.white, iconTheme: base.iconTheme, textTheme: base.textTheme, brightness: Brightness.light),
     primaryColor: primaryColor,
     buttonColor: primaryColor,
-    scaffoldBackgroundColor:Colors.white,
+    scaffoldBackgroundColor:Color(0xfff0f1f7),
     cupertinoOverrideTheme: _buildCupertinoLightTheme(),
     indicatorColor: Colors.white,
     pageTransitionsTheme: MyPageTransitionsTheme(),
@@ -208,7 +208,7 @@ ThemeData _buildLightTheme() {
     textTheme: _buildTextTheme(base.textTheme, Color(0xff333333)),
     primaryTextTheme: _buildTextTheme(base.primaryTextTheme),
     accentTextTheme: _buildTextTheme(base.accentTextTheme),
-    backgroundColor: const Color(0xFFF8F9FA),
+    backgroundColor: const Color(0xFFFFFFFF),
     chipTheme: ChipThemeData.fromDefaults(
       brightness: Brightness.light,
       secondaryColor: primaryColor,

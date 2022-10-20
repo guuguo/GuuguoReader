@@ -26,12 +26,7 @@ class ExploreLogic extends GetxController {
   }
 
   Future toDetailPage(BookItemBean item) async {
-    var routeRouteConfig=RouteConfig.detailbook;
-    if(source.bookSourceType==source_type_sms){
-      routeRouteConfig=RouteConfig.detailsms;
-    }
-    return await Get.toNamed(routeRouteConfig,
-        arguments: {ARG_BOOK_ITEM_BEAN: item,ARG_ITEM_SOURCE_BEAN: source});
+
   }
 
   Future<void> init() async {

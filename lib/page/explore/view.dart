@@ -2,12 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:read_info/bean/book_item_bean.dart';
+import 'package:read_info/config/route_config.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
 import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/global/custom/my_theme.dart';
 import 'package:read_info/widget/container.dart';
 
+import '../../bean/entity/source_entity.dart';
 import 'logic.dart';
 
 class ExplorePage extends StatefulWidget {
@@ -102,17 +104,15 @@ class _ExplorePageState extends State<ExplorePage> {
 class BookItemWidget extends StatelessWidget {
   const BookItemWidget({
     Key? key,
-    required this.bean,
+    required this.bean
   }) : super(key: key);
 
   final BookItemBean bean;
-
   @override
   Widget build(BuildContext context) {
-    final logic = Get.find<ExploreLogic>();
     return GestureDetector(
-      onTap: () {
-        logic.toDetailPage(bean);
+      onTap: () async {
+        return await Get.toNamed(RouteConfig.detailbook, arguments: {ARG_BOOK_ITEM_BEAN: bean, ARG_ITEM_SOURCE_BEAN: bean.source});
       },
       child: Center(
         child: Container(
