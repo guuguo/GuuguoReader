@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_content_config.dart';
+import 'package:read_info/widget/reader/reader_menu.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_gesture.dart';
 import 'package:read_info/widget/reader/reder_painter.dart';
@@ -13,6 +14,17 @@ import 'package:read_info/widget/reader/reder_painter.dart';
 import '../../page/view/my_appbar.dart';
 
 typedef ReadPageChangeCallback = void Function(int pageIndex, int chapterIndex);
+
+class InheritedReader extends InheritedWidget {
+  InheritedReader({required Widget child, this.onMenuChange, this.showChapterIndex}) : super(child: child);
+  ValueChanged<bool?>? onMenuChange;
+  VoidCallback? showChapterIndex;
+
+  @override
+  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+    return false;
+  }
+}
 
 class NovelReader extends StatefulWidget {
   const NovelReader({
@@ -30,6 +42,11 @@ class NovelReader extends StatefulWidget {
   final int startChapterIndex;
   final int startReadPageIndex;
   final Size pageSize;
+
+  static InheritedReader? of(BuildContext context) {
+    final InheritedReader? inheritedReader = context.dependOnInheritedWidgetOfExactType<InheritedReader>();
+    return inheritedReader;
+  }
 
   @override
   State<NovelReader> createState() => _NovelReaderState();
@@ -58,104 +75,59 @@ class _NovelReaderState extends State<NovelReader> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-            child: ReaderGesture(
-          onNextTap: () {
-            hideMenu();
-            viewModel.toNextPage();
-          },
-          onPreTap: () {
-            hideMenu();
-            viewModel.toPrePage();
-          },
-          onCenterTap: () {
-            changeMenuShow();
-          },
-          child: CustomPaint(
-            key: canvasKey,
-            isComplex: true,
-            size: widget.pageSize,
-            painter: mPainter,
-          ),
-        )),
-        if (menuShow)
+    return InheritedReader(
+      onMenuChange: changeMenuShow,
+      showChapterIndex: widget.showIndex,
+      child: Stack(
+        children: [
           Positioned.fill(
-              child: DefaultTextStyle(
-                style: TextStyle(inherit: false,color:Colors.white),
-                child: IconTheme(
-                    data: IconTheme.of(context).copyWith(color: Colors.white),
-                    child: Column(
-                      children: [
-                        MenuHeader(),
-                        Expanded(child: SizedBox()),
-                        MenuBottom(),
-                      ],
-                    )),
-              )),
-      ],
-    );
-  }
-
-  void changeMenuShow() {
-    setState(() {
-      menuShow = !menuShow;
-    });
-  }
-  void hideMenu() {
-    if(menuShow){
-      setState(() {
-        menuShow = false;
-      });
-    }
-  }
-
-  Widget MenuHeader() {
-    return Container(
-      padding: EdgeInsets.only(top:MediaQuery.of(context).padding.top),
-        height: kToolbarHeight,
-        width: double.infinity,
-        color: Colors.black54,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: MyBackButton(),
+            child: ReaderGesture(
+              onNextTap: () {
+                hideMenu();
+                viewModel.toNextPage();
+              },
+              onPreTap: () {
+                hideMenu();
+                viewModel.toPrePage();
+              },
+              onCenterTap: () {
+                changeMenuShow();
+              },
+              child: CustomPaint(
+                key: canvasKey,
+                isComplex: true,
+                size: widget.pageSize,
+                painter: mPainter,
               ),
-            Text(viewModel.currentChapter?.chapterName??"",style:TextStyle(fontSize: 18))
-          ],
-        ));
-  }
-
-  Widget MenuBottom() {
-    return Container(
-      height: 100,
-      width: double.infinity,
-      color: Colors.black54,
-      child: Container(
-        constraints: BoxConstraints.loose(Size(600,double.infinity)),
-        child: Row(
-          mainAxisSize:MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-             IconMenu(Icons.format_list_bulleted,onPressed: (){
-               changeMenuShow();
-               widget.showIndex();
-             }),
-            IconMenu(Icons.format_list_bulleted),
-            IconMenu(Icons.format_list_bulleted),
-            IconMenu(Icons.format_list_bulleted),
-            IconMenu(Icons.format_list_bulleted),
-          ],
-        ),
+            ),
+          ),
+          if (menuShow) ReaderMenu(
+            chapterName: viewModel.currentChapter?.chapterName,
+          ),
+        ],
       ),
     );
   }
 
-  Widget IconMenu(IconData icon,{VoidCallback? onPressed}) {
-    return Expanded(child:GestureDetector(onTap:onPressed,child: Icon(icon)));
+  void changeMenuShow([bool? bool = null]) {
+    if (bool == null) {
+      setState(() {
+        menuShow = !menuShow;
+      });
+    } else if (bool) {
+      if (menuShow == false)
+        setState(() {
+          menuShow = true;
+        });
+    } else {
+      if (menuShow == true)
+        setState(() {
+          menuShow = true;
+        });
+    }
+  }
+
+  void hideMenu() {
+    changeMenuShow(false);
   }
 }
