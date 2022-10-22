@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:read_info/config/route_config.dart';
-import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/global/custom/my_theme.dart';
+import 'package:read_info/global/logic.dart';
+import 'package:read_info/page/view/bookcover.dart';
 import 'package:read_info/page/view/icon.dart';
 import 'package:read_info/page/view/my_appbar.dart';
 import 'package:read_info/widget/container.dart';
@@ -20,10 +20,16 @@ class _ReadHistoryPageState extends State<ReadHistoryPage> {
   @override
   Widget build(BuildContext context) {
     Get.put(ReadHistoryLogic());
+    final globalLogic=Get.find<GlobalLogic>();
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: MyAppBar(leading: SearchItem(), trail: [
-        PrimaryIconButton(Icons.light_mode_outlined),
+        PrimaryIconButton(
+          MyTheme(context).isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+          onPressed: () {
+            globalLogic.changeThemeMode(context);
+          },
+        ),
         PrimaryIconButton(Icons.more_vert),
       ]),
       body: GetBuilder<ReadHistoryLogic>(
@@ -39,7 +45,6 @@ class _ReadHistoryPageState extends State<ReadHistoryPage> {
     );
   }
 }
-
 
 class SearchItem extends StatelessWidget {
   const SearchItem({Key? key}) : super(key: key);
@@ -98,25 +103,22 @@ class BookReadItemWidget extends StatelessWidget {
             children: [
               if (bean.coverUrl?.isNotEmpty == true)
                 Container(
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(2), boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 2))]),
+                    width: 40,
+                    height: 60,
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(2), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 3,offset: Offset(0,0),blurStyle: BlurStyle.outer)]),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(2),
-                      child: Image.network(
-                        bean.coverUrl!,
-                        fit: BoxFit.cover,
-                        width: 40,
-                        height: 60,
-                      ),
+                      child: BookCover(bean),
                     )),
               SizedBox(width: 20),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
                       children: [
-                        Text(bean.name ?? "", style: Theme.of(context).textTheme.bodyLarge),
+                        Flexible(flex: 1, child: Text(bean.name ?? "", style: Theme.of(context).textTheme.bodyLarge, overflow: TextOverflow.ellipsis)),
                         SizedBox(width: 4),
                         Text("(未读${bean.totalChapterCount - bean.readChapterIndex - 1}章)", style: Theme.of(context).textTheme.caption),
                       ],

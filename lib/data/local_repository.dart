@@ -12,7 +12,7 @@ import '../bean/entity/source_entity.dart';
 
 class LocalRepository {
   static Future<MyDataBase> database() async {
-    final database = await $FloorMyDataBase.databaseBuilder('app_database.db').addMigrations([migration1to2]).build();
+    final database = await $FloorMyDataBase.databaseBuilder('app_database.db').addMigrations(applyMigration).build();
 
     return database;
   }
@@ -26,12 +26,12 @@ class LocalRepository {
 
   static Future insertOrUpdateSource(SourceEntity entity) async {
     var myDataBase = await database();
-    await myDataBase.sourceDao.insertSource(Source(bookSourceUrl: entity.bookSourceUrl!, detail: json.encode(entity.toJson())));
+    await myDataBase.sourceDao.insertSource(entity.toSource());
   }
 
   static Future insertOrUpdateSources(List<SourceEntity> sources) async {
     var myDataBase = await database();
-    await myDataBase.sourceDao.insertSources(sources.map((entity) => Source(bookSourceUrl: entity.bookSourceUrl!, detail: json.encode(entity.toJson()))).toList());
+    await myDataBase.sourceDao.insertSources(sources.map((entity) => entity.toSource()).toList());
   }
 
   static Future deleteSource(SourceEntity entity) async {
@@ -82,5 +82,11 @@ class LocalRepository {
   static Future updateBook(BookDetailBean bean) async {
     var myDataBase = await database();
     await myDataBase.bookDao.updateBook(bean);
+  }
+
+  static Future<BookDetailBean?> queryBookDetail(BookItemBean bean) async {
+    if (bean.name?.isNotEmpty != true) return null;
+    var myDataBase = await database();
+    return (await myDataBase.bookDao.queryBookDetail(bean.name!)).firstOrNull;
   }
 }

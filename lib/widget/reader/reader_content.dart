@@ -122,6 +122,10 @@ class ReaderContentDrawer {
     return pageConfigList;
   }
 
+  void drawBackground(Canvas canvas) {
+    bgPaint.color = config.currentCanvasBgColor;
+    canvas.drawRect(Offset.zero & config.pageSize, bgPaint);
+  }
   ui.Picture drawContent(ReaderChapterData chapterData, int index) {
     ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
     Canvas pageCanvas = new Canvas(pageRecorder);
@@ -134,8 +138,7 @@ class ReaderContentDrawer {
     var pageContentConfig = chapterData.chapterContentConfigs[index];
 
     bgPaint.color = config.currentCanvasBgColor;
-    pageCanvas.drawRect(Offset.zero & config.pageSize, bgPaint);
-
+    drawBackground(pageCanvas);
     final validContentHeight = (config.pageSize.height -config.contentPaddingVertical * 2);
 
     ///第一页画上章节名

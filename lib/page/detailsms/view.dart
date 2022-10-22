@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
 import 'package:read_info/global/constant.dart';
-import 'package:read_info/global/custom/my_theme.dart';
+import 'package:read_info/page/view/my_appbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../bean/book_item_bean.dart';
@@ -28,7 +28,7 @@ class _DetailSmsPageState extends State<DetailSmsPage> {
   Widget build(BuildContext context) {
     final logic = Get.find<DetailLogic>();
     return Scaffold(
-      appBar: CupertinoNavigationBar(middle: Text("${itemBean.name}")),
+      appBar: MyAppBar(middle: Text("${itemBean.name}")),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: GetX<DetailLogic>(

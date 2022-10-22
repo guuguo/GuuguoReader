@@ -2,6 +2,8 @@ import 'package:read_info/generated/json/base/json_convert_content.dart';
 import 'package:read_info/bean/entity/source_entity.dart';
 import 'package:floor/floor.dart';
 
+import 'package:read_info/bean/db/source_db.dart';
+
 
 SourceEntity $SourceEntityFromJson(Map<String, dynamic> json) {
 	final SourceEntity sourceEntity = SourceEntity();
@@ -223,6 +225,10 @@ SourceRuleContent $SourceRuleContentFromJson(Map<String, dynamic> json) {
 	if (replaceRegex != null) {
 		sourceRuleContent.replaceRegex = replaceRegex;
 	}
+	final String? nextContentUrl = jsonConvert.convert<String>(json['nextContentUrl']);
+	if (nextContentUrl != null) {
+		sourceRuleContent.nextContentUrl = nextContentUrl;
+	}
 	return sourceRuleContent;
 }
 
@@ -230,6 +236,7 @@ Map<String, dynamic> $SourceRuleContentToJson(SourceRuleContent entity) {
 	final Map<String, dynamic> data = <String, dynamic>{};
 	data['content'] = entity.content;
 	data['replaceRegex'] = entity.replaceRegex;
+	data['nextContentUrl'] = entity.nextContentUrl;
 	return data;
 }
 

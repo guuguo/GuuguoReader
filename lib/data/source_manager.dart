@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
@@ -26,6 +27,12 @@ class SourceManager {
   List<SourceEntity> get sources => sourcesRx.value;
 
   SourceManager() {}
+
+  Future<SourceEntity?> getSourceFromUrl(String? url) async {
+    if(url==null) return null;
+    await ensureSources();
+    return sources.firstWhereOrNull((e) => e.bookSourceUrl == url);
+  }
 
   Future<List<SourceEntity>> ensureSources() async {
     if (sources.isEmpty) sourcesRx.value = await LocalRepository.getSourceList();

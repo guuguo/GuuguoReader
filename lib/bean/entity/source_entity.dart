@@ -1,4 +1,5 @@
 import 'package:floor/floor.dart';
+import 'package:read_info/bean/db/source_db.dart';
 import 'package:read_info/generated/json/base/json_field.dart';
 import 'package:read_info/generated/json/source_entity.g.dart';
 import 'dart:convert';
@@ -38,6 +39,9 @@ class SourceEntity {
   @override
   String toString() {
     return jsonEncode(this);
+  }
+  Source toSource(){
+    return Source(bookSourceUrl: bookSourceUrl!,bookSourceName: bookSourceName, detail: json.encode(toJson()));
   }
 }
 
@@ -106,7 +110,8 @@ class SourceRuleContent {
 
 	String? content;
 	String? replaceRegex;
-  
+	String? nextContentUrl;
+
   SourceRuleContent();
 
   factory SourceRuleContent.fromJson(Map<String, dynamic> json) => $SourceRuleContentFromJson(json);

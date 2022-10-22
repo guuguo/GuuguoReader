@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
               initialRoute: RouteConfig.home,
               getPages: RouteConfig.getPages,
               title: '信息阅读',
+              themeMode: Get.find<GlobalLogic>().themeMode,
               theme: kLightDiaryTheme.data,
               darkTheme: kDarkDiaryTheme.data,
             ));

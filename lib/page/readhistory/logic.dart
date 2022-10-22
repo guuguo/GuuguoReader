@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:read_info/bean/book_item_bean.dart';
 import 'package:read_info/config/route_config.dart';
 import 'package:read_info/global/constant.dart';
+import 'package:read_info/utils/developer.dart';
 
 import '../../data/local_repository.dart';
 import 'state.dart';
@@ -25,6 +26,7 @@ class ReadHistoryLogic extends GetxController {
     var routeRouteConfig = RouteConfig.bookcontent;
     var source = await LocalRepository.findSource(item.sourceUrl);
     var chapters = await LocalRepository.findBookChapters(item);
+    debug("跳转到详情页"+item.toString());
     if (chapters.isNotEmpty != true) {
       Get.snackbar("提示", "缓存失效，需要重新获取");
       return;

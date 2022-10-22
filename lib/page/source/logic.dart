@@ -41,9 +41,13 @@ class SourceLogic extends GetxController {
   }
 
   importSource({String url = defaultSourceUrl})async{
-      var sourcesResult=await NetRepository.getSources(url);
+    try {
+      var sourcesResult = await NetRepository.getSources(url);
       await SourceManager.instance.insertOrUpdateSources(sourcesResult);
       update();
+    }catch (e) {
+      print(e);
+    }
   }
   refreshList() async {
     refreshing.value = true;

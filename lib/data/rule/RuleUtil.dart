@@ -1,21 +1,69 @@
 import 'package:collection/collection.dart';
 import 'package:html/dom.dart';
-String? checkUrlRule(String baseUrl,String? rule){
-  final reg=RegExp(r'{{baseUrl}}');
-  if(rule?.contains(reg)==true){
-    return rule?.replaceAll(reg,baseUrl);
-  }else return null;
+
+String? checkUrlRule(String baseUrl, String? rule) {
+  final reg = RegExp(r'{{baseUrl}}');
+  if (rule?.contains(reg) == true) {
+    return rule?.replaceAll(reg, baseUrl);
+  } else
+    return null;
 }
-extension ElementListExt on List<Element>{
+
+extension ElementListExt on List<Element> {
+  List<Element> queryCustomSelectorAllFix(String selector) {
+    final splitPoint = selector.split('.');
+    List<Element> getIndex(List<Element> list, int? index) {
+      if (index == null) return list;
+      if (index >= 0)
+        return [this[index]];
+      else
+        return [this[this.length - 1 + index]];
+    }
+
+    ///是否是  tag.a.1 的格式   或者.2 的数组格式
+    if (splitPoint.length > 1) {
+      if (splitPoint[0].isNotEmpty != true) {
+        if (splitPoint.length == 2) {
+          ///如果是.2 数组风格
+          try {
+            final index = int.parse(splitPoint[1]);
+            return getIndex(this, index);
+          } catch (e) {
+            ///如果走到catch 说明是 .class的风格 不处理交给后续css selector
+
+          }
+        }
+      } else {
+        int? index;
+        if (splitPoint.length > 2) {
+          try {
+            index = int.parse(splitPoint[2]);
+          } catch (e) {}
+        }
+        final value = splitPoint[1];
+        if (splitPoint[0] == "tag") {
+          selector = value;
+        } else if (splitPoint[0] == "class") {
+          selector = ".${value}";
+        } else if (splitPoint[0] == "id") {
+          selector = "#${value}";
+        } else if (splitPoint[0] == "text") {
+          final res = this.where((element) => element.text.contains(RegExp(value))).toList();
+          return getIndex(res, index);
+        }
+        final res = querySelectorAllFix(selector);
+        return getIndex(res, index);
+      }
+    }
+    return querySelectorAllFix(selector);
+  }
+
   List<Element> querySelectorAllFix(String selector) {
-    return fold(
-        [],
-        (List previousValue, element) =>
-            [...(previousValue), ...element.querySelectorAllFix(selector)]);
+    return fold([], (List previousValue, element) => [...(previousValue), ...element.querySelectorAllFix(selector)]);
   }
 }
 
-extension ElementExt on Element{
+extension ElementExt on Element {
   ///[rule] 匹配规则
   ///当前支持
   /// - && 连接多个不同的匹配结果
@@ -27,30 +75,31 @@ extension ElementExt on Element{
   ///从 https://m.31xs.com/201/201996/ url中提取出 两个数字关键词 201， 201996
   ///将其作为$1和$2替换到结果中
   ///
-  String? parseRule(String? rule,[bool urlReplace = false]) {
-    if(rule==null) return null;
+  String? parseRule(String? rule, [bool urlReplace = false]) {
+    if (rule == null) return null;
+
     ///正则 处理 ##分割
     var regexSpan = rule.split('##');
     String? regex;
     String? replace;
-    if(regexSpan.length>1){
-      regex=regexSpan[1];
+    if (regexSpan.length > 1) {
+      regex = regexSpan[1];
     }
-    if(regexSpan.length>2){
-      replace=regexSpan[2];
+    if (regexSpan.length > 2) {
+      replace = regexSpan[2];
     }
 
     ///备选方案 处理 && 分割
     var rules = regexSpan[0].split('&&');
     String? resultStr;
     for (var i = 0; i < rules.length; i++) {
-      resultStr = _selectElement(rules[i], regex,replace,urlReplace);
+      resultStr = _selectElement(rules[i], regex, replace, urlReplace);
       if (resultStr != null) break;
     }
     return resultStr;
   }
 
-  String? _selectElement(String rule,String? regex,String? replace,bool urlReplace){
+  String? _selectElement(String rule, String? regex, String? replace, bool urlReplace) {
     ///css selector 处理 @ 分割
     var tags = rule.split('@');
     var attr;
@@ -59,7 +108,7 @@ extension ElementExt on Element{
 
     List<Element>? resultElement = [this];
     tags.where((element) => element.isNotEmpty).forEach((selector) {
-      resultElement = resultElement?.querySelectorAllFix(selector);
+      resultElement = resultElement?.queryCustomSelectorAllFix(selector);
     });
     String? resultStr;
     if (attr == "html") {
@@ -85,45 +134,55 @@ extension ElementExt on Element{
         resultStr = resultStr?.replaceAll(RegExp(regex), replace ?? "");
       }
     }
-     if(resultStr?.isEmpty==true) return null;
+    if (resultStr?.isEmpty == true) return null;
     return resultStr;
   }
-  List<Element> parseRuleWithoutAttr(String? rule){
-    if(rule==null) return [];
-    var tags=rule.split('@');
+
+  List<Element> parseRuleWithoutAttr(String? rule) {
+    if (rule == null) return [];
+    var tags = rule.split('@');
     List<Element>? resultElement;
 
-    tags.forEachIndexed((i,selector) {
+    tags.forEachIndexed((i, selector) {
       if (i == 0) {
         resultElement = this.querySelectorAllFix(selector);
       } else {
-        resultElement = resultElement?.fold([], (previousValue, element) => [...(previousValue??[]),... element.querySelectorAll(selector)]);
+        resultElement = resultElement?.fold([], (previousValue, element) => [...(previousValue ?? []), ...element.querySelectorAllFix(selector)]);
       }
     });
-    return  resultElement??[];
+    return resultElement ?? [];
   }
 
-  List<Element> querySelectorAllFix(String selector){
-    if(selector.contains("nth-of-type")){
-      final split=selector.split(':');
-      var list=querySelectorAll(split[0]);
-      RegExp exp = new RegExp(r"(?<=\().*(?=\))");
-      final nth= exp.firstMatch(selector)?.group(0)??"n";
-      final nsplit=nth.split('n');
-      if(!nth.contains('n')){
-        final cons=int.tryParse(nth)??1;
-        if(list.length < cons) return[];
-        return [list[cons-1]];
-      }else if(nsplit.length==2){
-        final n=int.tryParse(nsplit[0])??1;
-        final cons=int.tryParse(nsplit[1].replaceAll('+', ''))??0;
-        return list.whereIndexed((index, element)  =>(index+1-cons)%n==0&&(index+1-cons)/n>0).toList();
-      }else{
-        return list;
-      }
-    }else {
+  List<Element> querySelectorAllFix(String selector) {
+    if (selector.contains(":nth-of-type")) {
+      return dealNthOfType(selector);
+    }
+    // if(selector.contains("text")){
+    //   return dealNthOfType(selector);
+    // }
+    if (selector.contains(":")) {
+      return dealNthOfType(selector);
+    } else {
       return querySelectorAll(selector);
     }
   }
-}
 
+  List<Element> dealNthOfType(String selector) {
+    final split = selector.split(':');
+    var list = querySelectorAll(split[0]);
+    RegExp exp = new RegExp(r"(?<=\().*(?=\))");
+    final nth = exp.firstMatch(selector)?.group(0) ?? "n";
+    final nsplit = nth.split('n');
+    if (!nth.contains('n')) {
+      final cons = int.tryParse(nth) ?? 1;
+      if (list.length < cons) return [];
+      return [list[cons - 1]];
+    } else if (nsplit.length == 2) {
+      final n = int.tryParse(nsplit[0]) ?? 1;
+      final cons = int.tryParse(nsplit[1].replaceAll('+', '')) ?? 0;
+      return list.whereIndexed((index, element) => (index + 1 - cons) % n == 0 && (index + 1 - cons) / n > 0).toList();
+    } else {
+      return list;
+    }
+  }
+}

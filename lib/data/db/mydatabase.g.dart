@@ -71,7 +71,7 @@ class _$MyDataBase extends MyDataBase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 3,
+      version: 5,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -87,13 +87,15 @@ class _$MyDataBase extends MyDataBase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Source` (`bookSourceUrl` TEXT, `detail` TEXT, PRIMARY KEY (`bookSourceUrl`))');
+            'CREATE TABLE IF NOT EXISTS `Source` (`bookSourceUrl` TEXT, `detail` TEXT, `bookSourceName` TEXT, PRIMARY KEY (`bookSourceUrl`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `BookDetailBean` (`id` TEXT, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, `kind` TEXT, `lastChapter` TEXT, `tocUrl` TEXT, `sourceUrl` TEXT, `readChapterIndex` INTEGER NOT NULL, `readPageIndex` INTEGER NOT NULL, `totalChapterCount` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `BookDetailBean` (`id` TEXT NOT NULL, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, `kind` TEXT, `lastChapter` TEXT, `tocUrl` TEXT, `sourceUrl` TEXT, `sourceSearchResult` TEXT, `readChapterIndex` INTEGER NOT NULL, `readPageIndex` INTEGER NOT NULL, `totalChapterCount` INTEGER NOT NULL, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, `chapterIndex` INTEGER, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, `chapterIndex` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ChapterContent` (`id` TEXT NOT NULL, `chapter_id` TEXT NOT NULL, `content` TEXT NOT NULL, FOREIGN KEY (`chapter_id`) REFERENCES `BookChapterBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `ChapterContent` (`id` TEXT NOT NULL, `chapter_id` TEXT NOT NULL, `content` TEXT NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE INDEX `index_BookDetailBean_name` ON `BookDetailBean` (`name`)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -122,7 +124,8 @@ class _$SourceDao extends SourceDao {
             'Source',
             (Source item) => <String, Object?>{
                   'bookSourceUrl': item.bookSourceUrl,
-                  'detail': item.detail
+                  'detail': item.detail,
+                  'bookSourceName': item.bookSourceName
                 }),
         _sourceDeletionAdapter = DeletionAdapter(
             database,
@@ -130,7 +133,8 @@ class _$SourceDao extends SourceDao {
             ['bookSourceUrl'],
             (Source item) => <String, Object?>{
                   'bookSourceUrl': item.bookSourceUrl,
-                  'detail': item.detail
+                  'detail': item.detail,
+                  'bookSourceName': item.bookSourceName
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -148,7 +152,8 @@ class _$SourceDao extends SourceDao {
     return _queryAdapter.queryList('SELECT * FROM Source',
         mapper: (Map<String, Object?> row) => Source(
             bookSourceUrl: row['bookSourceUrl'] as String?,
-            detail: row['detail'] as String?));
+            detail: row['detail'] as String?,
+            bookSourceName: row['bookSourceName'] as String?));
   }
 
   @override
@@ -156,7 +161,8 @@ class _$SourceDao extends SourceDao {
     return _queryAdapter.query('SELECT * FROM Source where bookSourceUrl = ?1',
         mapper: (Map<String, Object?> row) => Source(
             bookSourceUrl: row['bookSourceUrl'] as String?,
-            detail: row['detail'] as String?),
+            detail: row['detail'] as String?,
+            bookSourceName: row['bookSourceName'] as String?),
         arguments: [url]);
   }
 
@@ -196,9 +202,14 @@ class _$BookDao extends BookDao {
                   'lastChapter': item.lastChapter,
                   'tocUrl': item.tocUrl,
                   'sourceUrl': item.sourceUrl,
+                  'sourceSearchResult': item.sourceSearchResult,
                   'readChapterIndex': item.readChapterIndex,
                   'readPageIndex': item.readPageIndex,
-                  'totalChapterCount': item.totalChapterCount
+                  'totalChapterCount': item.totalChapterCount,
+                  'name': item.name,
+                  'intro': item.intro,
+                  'author': item.author,
+                  'coverUrl': item.coverUrl
                 }),
         _bookChapterBeanInsertionAdapter = InsertionAdapter(
             database,
@@ -243,9 +254,14 @@ class _$BookDao extends BookDao {
                   'lastChapter': item.lastChapter,
                   'tocUrl': item.tocUrl,
                   'sourceUrl': item.sourceUrl,
+                  'sourceSearchResult': item.sourceSearchResult,
                   'readChapterIndex': item.readChapterIndex,
                   'readPageIndex': item.readPageIndex,
-                  'totalChapterCount': item.totalChapterCount
+                  'totalChapterCount': item.totalChapterCount,
+                  'name': item.name,
+                  'intro': item.intro,
+                  'author': item.author,
+                  'coverUrl': item.coverUrl
                 }),
         _bookDetailBeanDeletionAdapter = DeletionAdapter(
             database,
@@ -261,9 +277,14 @@ class _$BookDao extends BookDao {
                   'lastChapter': item.lastChapter,
                   'tocUrl': item.tocUrl,
                   'sourceUrl': item.sourceUrl,
+                  'sourceSearchResult': item.sourceSearchResult,
                   'readChapterIndex': item.readChapterIndex,
                   'readPageIndex': item.readPageIndex,
-                  'totalChapterCount': item.totalChapterCount
+                  'totalChapterCount': item.totalChapterCount,
+                  'name': item.name,
+                  'intro': item.intro,
+                  'author': item.author,
+                  'coverUrl': item.coverUrl
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -288,7 +309,7 @@ class _$BookDao extends BookDao {
   Future<List<BookDetailBean>> findAllBooks() async {
     return _queryAdapter.queryList('SELECT * FROM BookDetailBean',
         mapper: (Map<String, Object?> row) => BookDetailBean(
-            id: row['id'] as String?,
+            id: row['id'] as String,
             name: row['name'] as String?,
             intro: row['intro'] as String?,
             author: row['author'] as String?,
@@ -311,7 +332,7 @@ class _$BookDao extends BookDao {
             bookId: row['bookId'] as String?,
             chapterName: row['chapterName'] as String?,
             chapterUrl: row['chapterUrl'] as String?,
-            chapterIndex: row['chapterIndex'] as int?),
+            chapterIndex: row['chapterIndex'] as int),
         arguments: [bookId]);
   }
 
@@ -335,8 +356,28 @@ class _$BookDao extends BookDao {
             bookId: row['bookId'] as String?,
             chapterName: row['chapterName'] as String?,
             chapterUrl: row['chapterUrl'] as String?,
-            chapterIndex: row['chapterIndex'] as int?),
+            chapterIndex: row['chapterIndex'] as int),
         arguments: [bookId]);
+  }
+
+  @override
+  Future<List<BookDetailBean>> queryBookDetail(String bookName) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM BookDetailBean where name = ?1',
+        mapper: (Map<String, Object?> row) => BookDetailBean(
+            id: row['id'] as String,
+            name: row['name'] as String?,
+            intro: row['intro'] as String?,
+            author: row['author'] as String?,
+            coverUrl: row['coverUrl'] as String?,
+            kind: row['kind'] as String?,
+            lastChapter: row['lastChapter'] as String?,
+            tocUrl: row['tocUrl'] as String?,
+            sourceUrl: row['sourceUrl'] as String?,
+            readChapterIndex: row['readChapterIndex'] as int,
+            readPageIndex: row['readPageIndex'] as int,
+            totalChapterCount: row['totalChapterCount'] as int),
+        arguments: [bookName]);
   }
 
   @override

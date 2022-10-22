@@ -8,11 +8,9 @@ import '../../bean/entity/source_entity.dart';
 
 class ContentLogic extends GetxController {
 
-  Rx<String?> bookContent=Rx("");
   late BookDetailBean bookDetail;
-  var refreshing = false.obs;
-
   late SourceNetRepository repository;
+  var readChapterIndex=0.obs;
   SourceEntity source;
   ContentLogic(this.source) {
     repository=SourceNetRepository(source);
@@ -21,7 +19,8 @@ class ContentLogic extends GetxController {
     this.bookDetail = bean;
     bean.sourceUrl=source.bookSourceUrl;
     LocalRepository.saveBookIfNone(bean);
-    await loadContent();
+    readChapterIndex.value=bean.readChapterIndex;
+    // await loadContent();
   }
 
   BookChapterBean? getChapterByIndex(int index) {
@@ -41,6 +40,7 @@ class ContentLogic extends GetxController {
     debug("更新当前页面chapterIndex:${chapterIndex}  pageIndex:${pageIndex}");
     bookDetail.readPageIndex = pageIndex;
     bookDetail.readChapterIndex = chapterIndex;
+    readChapterIndex.value=chapterIndex;
     LocalRepository.updateBook(bookDetail);
   }
 
@@ -52,17 +52,9 @@ class ContentLogic extends GetxController {
     }
     if (!chapter.hasContent()) {
       await repository.queryBookContent(chapter);
+      debug("文章内容规则：${source.ruleContent}");
+      debug("加载文章内容：${chapter.content?.content}");
       LocalRepository.updateChapterContent(chapter);
     }
-  }
-
-  loadContent() async {
-    refreshing.value = true;
-    update();
-    var chapter=bookDetail.chapters![bookDetail.readChapterIndex];
-    var bean = await repository.queryBookContent(chapter);
-    bookContent.value = bean?.content?.content;
-    refreshing.value = false;
-    update();
   }
 }

@@ -8,3 +8,5 @@ final source_type_novel = 0;
 final source_type_sms = 1;
 final source_type_comic = 2;
 const defaultSourceUrl="https://gist.githubusercontent.com/guuguo/d1902049ba71149587dc074605e18f3a/raw";
+
+final sp_dark_mode="sp_dark_mode";

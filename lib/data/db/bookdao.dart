@@ -23,6 +23,9 @@ abstract class BookDao {
   @Query('DELETE FROM BookChapterBean where bookId = :bookId')
   Future<List<BookChapterBean>> deleteBookChapters(String bookId);
 
+  @Query('SELECT * FROM BookDetailBean where name = :bookName')
+  Future<List<BookDetailBean>> queryBookDetail(String bookName);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<int> insertBookChapter(BookChapterBean ban);
 

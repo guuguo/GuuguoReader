@@ -1,17 +1,12 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:read_info/config/config.dart';
+import 'package:read_info/data/net/intercepters/encoding_interceptor.dart';
 import 'package:read_info/utils/developer.dart';
-import 'package:read_info/utils/oss_utils.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 
-import 'error_handler.dart';
 import 'intercepters/log_interceptors.dart';
 
 ///缓存的超时时间
@@ -68,20 +63,9 @@ class DioHelper {
 
     applyDio?.call(_dio);
     _dio.interceptors.add(LogsInterceptors(_dio));
+    _dio.interceptors.add(EncodingInterceptor());
     return _dio;
   }
-
-  Future<Response> download(String url, {String? savePath}) async {
-    if (savePath == null) {
-      savePath = await getSaveCachePath();
-    }
-    final res = await Dio().download(url, savePath);
-    return res;
-  }
-
-
-  static Future<String> getSaveCachePath({String? fileName}) async =>
-      path.join((await getTemporaryDirectory()).path, "guuguohome", "temp_" + (fileName ?? DateTime.now().microsecondsSinceEpoch.toString()) + ".jpg");
 }
 
 

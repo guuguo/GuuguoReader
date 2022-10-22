@@ -52,7 +52,7 @@ class LogsInterceptors extends InterceptorsWrapper {
   void printRequest(RequestOptions options, AnsiColor? color) {
     if (env == 'dev' || env == 'test') {
       String top = topBorder;
-      String url = formatContent('url: ${options.uri.toString()}');
+      String url = formatContent('开始请求：url: ${options.uri.toString()}');
       String headers = formatContent('headers: ${options.headers.toString()}');
       String data ;
       try {
@@ -83,7 +83,7 @@ class LogsInterceptors extends InterceptorsWrapper {
   void printResponse(Response response, AnsiColor? color) {
     if (env == 'dev' || env == 'test') {
       String top = topBorder;
-      String url = formatContent('url: ${response.requestOptions.uri.toString()}');
+      String url = formatContent('开始响应：url: ${response.requestOptions.uri.toString()}');
       String headers = formatContent('headers: ${response.requestOptions.headers.toString()}');
       String query = formatContent('query: ${response.requestOptions.queryParameters.toString()}');
       var data=response.requestOptions.data;
@@ -101,7 +101,7 @@ class LogsInterceptors extends InterceptorsWrapper {
       developer.log(headers);
       developer.log(query);
       developer.log(params);
-      developer.log(res);
+      // developer.log(res);
       developer.log(bottom);
     }
   }
@@ -110,7 +110,7 @@ class LogsInterceptors extends InterceptorsWrapper {
   void printError(DioError err, AnsiColor? color) {
     if (env == 'dev' || env == 'test') {
       String top = topBorder;
-      String url = formatContent('${err.requestOptions.method}->url: ${err.requestOptions.path}');
+      String url = formatContent('出错了：${err.requestOptions.method}->url: ${err.requestOptions.path}');
       String error = formatContent('error: ${err.toString()}');
       String res = formatContent('response: ${err.response?.toString() ?? ''}');
       String bottom = bottomBorder;

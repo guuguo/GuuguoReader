@@ -12,6 +12,7 @@ import 'package:read_info/page/detailsms/logic.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../bean/book_item_bean.dart';
+import '../view/my_appbar.dart';
 
 class DetailBookPage extends StatefulWidget {
   @override
@@ -32,7 +33,7 @@ class _DetailSmsPageState extends State<DetailBookPage> {
   Widget build(BuildContext context) {
     final logic = Get.find<DetailLogic>();
     return Scaffold(
-      appBar: CupertinoNavigationBar(middle: Text("${itemBean.name}")),
+      appBar: MyAppBar(middle: Text("${itemBean.name}")),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: GetX<DetailLogic>(
@@ -84,7 +85,7 @@ class _DetailSmsPageState extends State<DetailBookPage> {
               sliver: SliverGrid.count(
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
-                childAspectRatio: 4,
+                childAspectRatio: 3,
                 crossAxisCount: 3,
                 children:
                     logic.detail.value!.chapters!.map((e) => ChapterItem(e)).toList(),
@@ -102,19 +103,17 @@ class _DetailSmsPageState extends State<DetailBookPage> {
 
   Widget ChapterItem(BookChapterBean e) {
     final logic = Get.find<DetailLogic>();
-    return InkWell(
+    return GestureDetector(
       onTap: () {
         logic.toBookContentPage(e);
       },
-      child: Material(
-        child: Container(
-          decoration: ShapeDecoration(
-            color: Theme.of(context).cardColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          alignment: Alignment.center,
-          child: Text(e.chapterName ?? "", textAlign: TextAlign.center,style:MyTheme(context).textTheme.bodySmall),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 4),
+        decoration: ShapeDecoration(
+          color: Theme.of(context).cardColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
+        child: Center(child: Text(e.chapterName ?? "", textAlign: TextAlign.center,style:MyTheme(context).textTheme.bodySmall)),
       ),
     );
   }

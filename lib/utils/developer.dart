@@ -11,7 +11,7 @@ debug(Object? msg,
     StackTrace? stackTrace,
     Zone zone = Zone.root,
     jsonFormat = false}) {
-  if (!inProduction) {
+  // if (!inProduction) {
     if (msg is Error && stackTrace == null) {
       stackTrace = msg.stackTrace;
     }
@@ -23,7 +23,7 @@ debug(Object? msg,
     }
     developer.log(message??"打印数据为空了",
         name: tag, level: 0, zone: zone, error: error, stackTrace: stackTrace);
-  }
+  // }
 }
 
 String _convertObject(Object? message) {

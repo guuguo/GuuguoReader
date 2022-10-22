@@ -157,6 +157,7 @@ ThemeData _buildDarkTheme() {
     pageTransitionsTheme: MyPageTransitionsTheme(),
     canvasColor: const Color(0xFF202124),
     backgroundColor: const Color(0xFF202124),
+    cardColor: const Color(0xFF202124),
     scaffoldBackgroundColor:Color(0xff434444),
     navigationBarTheme: NavigationBarThemeData(backgroundColor:Color(0xff343636)),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor:Color(0xff343636)),

@@ -6,7 +6,10 @@ import 'package:read_info/bean/entity/source_entity.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
 import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/global/constant.dart';
+import 'package:read_info/global/custom/component/limit_width_box.dart';
 import 'package:read_info/global/custom/my_theme.dart';
+import 'package:read_info/page/view/icon.dart';
+import 'package:read_info/page/view/my_appbar.dart';
 import 'package:read_info/widget/container.dart';
 
 import 'logic.dart';
@@ -16,8 +19,7 @@ class SourcePage extends StatefulWidget {
   State<SourcePage> createState() => _SourcePageState();
 }
 
-class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMixin{
-
+class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     Get.lazyPut(() => SourceLogic());
@@ -28,35 +30,11 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
   Widget build(BuildContext context) {
     final logic = Get.find<SourceLogic>();
     return Scaffold(
-      appBar: CupertinoNavigationBar(
-        middle: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Text("源列表"),
-        ),
-        trailing: Material(
-          child: PopupMenuButton(
-            itemBuilder: (BuildContext context) {
-              return [PopupMenuItem(child: Row(
-                children: [
-                  Icon(Icons.import_contacts),
-                  SizedBox(width:10),
-                        Text("获取常用源"),
-                      ],
-                    ),
-                    onTap: ()async  {
-                      final controller=Get.snackbar("提示", "正在更新源",showProgressIndicator: true,duration: Duration(seconds: 100));
-                      try {
-                        await logic.importSource();
-                        controller.close();
-                        Get.snackbar("提示", "更新源完成",duration: Duration(milliseconds: 1500));
-                      }catch (e){
-                        controller.close();
-                      }
-                    })
-              ];
-            },
-          ),
-        ),
+      appBar: MyAppBar(
+        middle: Text("源列表"),
+        trail: [
+          menuButton(logic)
+        ],
       ),
       backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
       body: GetX<SourceLogic>(
@@ -64,20 +42,46 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
           if (logic.refreshing.value) {
             return Center(child: CupertinoActivityIndicator(radius: 15));
           } else {
-            return SingleChildScrollView(
-              child: Center(
-                child: Container(
-                  constraints: BoxConstraints.loose(Size(MyTheme.contentMaxWidth, double.infinity)),
-                  child: Wrap(
-                      alignment: WrapAlignment.center,
-                      children: logic.sources.value
-                          .mapIndexed((i,e) => withContextMenu(SourceItemWidget(key:Key(e.bookSourceUrl??"$i"),bean: e), e))
-                          .toList()),
-                ),
+            return LimitWidthBox(
+              child: GridView.count(
+                padding: EdgeInsets.all(10),
+                crossAxisCount: 2,
+                childAspectRatio: 3.5,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                children: logic.sources.value.mapIndexed((i, e) => withContextMenu(SourceItemWidget(key: Key(e.bookSourceUrl ?? "$i"), bean: e), e)).toList(),
               ),
             );
           }
         },
+      ),
+    );
+  }
+
+  Widget menuButton(SourceLogic logic) {
+    return PopupMenuButton(
+      itemBuilder: (BuildContext context) => [
+        PopupMenuItem(
+            child: Row(
+              children: [
+                Icon(Icons.import_contacts),
+                SizedBox(width: 10),
+                Text("获取常用源"),
+              ],
+            ),
+            onTap: () async {
+              final controller = Get.snackbar("提示", "正在更新源", showProgressIndicator: true, duration: Duration(seconds: 100));
+              try {
+                await logic.importSource();
+                controller.close();
+                Get.snackbar("提示", "更新源完成", duration: Duration(milliseconds: 1500));
+              } catch (e) {
+                controller.close();
+              }
+            })
+      ],
+      child: PrimaryIconButton(
+        Icons.more_vert,
       ),
     );
   }
@@ -129,48 +133,34 @@ class SourceItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<SourceLogic>();
-    var title;
-    if (bean.bookSourceCoverUrl?.isNotEmpty == true)
-      title= Image.network(
-        bean.bookSourceCoverUrl!,
-        height: 40,
-      );
-    else
-      title= Text(bean.bookSourceName ?? "", style: Theme.of(context).textTheme.titleLarge);
     return GestureDetector(
       onTap: () {
         logic.toSourcePage(bean);
       },
       child: Container(
-          width: 120,
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          padding: EdgeInsets.all(18),
-          decoration: RoundedBoxDecoration(
-              radius: 10, color: Theme.of(context).cardColor),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          padding: EdgeInsets.symmetric(horizontal:14,vertical:14),
+          decoration: RoundedBoxDecoration(radius: 10, color: Theme.of(context).cardColor),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(child:title,height: 40),
-              SizedBox(height: 6),
-              Text("${getTypeDesc(bean.bookSourceType)}",
-                  style: Theme.of(context).textTheme.bodySmall),
-              SizedBox(height: 8),
+              Icon(getTypeDesc(bean.bookSourceType)),
+              SizedBox(width:6),
+              SizedBox(child: Text(bean.bookSourceName ?? "", style: Theme.of(context).textTheme.titleMedium?.copyWith(height: 1.3))),
             ],
           )),
     );
   }
 
-
-  String getTypeDesc(int? type) {
+  IconData getTypeDesc(int? type) {
     if (type == source_type_sms) {
-      return "信息流";
+      return Icons.newspaper_rounded;
     }
     if (type == source_type_comic) {
-      return "漫画站";
+      return Icons.collections_rounded;
     }
     if (type == source_type_novel) {
-      return "小说站";
+      return Icons.book_rounded;
     }
-    return "";
+    return Icons.book_rounded;
   }
 }

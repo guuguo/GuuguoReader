@@ -5,6 +5,7 @@ import 'package:read_info/data/source_net_repository.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/data/net_repository.dart';
 import 'package:read_info/config/route_config.dart';
+import 'package:read_info/utils/developer.dart';
 
 import '../../bean/book_item_bean.dart';
 import '../../bean/entity/source_entity.dart';
@@ -26,7 +27,13 @@ class ExploreLogic extends GetxController {
   }
 
   Future toDetailPage(BookItemBean item) async {
-
+    var routeRouteConfig=RouteConfig.detailbook;
+    if(source.bookSourceType==source_type_sms){
+      routeRouteConfig=RouteConfig.detailsms;
+    }
+    debug("跳转到详情页"+item.toString());
+    return await Get.toNamed(routeRouteConfig,
+        arguments: {ARG_BOOK_ITEM_BEAN: item,ARG_ITEM_SOURCE_BEAN: source});
   }
 
   Future<void> init() async {
@@ -44,11 +51,17 @@ class ExploreLogic extends GetxController {
     refreshing.value = true;
     loadEnd.value = false;
     update();
+
     try {
       books.value = await repository.exploreBookList(pageNum: page);
     } on DioError catch (e) {
       error.value=e.message;
       // showError(e.message);
+    }
+
+    ///只有一页
+    if (repository.getSourceExplore()?.url?.contains("{{page}}") != true) {
+      loadEnd.value = true;
     }
     refreshing.value = false;
     update();

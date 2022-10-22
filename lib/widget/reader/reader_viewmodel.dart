@@ -50,6 +50,10 @@ class ReaderViewModel extends ChangeNotifier {
       return false;
     }
   }
+  //绘制背景
+  drawBackground(Canvas canvas){
+    readerContentDrawer.drawBackground(canvas);
+  }
   //绘制当前页面
   drawCurrentPage(Canvas canvas) {
     if (currentChapter?.chapterContentConfigs.isNotEmpty != true) return;

@@ -8,7 +8,11 @@ class NovelPagePainter extends CustomPainter {
   NovelPagePainter(this.viewModel):super(repaint: viewModel);
   @override
   void paint(Canvas canvas, Size size) {
-    viewModel.drawCurrentPage(canvas);
+    if (viewModel.currentPageReady()) {
+      viewModel.drawCurrentPage(canvas);
+    } else {
+      viewModel.drawBackground(canvas);
+    }
   }
 
   @override

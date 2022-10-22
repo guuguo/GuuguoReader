@@ -9,12 +9,14 @@ class MyAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.leading,
     this.middle,
     this.trail,
+    this.autoImplLeading = true,
   }) : super(key: key);
 
   @override
   State<MyAppBar> createState() => _MyAppBarState();
   final Widget? leading;
   final Widget? middle;
+  final bool autoImplLeading;
   final List<Widget>? trail;
 
   @override
@@ -24,13 +26,16 @@ class MyAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _MyAppBarState extends State<MyAppBar> {
   @override
   Widget build(BuildContext context) {
+    var leading = widget.leading;
+    if (widget.autoImplLeading && widget.leading == null && Navigator.canPop(context)) {
+      leading = Align(alignment:Alignment.centerLeft,child: MyBackButton());
+    }
+    leading = leading ?? SizedBox();
     var barChild = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(width: 16),
-        Expanded(
-          child: widget.leading ?? SizedBox(),
-        ),
+        Expanded(child: leading),
         SizedBox(width: 10),
         if (widget.trail != null) ...[...widget.trail!, SizedBox(width: 6)] else SizedBox(width: 16)
       ],
@@ -44,31 +49,31 @@ class _MyAppBarState extends State<MyAppBar> {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
-                Expanded(child: SizedBox()),
-                widget.middle == null
-                    ? barChild
-                    : Stack(
-                        children: [
-                          Positioned.fill(
-                            child: barChild,
-                          ),
-                          Positioned.fill(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: SizedBox(),
-                                ),
-                                widget.middle!,
-                                Expanded(
-                                  child: SizedBox(),
-                                ),
-                              ],
+                Expanded(
+                  child: widget.middle == null
+                      ? Center(child: barChild)
+                      : Stack(
+                          children: [
+                            Positioned.fill(
+                              child: barChild,
                             ),
-                          ),
-                        ],
-                      ),
-                Expanded(child: SizedBox()),
+                            Positioned.fill(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: SizedBox(),
+                                  ),
+                                  DefaultTextStyle(style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold), child: widget.middle!),
+                                  Expanded(
+                                    child: SizedBox(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
                 Divider(
                   height: 0.5,
                   thickness: 0.5,
@@ -77,5 +82,24 @@ class _MyAppBarState extends State<MyAppBar> {
             ),
           ),
         ));
+  }
+}
+
+class MyBackButton extends StatelessWidget {
+  const MyBackButton({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      padding: EdgeInsets.symmetric(horizontal:5),
+      visualDensity: VisualDensity.compact,
+      icon: const BackButtonIcon(),
+      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+      onPressed: () {
+        Navigator.maybePop(context);
+      },
+    );
   }
 }
