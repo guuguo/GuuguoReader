@@ -1,10 +1,14 @@
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:read_info/commmon/utils.dart';
 import 'package:read_info/data/source_net_repository.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/data/net_repository.dart';
 import 'package:read_info/config/route_config.dart';
+import 'package:read_info/page/explore/state.dart';
+import 'package:read_info/page/readhistory/state.dart';
 import 'package:read_info/utils/developer.dart';
 
 import '../../bean/book_item_bean.dart';
@@ -12,32 +16,41 @@ import '../../bean/entity/source_entity.dart';
 
 class ExploreLogic extends GetxController {
   var query = "";
-  late var page;
-  var loading = false;
-  var error = "".obs;
-  var refreshing = true.obs;
-  var loadEnd = false.obs;
+
+  var tabIndex = ValueNotifier(0);
+  List<SourceExploreUrl> exploreTabs=[];
   SourceEntity source;
   late SourceNetRepository repository;
-  Rx<List<BookItemBean>> books = Rx([]);
+  Map<int,ExploreState> states={};
 
   ExploreLogic(this.source) {
+    exploreTabs = source.exploreUrl ?? [];
     repository = SourceNetRepository(source);
+
+    exploreTabs.forEachIndexed((i, e) {
+      states[i] = ExploreState();
+    });
+    tabIndex.addListener(() {
+      final state = states[tabIndex.value]!;
+      if (state.books.isNotEmpty) {
+        return;
+      }
+      refreshList(tabIndex.value);
+    });
     init();
   }
 
   Future toDetailPage(BookItemBean item) async {
-    var routeRouteConfig=RouteConfig.detailbook;
-    if(source.bookSourceType==source_type_sms){
-      routeRouteConfig=RouteConfig.detailsms;
+    var routeRouteConfig = RouteConfig.detailbook;
+    if (source.bookSourceType == source_type_sms) {
+      routeRouteConfig = RouteConfig.detailsms;
     }
-    debug("跳转到详情页"+item.toString());
-    return await Get.toNamed(routeRouteConfig,
-        arguments: {ARG_BOOK_ITEM_BEAN: item,ARG_ITEM_SOURCE_BEAN: source});
+    debug("跳转到详情页" + item.toString());
+    return await Get.toNamed(routeRouteConfig, arguments: {ARG_BOOK_ITEM_BEAN: item, ARG_ITEM_SOURCE_BEAN: source});
   }
 
   Future<void> init() async {
-      await refreshList();
+    await refreshList(0);
   }
 
   showError(String msg) {
@@ -45,46 +58,55 @@ class ExploreLogic extends GetxController {
     showMessage(msg);
   }
 
-  refreshList() async {
-    error.value = "";
-    page = source.from??1;
-    refreshing.value = true;
-    loadEnd.value = false;
+  refreshList(int index) async {
+    final state=states[index]!;
+    state.error = "";
+    state.page = source.from ?? 1;
+    state.refreshing = true;
+    state.loadEnd = false;
     update();
 
     try {
-      books.value = await repository.exploreBookList(pageNum: page);
-    } on DioError catch (e) {
-      error.value=e.message;
-      // showError(e.message);
+      state.books = await repository.exploreBookList(explore:exploreTabs[index],pageNum: state.page);
+    } catch (e) {
+      if (e is DioError)
+        state.error = e.message;
+      else
+        state.error = e.toString();
     }
 
     ///只有一页
     if (repository.getSourceExplore()?.url?.contains("{{page}}") != true) {
-      loadEnd.value = true;
+      state.loadEnd = true;
     }
-    refreshing.value = false;
+    state.refreshing = false;
     update();
   }
 
-  Future<bool> loadMore() async {
+  Future<bool> loadMore(int index) async {
     print("开始加载更多");
-    if (loading) return false;
-    loading = true;
+    final state=states[index]!;
+    if (state.loading) return false;
+    state.loading = true;
     update();
-    page++;
+    state.page++;
+    final explore=exploreTabs[index];
     try {
-      var list = await repository.exploreBookList(pageNum: page);
+      var list = await repository.exploreBookList(explore:explore,pageNum: state.page);
       if (list.isEmpty) {
-        loadEnd.value = true;
+        state.loadEnd = true;
       }
-      books.value = [...books.value..addAll(list)];
+      state.books = [...state.books, ...list];
     } on DioError catch (e) {
-      error.value = e.message;
+      state.error = e.message;
     }
 
-    loading = false;
+    state.loading = false;
     update();
     return true;
+  }
+
+  void updateIndex(int index) {
+    tabIndex.value = index;
   }
 }

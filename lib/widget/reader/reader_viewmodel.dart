@@ -68,7 +68,9 @@ class ReaderViewModel extends ChangeNotifier {
     if (loading) return;
     loading = true;
     try {
-      await preLoadNextData();
+      try {
+        await preLoadNextData();
+      } catch (e) {}
       if (!currentChapter!.toNextPage()) {
         currentChapterIndex++;
         preChapter = currentChapter;
@@ -86,10 +88,14 @@ class ReaderViewModel extends ChangeNotifier {
     if (loading) return;
     loading = true;
     try {
-      await preLoadPreData();
+      try {
+        await preLoadPreData();
+      }catch (e) {
+      }
       if (!currentChapter!.toPrePage()) {
         if (currentChapterIndex <= 0) {
           Get.snackbar("提示", "已经是第一页了", duration: Duration(milliseconds: 1000));
+          loading = false;
           return;
         }
         currentChapterIndex--;
@@ -131,7 +137,7 @@ class ReaderViewModel extends ChangeNotifier {
     } else {
       await ensurePreChapter();
       applyConfig(preChapter);
-      preparePagePicture(nextChapter!, 0);
+      preparePagePicture(preChapter!, preChapter!.chapterContentConfigs.length - 1);
     }
   }
 
@@ -193,9 +199,6 @@ class ReaderViewModel extends ChangeNotifier {
     var pageConfig = chapter.pageDate(pageIndex);
     if (pageConfig?.pagePicture == null) {
       var picture = readerContentDrawer.drawContent(chapter, pageIndex);
-      // ui.Image image = await picture.toImage(ScreenUtils.getScreenWidth().toInt(),
-      //     ScreenUtils.getScreenHeight().toInt());
-      // pageConfig.pageImage = image;
       pageConfig!.pagePicture = picture;
     }
   }

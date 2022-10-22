@@ -106,10 +106,7 @@ class BookReadItemWidget extends StatelessWidget {
                     width: 40,
                     height: 60,
                     decoration: BoxDecoration(borderRadius: BorderRadius.circular(2), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 3,offset: Offset(0,0),blurStyle: BlurStyle.outer)]),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: BookCover(bean),
-                    )),
+                    child: BookCover(bean,radius: 2)),
               SizedBox(width: 20),
               Expanded(
                 child: Column(

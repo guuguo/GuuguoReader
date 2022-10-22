@@ -5,7 +5,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:read_info/global/custom/my_page_transitions.dart';
-class MyTheme{
+
+class MyTheme {
   static const contentMaxWidth = 600.0;
   BuildContext context;
 
@@ -17,8 +18,10 @@ class MyTheme{
 
   // get cardColor => !isDark ? Color(0xffffffff) : Color(0xff1c1c1e);
   get searchBarColor => !isDark ? Color(0xfff1f2f2) : Color(0xff474747);
+
   get searchTextColor => Theme.of(context).textTheme.bodySmall?.color;
-  get hintTextColor =>  Color(0xfffa8abaa) ;
+
+  get hintTextColor => Color(0xfffa8abaa);
 
   Color get primaryColor => Theme.of(context).primaryColor;
 
@@ -158,17 +161,18 @@ ThemeData _buildDarkTheme() {
     canvasColor: const Color(0xFF202124),
     backgroundColor: const Color(0xFF202124),
     cardColor: const Color(0xFF202124),
-    scaffoldBackgroundColor:Color(0xff434444),
-    navigationBarTheme: NavigationBarThemeData(backgroundColor:Color(0xff343636)),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor:Color(0xff343636)),
+    scaffoldBackgroundColor: Color(0xff434444),
+    navigationBarTheme: NavigationBarThemeData(backgroundColor: Color(0xff343636)),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor: Color(0xff343636)),
     errorColor: const Color(0xFFB00020),
-    appBarTheme:AppBarTheme(backgroundColor:const Color(0xFF333634)),
+    appBarTheme: AppBarTheme(backgroundColor: const Color(0xFF333634)),
+    tabBarTheme: TabBarTheme(labelColor: primaryColor, indicator: UnderlineTabIndicator()),
     chipTheme: ChipThemeData.fromDefaults(
       brightness: Brightness.light,
       secondaryColor: primaryColor,
       labelStyle: _buildTextTheme(base.textTheme).bodyText2!,
     ).copyWith(
-      backgroundColor:Colors.white12,
+      backgroundColor: Colors.white12,
     ),
     buttonTheme: ButtonThemeData(
       colorScheme: colorScheme,
@@ -181,6 +185,7 @@ ThemeData _buildDarkTheme() {
 }
 
 ThemeData _buildLightTheme() {
+  const primaryTextColor = Color(0xff333333);
   const primaryColor = Color(0xff52a874);
   const secondaryColor = Color(0xFF13B9FD);
   final colorScheme = const ColorScheme.light()
@@ -191,13 +196,21 @@ ThemeData _buildLightTheme() {
     appBarTheme: base.appBarTheme.copyWith(color: Colors.white, iconTheme: base.iconTheme, textTheme: base.textTheme, brightness: Brightness.light),
     primaryColor: primaryColor,
     buttonColor: primaryColor,
-    scaffoldBackgroundColor:Color(0xfff0f1f7),
+    scaffoldBackgroundColor: Color(0xfff0f1f7),
     cupertinoOverrideTheme: _buildCupertinoLightTheme(),
     indicatorColor: Colors.white,
     pageTransitionsTheme: MyPageTransitionsTheme(),
     splashColor: Colors.black12,
-    navigationBarTheme: NavigationBarThemeData(backgroundColor:Colors.white),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor:Colors.white),
+    tabBarTheme: TabBarTheme(
+      labelColor: primaryColor,
+      labelPadding: EdgeInsets.symmetric(vertical:0,horizontal: 18),
+      indicator: UnderlineTabIndicator(
+        borderSide: const BorderSide(width: 2.0, color: primaryColor),
+      ),
+      unselectedLabelColor: primaryTextColor,
+    ),
+    navigationBarTheme: NavigationBarThemeData(backgroundColor: Colors.white),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor: Colors.white),
     splashFactory: NoSplash.splashFactory,
     accentColor: secondaryColor,
     errorColor: const Color(0xFFB00020),
@@ -205,8 +218,10 @@ ThemeData _buildLightTheme() {
       colorScheme: colorScheme,
       textTheme: ButtonTextTheme.primary,
     ),
-    iconTheme: IconThemeData(color:base.textTheme.caption?.color),
-    textTheme: _buildTextTheme(base.textTheme, Color(0xff333333)),
+    iconTheme: IconThemeData(color: base.textTheme.caption?.color),
+    textTheme: _buildTextTheme(
+      base.textTheme,
+    ),
     primaryTextTheme: _buildTextTheme(base.primaryTextTheme),
     accentTextTheme: _buildTextTheme(base.accentTextTheme),
     backgroundColor: const Color(0xFFFFFFFF),

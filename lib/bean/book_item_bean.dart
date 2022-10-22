@@ -4,9 +4,13 @@ import 'package:read_info/bean/entity/source_entity.dart';
 import 'package:uuid/uuid.dart';
 
 abstract class BookBean{
+  @ignore
   String? name;
+  @ignore
   String? intro;
+  @ignore
   String? author ;
+  @ignore
   String? coverUrl ;
 }
 class BookItemBean extends BookBean {

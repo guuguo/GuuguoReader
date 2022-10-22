@@ -24,10 +24,7 @@ class SourceNetRepository {
   SourceNetRepository(this.source);
 
   ///发现页
-  Future<List<BookItemBean>> exploreBookList({String? title, pageNum = 1}) async {
-    SourceExploreUrl? explore;
-    explore = getSourceExplore(title);
-    if (explore == null) return [];
+  Future<List<BookItemBean>> exploreBookList({required SourceExploreUrl explore, pageNum = 1}) async {
     var res = await getDio().get<String>(explore.url!.replaceAll('{{page}}', "${pageNum}"));
     var document = parse(res.data);
     //header.title@a@text
@@ -70,8 +67,9 @@ class SourceNetRepository {
                 return utf8.decode(res);
               }
             };
-            if (headerStr?.isNotEmpty != true) return;
-            o.headers.addAll(json.decode(headerStr!));
+            if (headerStr?.isNotEmpty == true){
+              o.headers.addAll(json.decode(headerStr!));
+            }
             h.next(o);
           }));
         });

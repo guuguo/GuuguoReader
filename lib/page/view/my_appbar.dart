@@ -9,6 +9,7 @@ class MyAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.leading,
     this.middle,
     this.trail,
+    this.bottom,
     this.autoImplLeading = true,
   }) : super(key: key);
 
@@ -18,9 +19,9 @@ class MyAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Widget? middle;
   final bool autoImplLeading;
   final List<Widget>? trail;
-
+  final PreferredSizeWidget? bottom;
   @override
-  Size get preferredSize => Size(double.infinity, kToolbarHeight);
+  Size get preferredSize => Size(double.infinity, 45+(bottom?.preferredSize.height??0));
 }
 
 class _MyAppBarState extends State<MyAppBar> {
@@ -49,31 +50,8 @@ class _MyAppBarState extends State<MyAppBar> {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
-                Expanded(
-                  child: widget.middle == null
-                      ? Center(child: barChild)
-                      : Stack(
-                          children: [
-                            Positioned.fill(
-                              child: barChild,
-                            ),
-                            Positioned.fill(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: SizedBox(),
-                                  ),
-                                  DefaultTextStyle(style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold), child: widget.middle!),
-                                  Expanded(
-                                    child: SizedBox(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
+                AppBar(barChild, context),
+                if(widget.bottom!=null) widget.bottom!,
                 Divider(
                   height: 0.5,
                   thickness: 0.5,
@@ -82,6 +60,34 @@ class _MyAppBarState extends State<MyAppBar> {
             ),
           ),
         ));
+  }
+
+  Expanded AppBar(Row barChild, BuildContext context) {
+    return Expanded(
+                child: widget.middle == null
+                    ? Center(child: barChild)
+                    : Stack(
+                        children: [
+                          Positioned.fill(
+                            child: barChild,
+                          ),
+                          Positioned.fill(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: SizedBox(),
+                                ),
+                                DefaultTextStyle(style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold), child: widget.middle!),
+                                Expanded(
+                                  child: SizedBox(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+              );
   }
 }
 

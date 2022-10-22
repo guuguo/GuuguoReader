@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:read_info/bean/book_item_bean.dart';
@@ -8,7 +9,9 @@ import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/data/source_manager.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/global/custom/my_theme.dart';
+import 'package:read_info/page/explore/state.dart';
 import 'package:read_info/page/view/bookcover.dart';
+import 'package:read_info/utils/ext/list_ext.dart';
 import 'package:read_info/widget/container.dart';
 
 import '../../bean/entity/source_entity.dart';
@@ -20,56 +23,90 @@ class ExplorePage extends StatefulWidget {
   State<ExplorePage> createState() => _ExplorePageState();
 }
 
-class _ExplorePageState extends State<ExplorePage> {
+class _ExplorePageState extends State<ExplorePage> with SingleTickerProviderStateMixin {
+  TabController? _tabController;
+
   @override
   void initState() {
+    _tabController = TabController(
+      initialIndex: 0,
+      length: 12,
+      vsync: this,
+    );
+    final logic = Get.find<ExploreLogic>();
+    _tabController!.addListener(() {
+      logic.updateIndex(_tabController!.index);
+    });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tabController!.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<ExploreLogic>();
     return Scaffold(
-      appBar: MyAppBar(middle: Text(logic.source.bookSourceName ?? "")),
-      backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
-      body: GetX<ExploreLogic>(
-        builder: (ExploreLogic logic) {
-          if (logic.refreshing.value) {
-            return buildRefreshView();
-          } else if (logic.error.value.isNotEmpty) {
-            return buildErrorView(logic);
-          } else {
-            return buildContentList(logic);
-          }
-        },
-      ),
-    );
+        appBar: MyAppBar(
+          middle: Text(logic.source.bookSourceName ?? ""),
+          bottom: logic.exploreTabs.length > 1
+              ? TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabs: [
+                    for (final tab in logic.exploreTabs) Tab(text: tab.title, height: 40),
+                  ],
+                )
+              : null,
+        ),
+        backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
+        body: TabBarView(
+            // physics: NeverScrollableScrollPhysics(),
+            controller: _tabController,
+            children: logic.exploreTabs
+                .mapIndexed((i, e) => GetBuilder<ExploreLogic>(
+                      builder: (logic) {
+                        final state = logic.states[i]!;
+                        if (state.refreshing) {
+                          return buildRefreshView();
+                        } else if (state.error.isNotEmpty) {
+                          return buildErrorView(logic, state, i);
+                        } else {
+                          return buildContentList(logic, state, i);
+                        }
+                      },
+                    ))
+                .toList()));
   }
 
-  ListView buildContentList(ExploreLogic logic) {
-    var itemCount = logic.books.value.length + 1;
+  ListView buildContentList(ExploreLogic logic, ExploreState state, int index) {
+    final logic = Get.find<ExploreLogic>();
+    var itemCount = state.books.length + 1;
     return ListView.builder(
       padding: EdgeInsets.symmetric(vertical: 8),
       itemBuilder: (c, i) {
         if (i == itemCount - 1) {
-          if (!logic.loadEnd.value) {
-            logic.loadMore();
+          if (!state.loadEnd) {
+            logic.loadMore(index);
           }
           return Container(
             alignment: Alignment.center,
             padding: EdgeInsets.symmetric(vertical: 4),
-            child: logic.error.value.isNotEmpty
+            child: state.error.isNotEmpty
                 ? TextButton(
                     onPressed: () {
-                      logic.page--;
-                      logic.error.value = "";
-                      logic.loadMore();
+                      state.page--;
+                      state.error = "";
+                      logic.loadMore(index);
                     },
                     child: Text("点击重试"))
-                : (logic.loadEnd.value ? Text("已经到底了") : CupertinoActivityIndicator()),
+                : (state.loadEnd ? Text("已经到底了") : CupertinoActivityIndicator()),
           );
         }
-        var bean = logic.books.value[i];
+        var bean = state.books[i];
         if (logic.source.bookSourceType == source_type_sms)
           return SMSItemWidget(bean: bean);
         else
@@ -81,7 +118,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
   Widget buildRefreshView() => Center(child: CupertinoActivityIndicator(radius: 15));
 
-  Widget buildErrorView(ExploreLogic logic) {
+  Widget buildErrorView(ExploreLogic logic, ExploreState state, int index) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Center(
@@ -89,11 +126,11 @@ class _ExplorePageState extends State<ExplorePage> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(logic.error.value, textAlign: TextAlign.center),
+          Text(state.error, textAlign: TextAlign.center),
           SizedBox(height: 16),
           ElevatedButton(
               onPressed: () {
-                logic.refreshList();
+                logic.refreshList(index);
               },
               child: Text("点击重试"))
         ],
@@ -124,7 +161,7 @@ class BookItemWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 70, height: 100, child: BookCover(bean)),
+                SizedBox(width: 70, height: 100, child: BookCover(bean, radius: 6)),
                 SizedBox(width: 20),
                 Expanded(
                   child: Column(
