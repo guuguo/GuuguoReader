@@ -101,7 +101,11 @@ class LogsInterceptors extends InterceptorsWrapper {
       developer.log(headers);
       developer.log(query);
       developer.log(params);
-      // developer.log(res);
+      if (res.length > 2000)
+        developer.log(res.substring(0, 2000));
+      else
+        developer.log(res);
+
       developer.log(bottom);
     }
   }

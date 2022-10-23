@@ -28,12 +28,12 @@ class _ExplorePageState extends State<ExplorePage> with SingleTickerProviderStat
 
   @override
   void initState() {
+    final logic = Get.find<ExploreLogic>();
     _tabController = TabController(
       initialIndex: 0,
-      length: 12,
+      length: logic.exploreTabs.length,
       vsync: this,
     );
-    final logic = Get.find<ExploreLogic>();
     _tabController!.addListener(() {
       logic.updateIndex(_tabController!.index);
     });

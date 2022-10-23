@@ -10,7 +10,9 @@ import 'package:read_info/bean/entity/source_header_entity.dart';
 import 'package:read_info/data/net/dio_helper.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
 import 'package:read_info/data/rule/app_helper.dart';
+import 'package:read_info/data/rule/novel_string_deal.dart';
 import 'package:read_info/generated/json/base/json_convert_content.dart';
+import 'package:read_info/utils/developer.dart';
 import 'package:uuid/uuid.dart';
 
 import '../bean/book_item_bean.dart';
@@ -162,6 +164,7 @@ class SourceNetRepository {
     var res = await getDio().get<dynamic>(bean.tocUrl ?? "");
     var element = parse(res.data).documentElement;
     if (element == null) return null;
+    debug("获取所有章节列表${source.ruleToc}");
     List<BookChapterBean> resList = getChapters(element,bean);
 
     return resList;
@@ -180,6 +183,7 @@ class SourceNetRepository {
 
   Future<BookChapterBean?> queryBookContent(BookChapterBean bean) async {
     var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent);
+    result= dealHtmlContentResult(result)??"";
     if (result.isNotEmpty) bean.content = ChapterContent.FromChapter(bean, result);
     return bean;
   }
@@ -211,31 +215,4 @@ class SourceNetRepository {
     return result ?? "";
   }
 
-  String? dealHtmlContentResult(String? html) {
-    if (html == null) return null;
-    var result = StringBuffer();
-    var lastStart = 0;
-    var originHtml = html;
-    RegExp(r"&nbsp;").allMatches(originHtml).forEach((match) {
-      result.write(originHtml.substring(lastStart, match.start));
-      result.write(' ');
-      lastStart = match.end;
-    });
-    result.write(originHtml.substring(lastStart));
-
-    lastStart = 0;
-    originHtml = result.toString();
-    result.clear();
-
-    RegExp(r"<.*?>").allMatches(originHtml).forEach((match) {
-      result.write(originHtml.substring(lastStart, match.start));
-      if (match[0]?.contains(RegExp('br')) == true || match[0]?.contains(RegExp('p')) == true) {
-        result.write('\n');
-      }
-      lastStart = match.end;
-    });
-    result.write(originHtml.substring(lastStart));
-
-    return result.toString();
-  }
 }

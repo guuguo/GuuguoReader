@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:read_info/bean/book_item_bean.dart';
+import 'package:read_info/data/rule/novel_string_deal.dart';
 import 'package:read_info/utils/utils_screen.dart';
 
 import 'reader_content_config.dart';
@@ -143,9 +144,12 @@ class ReaderContentDrawer {
 
     ///第一页画上章节名
     if (index == 0) {
-      ///绘制  章节名（1/5)
+
+      var entry=getChapterIndexName(chapterData.chapterName);
+
+      ///绘制  章节名
       textPainter.text = TextSpan(
-          text: "${chapterData.chapterName}",
+          text: "${entry.value}",
           style: TextStyle(
             color: config.contentTextColor,
             height: config.bottomTipHeight.toDouble() / config.bottomTipFontSize,
@@ -153,7 +157,21 @@ class ReaderContentDrawer {
             fontWeight: FontWeight.bold,
           ));
       textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
-      textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, validContentHeight / 4 + config.contentPaddingVertical - textPainter.height / 2));
+      final chapterOffHeight = validContentHeight / 4 + config.contentPaddingVertical - textPainter.height / 2;
+      textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, chapterOffHeight));
+
+      ///绘制  第几章
+      if (entry.key?.isNotEmpty == true) {
+        textPainter.text = TextSpan(
+            text: "${entry.key}",
+            style: TextStyle(
+              color: config.contentTextColor.withAlpha(100),
+              height: config.bottomTipHeight.toDouble() / config.bottomTipFontSize,
+              fontSize: config.bottomTipFontSize.toDouble()*1.4 ,
+            ));
+        textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
+        textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, chapterOffHeight-10));
+      }
     }
     final startHeightOff = index == 0 ? (validContentHeight / 2 + config.contentPaddingVertical) : config.contentPaddingVertical.toDouble();
 

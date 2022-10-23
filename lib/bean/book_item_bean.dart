@@ -78,10 +78,13 @@ class BookDetailBean extends BookBean {
       this.kind,
       this.lastChapter,
       this.tocUrl,
+        List<BookChapterBean>? chapters,
       this.sourceUrl,
       this.readChapterIndex = 0,
       this.readPageIndex = 0,
-      this.totalChapterCount = 0});
+      this.totalChapterCount = 0}) {
+    this.chapters=chapters;
+  }
 
   BookDetailBean copyWith({
     @PrimaryKey() String? id,
@@ -106,6 +109,7 @@ class BookDetailBean extends BookBean {
       coverUrl: coverUrl ?? this.coverUrl,
       kind: kind ?? this.kind,
       lastChapter: lastChapter ?? this.lastChapter,
+      chapters: chapters ?? this.chapters,
       tocUrl: tocUrl ?? this.tocUrl,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       readChapterIndex: readChapterIndex ?? this.readChapterIndex,

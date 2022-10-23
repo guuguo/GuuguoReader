@@ -122,7 +122,7 @@ class _NovelReaderState extends State<NovelReader> {
     } else {
       if (menuShow == true)
         setState(() {
-          menuShow = true;
+          menuShow = false;
         });
     }
   }
