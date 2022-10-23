@@ -37,7 +37,7 @@ class ContentLogic extends GetxController {
 
   ///更新阅读进度
   void updateReadPage(int pageIndex, int chapterIndex) {
-    debug("更新当前页面chapterIndex:${chapterIndex}  pageIndex:${pageIndex}");
+    debug("更新当前页面chapterIndex:${chapterIndex}  pageIndex:${pageIndex} chapterTotal:${bookDetail.totalChapterCount}");
     bookDetail.readPageIndex = pageIndex;
     bookDetail.readChapterIndex = chapterIndex;
     readChapterIndex.value=chapterIndex;

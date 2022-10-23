@@ -61,7 +61,9 @@ class BookDetailBean extends BookBean {
 
   set chapters(List<BookChapterBean>? chapters) {
     _chapters = chapters;
-    totalChapterCount=chapters?.length??0;
+    if (chapters?.isNotEmpty == true) {
+      totalChapterCount = chapters?.length ?? 0;
+    }
   }
 
 
@@ -78,7 +80,7 @@ class BookDetailBean extends BookBean {
       this.kind,
       this.lastChapter,
       this.tocUrl,
-        List<BookChapterBean>? chapters,
+      List<BookChapterBean>? chapters,
       this.sourceUrl,
       this.readChapterIndex = 0,
       this.readPageIndex = 0,

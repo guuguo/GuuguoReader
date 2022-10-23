@@ -31,11 +31,8 @@ class _BookContentPageState extends State<BookContentPage> {
     Get.find<ContentLogic>().init(detailBean);
   }
 
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  // }
+  GlobalKey<NovelReaderState> readerKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<ContentLogic>();
@@ -43,7 +40,8 @@ class _BookContentPageState extends State<BookContentPage> {
       body: Builder(
         builder: (context) {
           return NovelReader(
-            pageSize: Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - MediaQuery.of(context).padding.vertical),
+            key:readerKey,
+            pageSize: Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - MediaQuery.of(context).padding.bottom),
             chapterProvider: (i) async {
               var chapter = logic.getChapterByIndex(i);
               if (chapter?.hasContent() != true) await logic.loadChapterContent(chapter);
@@ -69,31 +67,44 @@ class _BookContentPageState extends State<BookContentPage> {
 
   Widget Drawer(ContentLogic logic) {
     return Container(
-        width: 300,
+        width: 350,
         color: Theme.of(context).cardColor,
         child: GetX<ContentLogic>(builder: (ContentLogic logic) {
           return ListView(
-            prototypeItem: ChapterItem("第一章", true),
+            prototypeItem: ChapterItem(context,0,"第一章", true),
             children: logic.bookDetail.chapters!
                 .mapIndexed(
-                  (i, e) => ChapterItem(e.chapterName ?? "", i == logic.readChapterIndex.value),
+                  (i, e) => ChapterItem(context,i,e.chapterName ?? "", i == logic.readChapterIndex.value),
                 )
                 .toList(),
           );
         }));
   }
 
-  Widget ChapterItem(String name, bool selected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          child: Text(name + (selected ? "    ☜" : ""), style: MyTheme(context).textTheme.bodyText2),
-        ),
-        DashDivider()
-      ],
+  Widget ChapterItem(BuildContext context, index,String name, bool selected) {
+    final logic = Get.find<ContentLogic>();
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: (){
+        try {
+          Scaffold.of(context).closeDrawer();
+        }catch (e) {}
+        if(index==logic.bookDetail.readChapterIndex){
+          return;
+        }
+        readerKey.currentState?.jumpToChapter(index);
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            child: Text(name + (selected ? "    ☜" : ""), style: MyTheme(context).textTheme.bodyMedium),
+          ),
+          DashDivider()
+        ],
+      ),
     );
   }
 }

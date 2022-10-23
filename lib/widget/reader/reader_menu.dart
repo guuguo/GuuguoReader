@@ -73,6 +73,6 @@ class ReaderMenu extends StatelessWidget {
   }
 
   Widget IconMenu(IconData icon, {VoidCallback? onPressed}) {
-    return Expanded(child: GestureDetector(onTap: onPressed, child: Icon(icon)));
+    return Expanded(child: GestureDetector(behavior:HitTestBehavior.translucent,onTap: onPressed, child: Center(child: Icon(icon))));
   }
 }

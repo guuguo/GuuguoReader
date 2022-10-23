@@ -83,7 +83,7 @@ MapEntry<String?,String> getChapterIndexNameWithSeparated(String chapter,String 
 }
 class ConvertNumberToChineseMoneyWords{
   // 大写数字
-  static List<String> NUMBERS = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十",""];
+  static List<String> NUMBERS = ["零","一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 
   static String toChinese(int index) {
     if(index > 100){
@@ -93,17 +93,28 @@ class ConvertNumberToChineseMoneyWords{
     if(index / 10 < 1){
       return NUMBERS[index];
     }
-    int tenUnit = index ~/ 10;
+    int thousandUnit = index ~/ 1000;
+    int hundredUnit = index%1000 ~/ 100;
+    int tenUnit = index%100 ~/ 10;
     int remainder = index % 10;
-    if(remainder == 9){
-      tenUnit++;
-      remainder = 10;
+    if(thousandUnit>0){
+      stringBuffer..write(NUMBERS[thousandUnit])..write("千");
+    }else{
+      stringBuffer..write(NUMBERS[thousandUnit]);
     }
-    if(tenUnit == 1){
-      stringBuffer..write("十")..write(NUMBERS[remainder]);
-      return stringBuffer.toString();
+    if(hundredUnit>0){
+      stringBuffer..write(NUMBERS[hundredUnit])..write("百");
+    }else{
+      stringBuffer..write(NUMBERS[hundredUnit]);
     }
-    stringBuffer..write(NUMBERS[tenUnit - 1])..write("十")..write(NUMBERS[remainder]);
-    return stringBuffer.toString();
+
+    if(tenUnit>0){
+      stringBuffer..write(NUMBERS[tenUnit])..write("十");
+    }else{
+      stringBuffer..write(NUMBERS[tenUnit]);
+    }
+    stringBuffer..write(NUMBERS[remainder]);
+
+    return stringBuffer.toString().replaceAll(RegExp(r"^零+|零+$"), "");
   }
 }

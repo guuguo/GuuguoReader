@@ -20,7 +20,11 @@ class ReaderViewModel extends ChangeNotifier {
     this.readChangeCallback,
     this.currentChapterIndex,
     this.startReadPageIndex,
-  );
+    this.config,
+  ){
+    readerContentDrawer=ReaderContentDrawer(this);
+    reApplyConfig();
+  }
 
   final ReadPageChangeCallback readChangeCallback;
   final ChapterProvider chapterProvider;
@@ -37,8 +41,8 @@ class ReaderViewModel extends ChangeNotifier {
 
   ReaderChapterData? preChapter;
 
-  ReaderConfigEntity? config;
-  ReaderContentDrawer readerContentDrawer = ReaderContentDrawer();
+  ReaderConfigEntity config;
+  late ReaderContentDrawer readerContentDrawer;
 
   //当前页面是否已经ready
   bool currentPageReady() {
@@ -51,9 +55,10 @@ class ReaderViewModel extends ChangeNotifier {
     }
   }
   //绘制背景
-  drawBackground(Canvas canvas){
-    readerContentDrawer.drawBackground(canvas);
+  drawBackground(Canvas canvas) {
+    canvas.drawPicture(readerContentDrawer.drawBackground());
   }
+
   //绘制当前页面
   drawCurrentPage(Canvas canvas) {
     if (currentChapter?.chapterContentConfigs.isNotEmpty != true) return;
@@ -63,6 +68,7 @@ class ReaderViewModel extends ChangeNotifier {
 
   //是否在跳转页面加载中
   var loading = false;
+
 //跳转到下一页
   Future toNextPage() async {
     if (loading) return;
@@ -101,8 +107,35 @@ class ReaderViewModel extends ChangeNotifier {
         currentChapterIndex--;
         nextChapter = currentChapter;
         currentChapter = preChapter;
+        currentChapter!.currentPageIndex=currentChapter!.chapterContentConfigs.length-1;
         preChapter = null;
       }
+      readChangeCallback(currentChapterIndex, currentChapter!.currentPageIndex);
+      notifyListeners();
+    } catch (e) {}
+    loading = false;
+  }
+
+  //跳转到某一页
+  Future toChapter(int chapterIndex) async {
+    if (loading) return;
+    loading = true;
+    if(chapterIndex==currentChapter?.chapterIndex){
+      return;
+    }
+    if(!currentChapter!.canToTargetChapter(chapterIndex)){
+      return;
+    }
+    try {
+      ReaderChapterData? targetChapter;
+      try {
+        targetChapter= await preLoadData(chapterIndex);
+      }catch (e) {}
+      currentChapterIndex=chapterIndex;
+      nextChapter = null;
+      currentChapter = targetChapter;
+      preChapter = null;
+
       readChangeCallback(currentChapterIndex, currentChapter!.currentPageIndex);
       notifyListeners();
     } catch (e) {}
@@ -119,11 +152,11 @@ class ReaderViewModel extends ChangeNotifier {
 
   ///预加载下一页
   Future preLoadNextData() async {
-    await ensureCurrentChapter();
+    await ensureChapter(currentChapterIndex);
     if (currentChapter!.canToNextPage()) {
       preparePagePicture(currentChapter!, currentChapter!.currentPageIndex + 1);
     } else {
-      await ensureNextChapter();
+      await ensureChapter(currentChapterIndex+1);
       applyConfig(nextChapter);
       preparePagePicture(nextChapter!, 0);
     }
@@ -131,36 +164,53 @@ class ReaderViewModel extends ChangeNotifier {
 
   ///预加载前一页
   Future preLoadPreData() async {
-    await ensureCurrentChapter();
+    await ensureChapter(currentChapterIndex);
     if (currentChapter!.canToPrePage()) {
       preparePagePicture(currentChapter!, currentChapter!.currentPageIndex - 1);
     } else {
-      await ensurePreChapter();
+      await ensureChapter(currentChapterIndex-1);
       applyConfig(preChapter);
       preparePagePicture(preChapter!, preChapter!.chapterContentConfigs.length - 1);
     }
   }
 
-  Future ensurePreChapter() async {
-    if (preChapter?.content?.isNotEmpty!=true) preChapter = await chapterProvider(currentChapterIndex - 1);
-  }
+  ///预加载某一页
+  Future<ReaderChapterData?> preLoadData(int chapter) async {
 
-  Future ensureNextChapter() async {
-    if (nextChapter?.content?.isNotEmpty!=true) nextChapter = await chapterProvider(currentChapterIndex + 1);
+    await ensureChapter(currentChapterIndex);
+    if (currentChapter!.canToTargetChapter(chapter)) {
+      final chapterBean=  await ensureChapter(chapter);
+      applyConfig(chapterBean);
+      preparePagePicture(chapterBean!, chapterBean.currentPageIndex);
+      return chapterBean;
+    }
+    return null;
   }
-
-  Future ensureCurrentChapter() async {
-    if (currentChapter == null) {
-      currentChapter = await chapterProvider(currentChapterIndex);
-      if (firstLoad) {
-        currentChapter?.currentPageIndex = startReadPageIndex;
-        firstLoad = false;
+  Future<ReaderChapterData?> ensureChapter(int chapterIndex) async {
+    if (chapterIndex == currentChapterIndex - 1) {
+      if (preChapter?.content?.isNotEmpty != true) preChapter = await chapterProvider(chapterIndex);
+      return preChapter;
+    } else if (chapterIndex == currentChapterIndex) {
+      if (currentChapter?.content?.isNotEmpty != true) {
+        currentChapter = await chapterProvider(chapterIndex);
+        if (firstLoad) {
+          currentChapter?.currentPageIndex = startReadPageIndex;
+          firstLoad = false;
+        }
       }
+      return currentChapter;
+    } else if (chapterIndex == currentChapterIndex + 1) {
+      if (nextChapter?.content?.isNotEmpty != true) nextChapter = await chapterProvider(chapterIndex);
+      return nextChapter;
+    } else {
+      return await chapterProvider(chapterIndex);
     }
   }
+  void gesturePanChange(Offset delta,Offset startPosition){
 
+  }
   void reApplyConfig() async {
-    await ensureCurrentChapter();
+    await ensureChapter(currentChapterIndex);
     currentChapter?.clearCalculateResult();
     nextChapter?.clearCalculateResult();
     preChapter?.clearCalculateResult();

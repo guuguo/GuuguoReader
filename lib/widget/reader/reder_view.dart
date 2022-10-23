@@ -49,10 +49,10 @@ class NovelReader extends StatefulWidget {
   }
 
   @override
-  State<NovelReader> createState() => _NovelReaderState();
+  State<NovelReader> createState() => NovelReaderState();
 }
 
-class _NovelReaderState extends State<NovelReader> {
+class NovelReaderState extends State<NovelReader> {
   NovelPagePainter? mPainter;
   late ReaderViewModel viewModel;
   GlobalKey canvasKey = new GlobalKey();
@@ -61,16 +61,23 @@ class _NovelReaderState extends State<NovelReader> {
   @override
   initState() {
     super.initState();
-    viewModel = ReaderViewModel(widget.chapterProvider, widget.readChangeCallback, widget.startChapterIndex, widget.startReadPageIndex);
-    viewModel.addListener(() {
-      setState(() {});
-    });
-    mPainter = NovelPagePainter(viewModel);
-    viewModel.setConfig(
+    viewModel = ReaderViewModel(
+      widget.chapterProvider,
+      widget.readChangeCallback,
+      widget.startChapterIndex,
+      widget.startReadPageIndex,
       ReaderConfigEntity().copyWith(
         pageSize: widget.pageSize,
       ),
     );
+    viewModel.addListener(() {
+      setState(() {});
+    });
+    mPainter = NovelPagePainter(viewModel);
+  }
+
+  void jumpToChapter(int chapterIndex) {
+    viewModel.toChapter(chapterIndex);
   }
 
   @override
@@ -93,6 +100,7 @@ class _NovelReaderState extends State<NovelReader> {
               onCenterTap: () {
                 changeMenuShow();
               },
+              onPanChange: viewModel.gesturePanChange,
               child: CustomPaint(
                 key: canvasKey,
                 isComplex: true,

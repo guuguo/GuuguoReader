@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:read_info/res.dart';
 import 'package:read_info/utils/utils_screen.dart';
 
 class ReaderConfigEntity {
@@ -14,6 +15,7 @@ class ReaderConfigEntity {
 
   /// 背景色
   Color currentCanvasBgColor = Color(0xfffff2cc);
+  String currentCanvasBgRes = Res.p01;
 
   int currentPageIndex = 0;
   int currentChapterIndex = 0;

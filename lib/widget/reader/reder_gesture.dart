@@ -7,19 +7,22 @@ import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_content_config.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_painter.dart';
-
+typedef GesturePanCallback =void Function(Offset panDelta,Offset fingerPosition);
 class ReaderGesture extends StatelessWidget {
-  const ReaderGesture({
+  ReaderGesture({
     Key? key,
     this.child,
     this.onCenterTap,
     this.onNextTap,
     this.onPreTap,
+    this.onPanChange,
   }) : super(key: key);
   final Widget? child;
   final GestureTapCallback? onCenterTap;
   final GestureTapCallback? onNextTap;
   final GestureTapCallback? onPreTap;
+  final GesturePanCallback? onPanChange;
+  late Offset dragDownPosition;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +42,13 @@ class ReaderGesture extends StatelessWidget {
           return;
         }
       },
+      onPanStart: (DragStartDetails details){
+        dragDownPosition=details.localPosition;
+      },
+      onPanUpdate: (DragUpdateDetails details){
+        onPanChange?.call(details.localPosition-dragDownPosition, details.localPosition);
+      },
+      onPanEnd: (DragEndDetails details){},
       child: child,
     );
   }

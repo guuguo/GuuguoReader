@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:read_info/bean/book_item_bean.dart';
 import 'package:read_info/data/rule/novel_string_deal.dart';
 import 'package:read_info/utils/utils_screen.dart';
+import 'package:read_info/widget/reader/reader_viewmodel.dart';
 
 import 'reader_content_config.dart';
 
@@ -13,29 +14,9 @@ class ReaderContentDrawer {
   TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
   Paint bgPaint = Paint();
   Paint configData = Paint();
-  ReaderConfigEntity config = ReaderConfigEntity();
+  ReaderViewModel model;
 
-  /// em…………由于大量文字计算，即Cpu计算，在UI的Isolate会阻塞后续的UI事件（例如跳转，动画啥的），所以采取新建Isolate的方式，这也是flutter中建议的&……
-  /// 但是目前尴尬的是：
-  /// 非UI的Isolate不支持UI控件，即下面的textPainter废了……一调用就报错
-  /// https://github.com/flutter/flutter/issues/30604
-  /// 所以，理论上来说，这块的计算应该放到一个子线程中，对于目前功能来说，也可以说是isolate中，但是flutter 现在不支持……
-  /// 现在个人有几种想法：
-  /// 1、翻页的时候动态计算，只缓存几页的内容，下次翻页的时候再计算
-  /// 2、https://github.com/flutter/flutter/issues/30604 裁剪canvas
-  /// 3、平台计算……
-  /// 4、自己新建一个主isolate？但是不给它任何View？
-  ///
-  ///
-  /// 评测结果记录：
-  /// 1、这样不行，这样无法计算上一章的最后一页
-  /// 2、但是这种方式是基于不自定义段落间距，而固定所有行距实现的，无法自定义
-  /// 3、但是不能保证Android平台和ios平台自己计算结果和flutter的一致……
-  /// 4、好像https://pub.dev/packages/flutter_isolate 实现了这点。
-  ///
-  /// 现阶段基于flutter v1.10.14,其中有个LineMetrics，解决了无法获得段落展示高度的问题(说白了就是提供了行数，这样直接用行数*行高)，因此不需要一行一行的那种计算，大大减少了layout的次数
-  /// 计算慢说白了就是layout导致的，flutter啥时候出个像android stackLayout或者painter breakText这种不需要布局测绘即可得出展示指针位置的方法啊
-
+  ReaderContentDrawer(this.model);
   static List<ReaderContentPageData> getChapterPageContentConfigList(
     int targetChapterId,
     String content,
@@ -123,10 +104,19 @@ class ReaderContentDrawer {
     return pageConfigList;
   }
 
-  void drawBackground(Canvas canvas) {
-    bgPaint.color = config.currentCanvasBgColor;
-    canvas.drawRect(Offset.zero & config.pageSize, bgPaint);
+  ui.Picture? bgPicture;
+
+  ui.Picture drawBackground( [bool forceRedraw = false]) {
+    if (bgPicture == null || forceRedraw) {
+      ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
+      Canvas pageCanvas = new Canvas(pageRecorder);
+      bgPaint.color = model.config.currentCanvasBgColor;
+      pageCanvas.drawRect(Offset.zero & model.config.pageSize, bgPaint);
+      bgPicture= pageRecorder.endRecording();
+    }
+    return bgPicture!;
   }
+
   ui.Picture drawContent(ReaderChapterData chapterData, int index) {
     ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
     Canvas pageCanvas = new Canvas(pageRecorder);
@@ -138,9 +128,8 @@ class ReaderContentDrawer {
 
     var pageContentConfig = chapterData.chapterContentConfigs[index];
 
-    bgPaint.color = config.currentCanvasBgColor;
-    drawBackground(pageCanvas);
-    final validContentHeight = (config.pageSize.height -config.contentPaddingVertical * 2);
+    final validContentHeight = (model.config.pageSize.height -model.config.contentPaddingVertical * 2);
+    pageCanvas.drawPicture(drawBackground());
 
     ///第一页画上章节名
     if (index == 0) {
@@ -151,32 +140,32 @@ class ReaderContentDrawer {
       textPainter.text = TextSpan(
           text: "${entry.value}",
           style: TextStyle(
-            color: config.contentTextColor,
-            height: config.bottomTipHeight.toDouble() / config.bottomTipFontSize,
-            fontSize: config.bottomTipFontSize.toDouble() * 2.5,
+            color: model.config.contentTextColor,
+            height: model.config.bottomTipHeight.toDouble() / model.config.bottomTipFontSize,
+            fontSize: model.config.bottomTipFontSize.toDouble() * 2.5,
             fontWeight: FontWeight.bold,
           ));
-      textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
-      final chapterOffHeight = validContentHeight / 4 + config.contentPaddingVertical - textPainter.height / 2;
-      textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, chapterOffHeight));
+      textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
+      final chapterOffHeight = validContentHeight / 4 + model.config.contentPaddingVertical - textPainter.height / 2;
+      textPainter.paint(pageCanvas, Offset((model.config.pageSize.width - textPainter.width) / 2, chapterOffHeight));
 
       ///绘制  第几章
       if (entry.key?.isNotEmpty == true) {
         textPainter.text = TextSpan(
             text: "${entry.key}",
             style: TextStyle(
-              color: config.contentTextColor.withAlpha(100),
-              height: config.bottomTipHeight.toDouble() / config.bottomTipFontSize,
-              fontSize: config.bottomTipFontSize.toDouble()*1.4 ,
+              color: model.config.contentTextColor.withAlpha(100),
+              height: model.config.bottomTipHeight.toDouble() / model.config.bottomTipFontSize,
+              fontSize: model.config.bottomTipFontSize.toDouble()*1.4 ,
             ));
-        textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
-        textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, chapterOffHeight-10));
+        textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
+        textPainter.paint(pageCanvas, Offset((model.config.pageSize.width - textPainter.width) / 2, chapterOffHeight-10));
       }
     }
-    final startHeightOff = index == 0 ? (validContentHeight / 2 + config.contentPaddingVertical) : config.contentPaddingVertical.toDouble();
+    final startHeightOff = index == 0 ? (validContentHeight / 2 + model.config.contentPaddingVertical) : model.config.contentPaddingVertical.toDouble();
 
     ///绘制内容
-    Offset offset = Offset(config.contentPaddingHorizontal.toDouble(), startHeightOff);
+    Offset offset = Offset(model.config.contentPaddingHorizontal.toDouble(), startHeightOff);
 
     List<String> paragraphContents = pageContentConfig.paragraphContents;
     textPainter.textAlign = TextAlign.start;
@@ -184,34 +173,31 @@ class ReaderContentDrawer {
       textPainter.text = TextSpan(
           text: content,
           style: TextStyle(
-              color: config.contentTextColor,
+              color: model.config.contentTextColor,
               height: pageContentConfig.currentContentLineHeight / pageContentConfig.currentContentFontSize,
               fontSize: pageContentConfig.currentContentFontSize.toDouble()));
-      textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
+      textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
       textPainter.paint(pageCanvas, offset);
 
-      offset = Offset(config.contentPaddingHorizontal.toDouble(), offset.dy + textPainter.computeLineMetrics().length * pageContentConfig.currentContentLineHeight);
+      offset = Offset(model.config.contentPaddingHorizontal.toDouble(), offset.dy + textPainter.computeLineMetrics().length * pageContentConfig.currentContentLineHeight);
 
-      offset = Offset(config.contentPaddingHorizontal.toDouble(), offset.dy + pageContentConfig.currentContentParagraphSpacing);
+      offset = Offset(model.config.contentPaddingHorizontal.toDouble(), offset.dy + pageContentConfig.currentContentParagraphSpacing);
     }
 
     ///绘制  章节名（1/5)
     textPainter.text = TextSpan(
         text: "${chapterData.chapterName}(${index + 1}/${chapterData.chapterContentConfigs.length})",
-        style: TextStyle(color: config.contentTextColor, height:1.2, fontSize: config.bottomTipFontSize.toDouble()));
-    textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
-    textPainter.paint(pageCanvas, Offset((config.pageSize.width - textPainter.width) / 2, config.pageSize.height - config.bottomTipHeight.toDouble()));
+        style: TextStyle(color: model.config.contentTextColor, height:1.2, fontSize: model.config.bottomTipFontSize.toDouble()));
+    textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
+    textPainter.paint(pageCanvas, Offset((model.config.pageSize.width - textPainter.width) / 2, model.config.pageSize.height - model.config.bottomTipHeight.toDouble()));
 
-    // pageCanvas.drawLine(OffSet((config.page)), p2, paint).
+    // pageCanvas.drawLine(OffSet((model.config.page)), p2, paint).
     ///绘制  1/100章
     textPainter.text = TextSpan(
         text: "${chapterData.chapterIndex + 1}/${chapterData.totalChapterCount}章",
-        style: TextStyle(color: config.contentTextColor, height: 1.2, fontSize: config.bottomTipFontSize.toDouble()));
-    textPainter.layout(maxWidth: config.pageSize.width - (2 * config.contentPaddingHorizontal));
-    textPainter.paint(pageCanvas, Offset(config.pageSize.width - config.contentPaddingHorizontal.toDouble() - textPainter.width, config.pageSize.height - config.bottomTipHeight.toDouble()));
-   //  bgPaint.color=Colors.black26;
-   // pageCanvas.drawRect(Rect.fromLTWH(0,0,config.pageSize.width,config.contentPaddingVertical.toDouble()), bgPaint);
-   // pageCanvas.drawRect(Rect.fromLTWH(0,config.pageSize.height-config.contentPaddingVertical.toDouble(),config.pageSize.width,config.contentPaddingVertical.toDouble()), bgPaint);
+        style: TextStyle(color: model.config.contentTextColor, height: 1.2, fontSize: model.config.bottomTipFontSize.toDouble()));
+    textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
+    textPainter.paint(pageCanvas, Offset(model.config.pageSize.width - model.config.contentPaddingHorizontal.toDouble() - textPainter.width, model.config.pageSize.height - model.config.bottomTipHeight.toDouble()));
     return pageRecorder.endRecording();
   }
 }
@@ -243,12 +229,16 @@ class ReaderChapterData {
     return currentPageIndex > 0;
   }
 
+
   bool toPrePage() {
     if (canToPrePage()) {
       currentPageIndex--;
       return true;
     }
     return false;
+  }
+  bool canToTargetChapter(int chapter) {
+    return chapter>=0&&chapter<totalChapterCount;
   }
 
   ReaderContentPageData currentPageData() => chapterContentConfigs[currentPageIndex];
