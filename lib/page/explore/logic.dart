@@ -24,7 +24,7 @@ class ExploreLogic extends GetxController {
   Map<int,ExploreState> states={};
 
   ExploreLogic(this.source) {
-    exploreTabs = source.exploreUrl ?? [];
+    exploreTabs = source.exploreUrls ?? [];
     repository = SourceNetRepository(source);
 
     exploreTabs.forEachIndexed((i, e) {
@@ -69,6 +69,7 @@ class ExploreLogic extends GetxController {
     try {
       state.books = await repository.exploreBookList(explore:exploreTabs[index],pageNum: state.page);
     } catch (e) {
+      debug(e);
       if (e is DioError)
         state.error = e.message;
       else

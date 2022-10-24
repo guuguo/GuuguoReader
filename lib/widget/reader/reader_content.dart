@@ -1,5 +1,4 @@
 import 'dart:ui' as ui;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -137,11 +136,12 @@ class ReaderContentDrawer {
       var entry=getChapterIndexName(chapterData.chapterName);
 
       ///绘制  章节名
+      textPainter.textAlign=TextAlign.center;
       textPainter.text = TextSpan(
           text: "${entry.value}",
           style: TextStyle(
             color: model.config.contentTextColor,
-            height: model.config.bottomTipHeight.toDouble() / model.config.bottomTipFontSize,
+            height: 1.2,
             fontSize: model.config.bottomTipFontSize.toDouble() * 2.5,
             fontWeight: FontWeight.bold,
           ));
@@ -155,13 +155,14 @@ class ReaderContentDrawer {
             text: "${entry.key}",
             style: TextStyle(
               color: model.config.contentTextColor.withAlpha(100),
-              height: model.config.bottomTipHeight.toDouble() / model.config.bottomTipFontSize,
+              height: 1.2,
               fontSize: model.config.bottomTipFontSize.toDouble()*1.4 ,
             ));
         textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
-        textPainter.paint(pageCanvas, Offset((model.config.pageSize.width - textPainter.width) / 2, chapterOffHeight-10));
+        textPainter.paint(pageCanvas, Offset((model.config.pageSize.width - textPainter.width) / 2, chapterOffHeight-textPainter.height-10));
       }
     }
+    textPainter.textAlign=TextAlign.start;
     final startHeightOff = index == 0 ? (validContentHeight / 2 + model.config.contentPaddingVertical) : model.config.contentPaddingVertical.toDouble();
 
     ///绘制内容

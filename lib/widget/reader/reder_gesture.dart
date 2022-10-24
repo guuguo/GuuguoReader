@@ -7,7 +7,16 @@ import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_content_config.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_painter.dart';
-typedef GesturePanCallback =void Function(Offset panDelta,Offset fingerPosition);
+
+class ReaderGestureDetail {
+  Offset panDownDelta;
+  Offset fingerPosition;
+  Offset lastDelta;
+
+  ReaderGestureDetail(this.panDownDelta, this.fingerPosition, this.lastDelta);
+}
+
+typedef GesturePanCallback =void Function(ReaderGestureDetail);
 class ReaderGesture extends StatelessWidget {
   ReaderGesture({
     Key? key,
@@ -46,7 +55,7 @@ class ReaderGesture extends StatelessWidget {
         dragDownPosition=details.localPosition;
       },
       onPanUpdate: (DragUpdateDetails details){
-        onPanChange?.call(details.localPosition-dragDownPosition, details.localPosition);
+        onPanChange?.call(ReaderGestureDetail(details.localPosition-dragDownPosition, details.localPosition,details.delta));
       },
       onPanEnd: (DragEndDetails details){},
       child: child,

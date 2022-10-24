@@ -4,6 +4,8 @@ import 'package:floor/floor.dart';
 
 import 'package:read_info/bean/db/source_db.dart';
 
+import 'package:read_info/generated/json/base/json_convert_content.dart';
+
 
 SourceEntity $SourceEntityFromJson(Map<String, dynamic> json) {
 	final SourceEntity sourceEntity = SourceEntity();
@@ -55,7 +57,7 @@ SourceEntity $SourceEntityFromJson(Map<String, dynamic> json) {
 	if (enabledReview != null) {
 		sourceEntity.enabledReview = enabledReview;
 	}
-	final List<SourceExploreUrl>? exploreUrl = jsonConvert.convertListNotNull<SourceExploreUrl>(json['exploreUrl']);
+	final dynamic? exploreUrl = jsonConvert.convert<dynamic>(json['exploreUrl']);
 	if (exploreUrl != null) {
 		sourceEntity.exploreUrl = exploreUrl;
 	}
@@ -116,7 +118,7 @@ Map<String, dynamic> $SourceEntityToJson(SourceEntity entity) {
 	data['enabledCookieJar'] = entity.enabledCookieJar;
 	data['enabledExplore'] = entity.enabledExplore;
 	data['enabledReview'] = entity.enabledReview;
-	data['exploreUrl'] =  entity.exploreUrl?.map((v) => v.toJson()).toList();
+	data['exploreUrl'] = entity.exploreUrl;
 	data['lastUpdateTime'] = entity.lastUpdateTime;
 	data['respondTime'] = entity.respondTime;
 	data['ruleBookInfo'] = entity.ruleBookInfo?.toJson();

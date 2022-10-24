@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:html/dom.dart';
-
+import 'package:read_info/utils/ext/match_ext.dart';
 String? checkUrlRule(String baseUrl, String? rule) {
   final reg = RegExp(r'{{baseUrl}}');
   if (rule?.contains(reg) == true) {
@@ -8,17 +8,23 @@ String? checkUrlRule(String baseUrl, String? rule) {
   } else
     return null;
 }
+List<Element> getElementsByIndex(List<Element> list, int? index) {
+  if (index == null|| list.isEmpty) return list;
+  if (index >= 0) {
+    if (index < list.length) return [list[index]];
+    return [];
+  } else {
+    final resI = list.length - 1 + index;
+    if (resI >= 0) return [list[resI]];
+    return [];
+  }
+}
 
 extension ElementListExt on List<Element> {
+
   List<Element> queryCustomSelectorAllFix(String selector) {
     final splitPoint = selector.split('.');
-    List<Element> getIndex(List<Element> list, int? index) {
-      if (index == null) return list;
-      if (index >= 0)
-        return [this[index]];
-      else
-        return [this[this.length - 1 + index]];
-    }
+
 
     ///是否是  tag.a.1 的格式   或者.2 的数组格式
     if (splitPoint.length > 1) {
@@ -27,7 +33,7 @@ extension ElementListExt on List<Element> {
           ///如果是.2 数组风格
           try {
             final index = int.parse(splitPoint[1]);
-            return getIndex(this, index);
+            return getElementsByIndex(this, index);
           } catch (e) {
             ///如果走到catch 说明是 .class的风格 不处理交给后续css selector
 
@@ -49,10 +55,10 @@ extension ElementListExt on List<Element> {
           selector = "#${value}";
         } else if (splitPoint[0] == "text") {
           final res = this.where((element) => element.text.contains(RegExp(value))).toList();
-          return getIndex(res, index);
+          return getElementsByIndex(res, index);
         }
         final res = querySelectorAllFix(selector);
-        return getIndex(res, index);
+        return getElementsByIndex(res, index);
       }
     }
     return querySelectorAllFix(selector);
@@ -70,12 +76,12 @@ extension ElementExt on Element {
   /// - @ 分割css 选择器匹配
   /// - ## 后面跟随正则表达式
   /// 比如ol.am-breadcrumb@li:nth-of-type(2)@text
-  ///[urlReplace] 是否处理图片url等需要替换的值
+  ///[matchReplace] 是否处理图片url等需要替换的值
   ///比如  dt@a@href##.*/(\\d+)/(\\d+)/##https://style.31xs.net/img/$1/$2/$2s.jpg
   ///从 https://m.31xs.com/201/201996/ url中提取出 两个数字关键词 201， 201996
   ///将其作为$1和$2替换到结果中
   ///
-  String? parseRule(String? rule, [bool urlReplace = false]) {
+  String? parseRule(String? rule) {
     if (rule == null) return null;
 
     ///正则 处理 ##分割
@@ -89,49 +95,65 @@ extension ElementExt on Element {
       replace = regexSpan[2];
     }
 
-    ///备选方案 处理 && 分割
-    var rules = regexSpan[0].split('&&');
-    String? resultStr;
-    for (var i = 0; i < rules.length; i++) {
-      resultStr = _selectElement(rules[i], regex, replace, urlReplace);
-      if (resultStr != null) break;
-    }
+    String? resultStr=_selectElement(regexSpan[0], regex, replace, rule.endsWith("###"));
     return resultStr;
   }
 
   String? _selectElement(String rule, String? regex, String? replace, bool urlReplace) {
+    ///处理 && 分割
+    if(rule.contains('&&')) {
+      var rules = rule.split('&&');
+      return rules.map((e) => _selectElement(e, regex, replace, urlReplace)).join('\n');
+    }
+    ///处理 || 分割
+    if (rule.contains('||')) {
+      var rules = rule.split('||');
+      for (String e in rules) {
+        final res = _selectElement(e, regex, replace, urlReplace);
+        if (res?.isNotEmpty == true) return res;
+      }
+      return null;
+    }
+
+    if(rule.isEmpty){
+      rule="html";
+    }
     ///css selector 处理 @ 分割
     var tags = rule.split('@');
     var attr;
     attr = tags.last;
     tags.removeLast();
 
-    List<Element>? resultElement = [this];
+    List<Element> resultElement = [this];
     tags.where((element) => element.isNotEmpty).forEach((selector) {
-      resultElement = resultElement?.queryCustomSelectorAllFix(selector);
+      resultElement = resultElement.queryCustomSelectorAllFix(selector);
     });
     String? resultStr;
     if (attr == "html") {
-      resultStr = resultElement?.map((e) => e.innerHtml).whereNotNull().join('\n');
-    } else if (attr == "text") {
-      resultStr = resultElement?.map((e) => e.text).whereNotNull().join('\n');
+      resultStr = resultElement.map((e) => e.innerHtml).whereNotNull().join('\n');
+    }else if (attr == "outerHtml") {
+      resultStr = resultElement.map((e) => e.outerHtml).whereNotNull().join('\n');
+    } else if (attr == "text"||attr=="textNodes") {
+      resultStr = resultElement.map((e) => e.text).whereNotNull().join('\n');
     } else {
-      resultStr = resultElement?.map((e) => e.attributes[attr]).whereNotNull().join('\n');
+      resultStr = resultElement.map((e) => e.attributes[attr]).whereNotNull().join('\n');
     }
 
-    if (regex != null) {
+    if (resultStr.isNotEmpty==true && regex != null) {
+      final originReg = RegExp(regex);
       if (urlReplace) {
-        final reg = RegExp(r'(?<=/)\d+(?=/)');
-        List<String?> params = reg.allMatches(resultStr ?? "").map((e) => e[0]).toList();
-        resultStr = resultStr?.replaceAll(RegExp(regex), replace ?? "");
-        if (params.length >= 1 && params[0] != null) {
-          resultStr = resultStr?.replaceAll(RegExp(r"\$1"), params[0]!);
-        }
-        if (params.length >= 2 && params[1] != null) {
-          resultStr = resultStr?.replaceAll(RegExp(r"\$2"), params[1]!);
-        }
+
+        final allMatches = originReg.allMatches(resultStr!);
+        var s1 = allMatches.firstOrNull?.groupOrNull(1);
+        var s2 = allMatches.firstOrNull?.groupOrNull(2);
+        var s3 = allMatches.firstOrNull?.groupOrNull(3);
+
+        replace = replace?.replaceAll(RegExp(r"\$1"), s1 ?? "");
+        replace = replace?.replaceAll(RegExp(r"\$2"), s2 ?? "");
+        replace = replace?.replaceAll(RegExp(r"\$3"), s3 ?? "");
+        resultStr=replace;
       } else {
-        resultStr = resultStr?.replaceAll(RegExp(regex), replace ?? "");
+        resultStr = resultStr.replaceAll(originReg, replace ?? "");
       }
     }
     if (resultStr?.isEmpty == true) return null;
@@ -139,28 +161,37 @@ extension ElementExt on Element {
   }
 
   List<Element> parseRuleWithoutAttr(String? rule) {
+    if(rule==null) return [this];
+    ///处理 && 分割
+    if(rule.contains('&&')) {
+      var rules = rule.split('&&');
+      return rules.map((e) => parseRuleWithoutAttr(e)).flattened.toList();
+    }
+    ///处理 || 分割
+    if (rule.contains('||')) {
+      var rules = rule.split('||');
+      for (String e in rules) {
+        final res = parseRuleWithoutAttr(e);
+        if (res.isNotEmpty == true) return res;
+      }
+      return [];
+    }
+
     if (rule == null) return [];
     var tags = rule.split('@');
-    List<Element>? resultElement;
+    List<Element> resultElement = [this];
 
     tags.forEachIndexed((i, selector) {
-      if (i == 0) {
-        resultElement = this.querySelectorAllFix(selector);
-      } else {
-        resultElement = resultElement?.fold([], (previousValue, element) => [...(previousValue ?? []), ...element.querySelectorAllFix(selector)]);
-      }
+      resultElement = resultElement.queryCustomSelectorAllFix(selector);
     });
-    return resultElement ?? [];
+    return resultElement;
   }
 
   List<Element> querySelectorAllFix(String selector) {
     if (selector.contains(":nth-of-type")) {
       return dealNthOfType(selector);
     }
-    // if(selector.contains("text")){
-    //   return dealNthOfType(selector);
-    // }
-    if (selector.contains(":")) {
+    if (selector.contains(":(")) {
       return dealNthOfType(selector);
     } else {
       return querySelectorAll(selector);
@@ -185,4 +216,10 @@ extension ElementExt on Element {
       return list;
     }
   }
+}
+main() {
+  final reg=RegExp(r'data-bid="([^"]+)"');
+  var str='<a href="//book.qidian.com/info/1031777108" target="_blank" data-eid="qd_C39" data-bid="1031777108"><img src="//bookcover.yuewen.com/qdbimg/349573/1031777108/150" alt="光阴之外在线阅读"></a>';
+  var matches=reg.allMatches(str).toList();
+  print(matches);
 }

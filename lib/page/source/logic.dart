@@ -36,7 +36,6 @@ class SourceLogic extends GetxController {
   }
   Future<void> deleteSource(SourceEntity source) async {
     await SourceManager.instance.deleteSource(source);
-    // sources.value=[...sources.value..remove(source)];
     update();
   }
 

@@ -3,15 +3,20 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:get/get.dart';
 import 'package:read_info/bean/book_item_bean.dart';
+import 'package:read_info/global/constant.dart';
 
 import '../../../data/source_manager.dart';
 import 'state.dart';
 
 class SearchResultLogic extends GetxController {
-  final SearchResultState state = SearchResultState();
+  late SearchResultState state;
 
   late SourceManager manager=SourceManager();
-  SearchResultLogic(){
+  @override
+  onInit() {
+    super.onInit();
+    final searchKey = Get.arguments[ARG_SEARCH_KEY];
+    state = SearchResultState(searchKey);
     searchBook();
   }
   void searchBook(){

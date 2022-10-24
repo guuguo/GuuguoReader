@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,6 +14,22 @@ import 'package:read_info/widget/reader/reder_painter.dart';
 
 import '../../../page/view/my_appbar.dart';
 
-class ReaderSlideAnim{
+abstract class NovelReaderAnim {
+  drawCanvas(ReaderGestureDetail detail,Picture prePage,Picture nextPage);
+  Animation createFlingAnim();
+
+}
+class ReaderSlideAnim extends NovelReaderAnim{
+  @override
+  drawCanvas(ReaderGestureDetail detail, Picture prePage, Picture nextPage) {
+    // TODO: implement drawCanvas
+    throw UnimplementedError();
+  }
+
+  @override
+  Animation createFlingAnim() {
+    // TODO: implement createFlingAnim
+    throw UnimplementedError();
+  }
 
 }

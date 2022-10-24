@@ -90,7 +90,9 @@ class _ExplorePageState extends State<ExplorePage> with SingleTickerProviderStat
       itemBuilder: (c, i) {
         if (i == itemCount - 1) {
           if (!state.loadEnd) {
-            logic.loadMore(index);
+            Future.delayed(Duration(milliseconds: 20),(){
+              logic.loadMore(index);
+            });
           }
           return Container(
             alignment: Alignment.center,
@@ -161,7 +163,7 @@ class BookItemWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 70, height: 100, child: BookCover(bean, radius: 6)),
+                SizedBox(width: 70, height: 100, child: ClipRRect(borderRadius:BorderRadius.circular(4),child: BookCover(bean, radius: 6))),
                 SizedBox(width: 20),
                 Expanded(
                   child: Column(

@@ -51,7 +51,7 @@ class SourceManager {
   Future deleteSource(SourceEntity entity) async {
     await ensureSources();
     await LocalRepository.deleteSource(entity);
-    sourcesRx.value =sources..remove(entity);
+    sourcesRx.value =[...sources..remove(entity)];
   }
 
   ///////书源搜索功能

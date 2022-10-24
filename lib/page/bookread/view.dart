@@ -67,7 +67,7 @@ class _BookContentPageState extends State<BookContentPage> {
 
   Widget Drawer(ContentLogic logic) {
     return Container(
-        width: 350,
+        width: 280,
         color: Theme.of(context).cardColor,
         child: GetX<ContentLogic>(builder: (ContentLogic logic) {
           return ListView(
@@ -83,28 +83,30 @@ class _BookContentPageState extends State<BookContentPage> {
 
   Widget ChapterItem(BuildContext context, index,String name, bool selected) {
     final logic = Get.find<ContentLogic>();
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: (){
-        try {
-          Scaffold.of(context).closeDrawer();
-        }catch (e) {}
-        if(index==logic.bookDetail.readChapterIndex){
-          return;
-        }
-        readerKey.currentState?.jumpToChapter(index);
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-            child: Text(name + (selected ? "    ☜" : ""), style: MyTheme(context).textTheme.bodyMedium),
+    return Builder(
+      builder: (context) {
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: (){
+              Scaffold.of(context).closeDrawer();
+            if(index==logic.bookDetail.readChapterIndex){
+              return;
+            }
+            readerKey.currentState?.jumpToChapter(index);
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.only(top: 10,bottom: 10,left:16),
+                child: Text(name + (selected ? "    ☜" : ""), style: MyTheme(context).textTheme.bodyMedium,maxLines: 1,overflow: TextOverflow.ellipsis),
+              ),
+              DashDivider()
+            ],
           ),
-          DashDivider()
-        ],
-      ),
+        );
+      }
     );
   }
 }

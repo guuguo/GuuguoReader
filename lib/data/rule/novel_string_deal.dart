@@ -108,13 +108,18 @@ class ConvertNumberToChineseMoneyWords{
       stringBuffer..write(NUMBERS[hundredUnit]);
     }
 
-    if(tenUnit>0){
-      stringBuffer..write(NUMBERS[tenUnit])..write("十");
-    }else{
+    if (tenUnit > 0) {
+      stringBuffer
+        ..write(NUMBERS[tenUnit])
+        ..write("十");
+    } else {
       stringBuffer..write(NUMBERS[tenUnit]);
     }
     stringBuffer..write(NUMBERS[remainder]);
-
-    return stringBuffer.toString().replaceAll(RegExp(r"^零+|零+$"), "");
+    var res = stringBuffer.toString().replaceAll(RegExp(r"^零+|零+$"), "");
+    if (res.startsWith("一十")) {
+      res = res.replaceFirst("一十", "十");
+    }
+    return res;
   }
 }

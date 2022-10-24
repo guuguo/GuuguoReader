@@ -11,7 +11,7 @@ import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_gesture.dart';
 import 'package:read_info/widget/reader/reder_painter.dart';
 
-import '../../page/view/my_appbar.dart';
+import 'anim/page_anim_manager.dart';
 
 typedef ReadPageChangeCallback = void Function(int pageIndex, int chapterIndex);
 
@@ -69,6 +69,7 @@ class NovelReaderState extends State<NovelReader> {
       ReaderConfigEntity().copyWith(
         pageSize: widget.pageSize,
       ),
+      canvasKey,
     );
     viewModel.addListener(() {
       setState(() {});
@@ -100,7 +101,7 @@ class NovelReaderState extends State<NovelReader> {
               onCenterTap: () {
                 changeMenuShow();
               },
-              onPanChange: viewModel.gesturePanChange,
+              onPanChange: viewModel.animManager.gesturePanChange,
               child: CustomPaint(
                 key: canvasKey,
                 isComplex: true,

@@ -71,7 +71,7 @@ class _$MyDataBase extends MyDataBase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 5,
+      version: 6,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -87,7 +87,7 @@ class _$MyDataBase extends MyDataBase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Source` (`bookSourceUrl` TEXT, `detail` TEXT, `bookSourceName` TEXT, PRIMARY KEY (`bookSourceUrl`))');
+            'CREATE TABLE IF NOT EXISTS `Source` (`bookSourceUrl` TEXT, `detail` TEXT, PRIMARY KEY (`bookSourceUrl`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `BookDetailBean` (`id` TEXT NOT NULL, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, `kind` TEXT, `lastChapter` TEXT, `tocUrl` TEXT, `sourceUrl` TEXT, `sourceSearchResult` TEXT, `readChapterIndex` INTEGER NOT NULL, `readPageIndex` INTEGER NOT NULL, `totalChapterCount` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -124,8 +124,7 @@ class _$SourceDao extends SourceDao {
             'Source',
             (Source item) => <String, Object?>{
                   'bookSourceUrl': item.bookSourceUrl,
-                  'detail': item.detail,
-                  'bookSourceName': item.bookSourceName
+                  'detail': item.detail
                 }),
         _sourceDeletionAdapter = DeletionAdapter(
             database,
@@ -133,8 +132,7 @@ class _$SourceDao extends SourceDao {
             ['bookSourceUrl'],
             (Source item) => <String, Object?>{
                   'bookSourceUrl': item.bookSourceUrl,
-                  'detail': item.detail,
-                  'bookSourceName': item.bookSourceName
+                  'detail': item.detail
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -152,8 +150,7 @@ class _$SourceDao extends SourceDao {
     return _queryAdapter.queryList('SELECT * FROM Source',
         mapper: (Map<String, Object?> row) => Source(
             bookSourceUrl: row['bookSourceUrl'] as String?,
-            detail: row['detail'] as String?,
-            bookSourceName: row['bookSourceName'] as String?));
+            detail: row['detail'] as String?));
   }
 
   @override
@@ -161,8 +158,7 @@ class _$SourceDao extends SourceDao {
     return _queryAdapter.query('SELECT * FROM Source where bookSourceUrl = ?1',
         mapper: (Map<String, Object?> row) => Source(
             bookSourceUrl: row['bookSourceUrl'] as String?,
-            detail: row['detail'] as String?,
-            bookSourceName: row['bookSourceName'] as String?),
+            detail: row['detail'] as String?),
         arguments: [url]);
   }
 

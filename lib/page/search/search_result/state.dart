@@ -11,8 +11,5 @@ class SearchResultState {
   bool loading=false;
   late String searchKey;
 
-  SearchResultState() {
-    searchKey = Get.arguments[ARG_SEARCH_KEY];
-
-  }
+  SearchResultState(this.searchKey);
 }

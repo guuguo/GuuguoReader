@@ -1,5 +1,6 @@
 import 'package:floor/floor.dart';
 import 'package:read_info/bean/db/source_db.dart';
+import 'package:read_info/generated/json/base/json_convert_content.dart';
 import 'package:read_info/generated/json/base/json_field.dart';
 import 'package:read_info/generated/json/source_entity.g.dart';
 import 'dart:convert';
@@ -18,7 +19,7 @@ class SourceEntity {
 	bool? enabledCookieJar;
 	bool? enabledExplore;
 	bool? enabledReview;
-	List<SourceExploreUrl>? exploreUrl;
+  dynamic? exploreUrl;
 	int? lastUpdateTime;
 	int? respondTime;
 	SourceRuleBookInfo? ruleBookInfo;
@@ -41,7 +42,14 @@ class SourceEntity {
     return jsonEncode(this);
   }
   Source toSource(){
-    return Source(bookSourceUrl: bookSourceUrl!,bookSourceName: bookSourceName, detail: json.encode(toJson()));
+    return Source(bookSourceUrl: bookSourceUrl!, detail: json.encode(toJson()));
+  }
+
+  List<SourceExploreUrl>? get exploreUrls {
+    if (exploreUrl is Map) {
+      return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(exploreUrl);
+    } else if (exploreUrl is String) return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(json.decode(exploreUrl!));
+    return null;
   }
 }
 

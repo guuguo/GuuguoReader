@@ -31,26 +31,30 @@ class SourceNetRepository {
     var document = parse(res.data);
     //header.title@a@text
     var rule = source.ruleExplore;
+    if (rule?.bookList?.isNotEmpty != true) {
+      rule = source.ruleSearch;
+    }
     var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
-    var bookList = list
-        ?.map((e) => BookItemBean.FormSource(source)
-          ..name = e.parseRule(rule?.name)?.trim()
-          ..intro = e.parseRule(rule?.intro)?.trim()
-          ..author = e.parseRule(rule?.author)
-          ..lastChapter = e.parseRule(rule?.lastChapter)
-          ..coverUrl = urlFix(e.parseRule(rule?.coverUrl, true), source.bookSourceUrl!)
-          ..bookUrl = e.parseRule(rule?.bookUrl))
-        .toList();
+    var bookList = list?.map((e) {
+      debug(e.innerHtml);
+      return BookItemBean.FormSource(source)
+        ..name = e.parseRule(rule?.name)?.trim()
+        ..intro = e.parseRule(rule?.intro)?.trim()
+        ..author = e.parseRule(rule?.author)
+        ..lastChapter = e.parseRule(rule?.lastChapter)
+        ..coverUrl = urlFix(e.parseRule(rule?.coverUrl), source.bookSourceUrl!)
+        ..bookUrl = e.parseRule(rule?.bookUrl);
+    }).toList();
 
     return bookList ?? [];
   }
 
-  SourceExploreUrl? getSourceExplore([String? title=null]) {
+  SourceExploreUrl? getSourceExplore([String? title = null]) {
     SourceExploreUrl? explore;
     if (title == null) {
-      explore = source.exploreUrl?.first;
+      explore = source.exploreUrls?.first;
     } else {
-      explore = source.exploreUrl?.firstWhere((element) => element.title == title);
+      explore = source.exploreUrls?.firstWhere((element) => element.title == title);
     }
     return explore;
   }
@@ -69,7 +73,7 @@ class SourceNetRepository {
                 return utf8.decode(res);
               }
             };
-            if (headerStr?.isNotEmpty == true){
+            if (headerStr?.isNotEmpty == true) {
               o.headers.addAll(json.decode(headerStr!));
             }
             h.next(o);
@@ -86,7 +90,8 @@ class SourceNetRepository {
 
     var method = "get";
     var charset = "utf-8";
-    String? contentType;;
+    String? contentType;
+    ;
     dynamic body;
     searchUrl = searchUrl.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
 
@@ -110,18 +115,18 @@ class SourceNetRepository {
     Response<String?> res = await getDio().request<String>(
       searchUrl,
       data: body,
-      queryParameters: method == "get"?body:null,
+      queryParameters: method == "get" ? body : null,
       options: Options(
-          method: method,
-          contentType: contentType,
-          requestEncoder: (req, option) {
-            if (option.contentType?.toLowerCase().contains(RegExp('gb'))==true) {
-              return gbk.encode(req);
-            } else {
-              return utf8.encode(req);
-            }
-          },
-          ),
+        method: method,
+        contentType: contentType,
+        requestEncoder: (req, option) {
+          if (option.contentType?.toLowerCase().contains(RegExp('gb')) == true) {
+            return gbk.encode(req);
+          } else {
+            return utf8.encode(req);
+          }
+        },
+      ),
     );
 
     var document = parse(res.data);
@@ -132,10 +137,10 @@ class SourceNetRepository {
         ?.map((e) => BookItemBean.FormSource(source)
           ..name = e.parseRule(rule?.name)?.trim()
           ..intro = e.parseRule(rule?.intro)?.trim()
-      ..author = e.parseRule(rule?.author)
-      ..lastChapter = e.parseRule(rule?.lastChapter)
-      ..coverUrl = urlFix(e.parseRule(rule?.coverUrl, true), source.bookSourceUrl!)
-      ..bookUrl = e.parseRule(rule?.bookUrl))
+          ..author = e.parseRule(rule?.author)
+          ..lastChapter = e.parseRule(rule?.lastChapter)
+          ..coverUrl = urlFix(e.parseRule(rule?.coverUrl), source.bookSourceUrl!)
+          ..bookUrl = e.parseRule(rule?.bookUrl))
         .toList();
 
     return bookList ?? [];
@@ -146,16 +151,16 @@ class SourceNetRepository {
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     var rule = source.ruleBookInfo;
-    var bookBean = BookDetailBean(id:Uuid().v1())
+    var bookBean = BookDetailBean(id: Uuid().v1())
       ..name = element.parseRule(rule?.name) ?? bean.name
       ..author = element.parseRule(rule?.author) ?? bean.author
-      ..coverUrl = urlFix(element.parseRule(rule?.coverUrl, true) ?? bean.coverUrl, source.bookSourceUrl!)
+      ..coverUrl = urlFix(element.parseRule(rule?.coverUrl) ?? bean.coverUrl, source.bookSourceUrl!)
       ..kind = element.parseRule(rule?.kind)?.trim()
       ..lastChapter = element.parseRule(rule?.lastChapter)
       ..intro = element.parseRule(rule?.intro)?.trim()
-      ..tocUrl = checkUrlRule(bean.bookUrl!, rule?.tocUrl) ?? element.parseRule(rule?.tocUrl) ?? bean.bookUrl;
+      ..tocUrl = urlFix(checkUrlRule(bean.bookUrl!, rule?.tocUrl) ?? element.parseRule(rule?.tocUrl) ?? bean.bookUrl,source.bookSourceUrl!);
     if (bookBean.tocUrl == bean.bookUrl) {
-      bookBean.chapters = getChapters(element,bookBean);
+      bookBean.chapters = getChapters(element, bookBean);
     }
     return bookBean;
   }
@@ -165,25 +170,25 @@ class SourceNetRepository {
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     debug("获取所有章节列表${source.ruleToc}");
-    List<BookChapterBean> resList = getChapters(element,bean);
+    List<BookChapterBean> resList = getChapters(element, bean);
 
     return resList;
   }
 
-  List<BookChapterBean> getChapters(Element element,BookDetailBean bookBean) {
+  List<BookChapterBean> getChapters(Element element, BookDetailBean bookBean) {
     var rule = source.ruleToc;
     var list = element.parseRuleWithoutAttr(rule?.chapterList);
     var resList = list
-        .mapIndexed((i,e) => BookChapterBean(id: Uuid().v1(),bookId: bookBean.id,chapterIndex: i)
+        .mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
           ..chapterName = e.parseRule(rule?.chapterName)?.trim()
-          ..chapterUrl = e.parseRule(rule?.chapterUrl))
+          ..chapterUrl = urlFix(e.parseRule(rule?.chapterUrl),source.bookSourceUrl!))
         .toList();
     return resList;
   }
 
   Future<BookChapterBean?> queryBookContent(BookChapterBean bean) async {
     var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent);
-    result= dealHtmlContentResult(result)??"";
+    result = dealHtmlContentResult(result) ?? "";
     if (result.isNotEmpty) bean.content = ChapterContent.FromChapter(bean, result);
     return bean;
   }
@@ -209,10 +214,9 @@ class SourceNetRepository {
     });
 
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
-      result =(result ?? "") + await queryBookContentByUrl(nextUrl, rule);
+      result = (result ?? "") + await queryBookContentByUrl(nextUrl, rule);
     }
 
     return result ?? "";
   }
-
 }
