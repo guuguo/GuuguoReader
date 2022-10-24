@@ -7,30 +7,30 @@ import 'dart:convert';
 
 @JsonSerializable()
 class SourceEntity {
-	String? bookSourceComment;
-	String? bookSourceName;
-	int? bookSourceType;
-	String? bookSourceUrl;
-	String? bookSourceCoverUrl;
-	String? header;
-	int? customOrder;
-	int? from;
-	bool? enabled;
-	bool? enabledCookieJar;
-	bool? enabledExplore;
-	bool? enabledReview;
+  String? bookSourceComment;
+  String? bookSourceName;
+  int? bookSourceType;
+  String? bookSourceUrl;
+  String? bookSourceCoverUrl;
+  String? header;
+  int? customOrder;
+  int? from;
+  bool? enabled;
+  bool? enabledCookieJar;
+  bool? enabledExplore;
+  bool? enabledReview;
   dynamic? exploreUrl;
-	int? lastUpdateTime;
-	int? respondTime;
-	SourceRuleBookInfo? ruleBookInfo;
-	SourceRuleContent? ruleContent;
-	SourceRuleExplore? ruleExplore;
-	SourceRuleReview? ruleReview;
+  int? lastUpdateTime;
+  int? respondTime;
+  SourceRuleBookInfo? ruleBookInfo;
+  SourceRuleContent? ruleContent;
+  SourceRuleExplore? ruleExplore;
+  SourceRuleReview? ruleReview;
   SourceRuleExplore? ruleSearch;
-	SourceRuleToc? ruleToc;
-	String? searchUrl;
-	int? weight;
-  
+  SourceRuleToc? ruleToc;
+  String? searchUrl;
+  int? weight;
+
   SourceEntity();
 
   factory SourceEntity.fromJson(Map<String, dynamic> json) => $SourceEntityFromJson(json);
@@ -41,25 +41,27 @@ class SourceEntity {
   String toString() {
     return jsonEncode(this);
   }
-  Source toSource(){
+
+  Source toSource() {
     return Source(bookSourceUrl: bookSourceUrl!, detail: json.encode(toJson()));
   }
 
   List<SourceExploreUrl>? get exploreUrls {
-    if (exploreUrl is Map) {
+    if (exploreUrl is List) {
       return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(exploreUrl);
-    } else if (exploreUrl is String) return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(json.decode(exploreUrl!));
+    } else if (exploreUrl is String) {
+      return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(json.decode(exploreUrl!));
+    }
     return null;
   }
 }
 
 @JsonSerializable()
 class SourceExploreUrl {
+  String? title;
+  String? url;
+  SourceExploreUrlStyle? style;
 
-	String? title;
-	String? url;
-	SourceExploreUrlStyle? style;
-  
   SourceExploreUrl();
 
   factory SourceExploreUrl.fromJson(Map<String, dynamic> json) => $SourceExploreUrlFromJson(json);
@@ -74,10 +76,9 @@ class SourceExploreUrl {
 
 @JsonSerializable()
 class SourceExploreUrlStyle {
+  @JSONField(name: "layout_flexBasisPercent")
+  double? layoutFlexbasispercent;
 
-	@JSONField(name: "layout_flexBasisPercent")
-	double? layoutFlexbasispercent;
-  
   SourceExploreUrlStyle();
 
   factory SourceExploreUrlStyle.fromJson(Map<String, dynamic> json) => $SourceExploreUrlStyleFromJson(json);
@@ -92,15 +93,14 @@ class SourceExploreUrlStyle {
 
 @JsonSerializable()
 class SourceRuleBookInfo {
+  String? author;
+  String? coverUrl;
+  String? intro;
+  String? kind;
+  String? lastChapter;
+  String? name;
+  String? tocUrl;
 
-	String? author;
-	String? coverUrl;
-	String? intro;
-	String? kind;
-	String? lastChapter;
-	String? name;
-	String? tocUrl;
-  
   SourceRuleBookInfo();
 
   factory SourceRuleBookInfo.fromJson(Map<String, dynamic> json) => $SourceRuleBookInfoFromJson(json);
@@ -115,10 +115,9 @@ class SourceRuleBookInfo {
 
 @JsonSerializable()
 class SourceRuleContent {
-
-	String? content;
-	String? replaceRegex;
-	String? nextContentUrl;
+  String? content;
+  String? replaceRegex;
+  String? nextContentUrl;
 
   SourceRuleContent();
 
@@ -134,15 +133,14 @@ class SourceRuleContent {
 
 @JsonSerializable()
 class SourceRuleExplore {
-
-	String? author;
-	String? bookList;
+  String? author;
+  String? bookList;
   String? bookUrl;
   String? coverUrl;
   String? intro;
   String? name;
   String? lastChapter;
-	String? kind;
+  String? kind;
 
   SourceRuleExplore();
 
@@ -158,9 +156,6 @@ class SourceRuleExplore {
 
 @JsonSerializable()
 class SourceRuleReview {
-
-
-  
   SourceRuleReview();
 
   factory SourceRuleReview.fromJson(Map<String, dynamic> json) => $SourceRuleReviewFromJson(json);
@@ -175,11 +170,10 @@ class SourceRuleReview {
 
 @JsonSerializable()
 class SourceRuleToc {
+  String? chapterList;
+  String? chapterName;
+  String? chapterUrl;
 
-	String? chapterList;
-	String? chapterName;
-	String? chapterUrl;
-  
   SourceRuleToc();
 
   factory SourceRuleToc.fromJson(Map<String, dynamic> json) => $SourceRuleTocFromJson(json);

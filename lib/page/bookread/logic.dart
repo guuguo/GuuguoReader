@@ -53,7 +53,7 @@ class ContentLogic extends GetxController {
     if (!chapter.hasContent()) {
       await repository.queryBookContent(chapter);
       debug("文章内容规则：${source.ruleContent}");
-      debug("加载文章内容：${chapter.content?.content}");
+      debug("加载文章内容：${chapter.content?.content??"没找到内容"}");
       LocalRepository.updateChapterContent(chapter);
     }
   }

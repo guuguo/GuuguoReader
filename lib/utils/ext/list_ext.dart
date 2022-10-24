@@ -16,8 +16,17 @@ extension ListExt on Iterable {
 extension ListTExt<E> on Iterable<E> {
   Iterable<T> mapIndexed<T>(T toElement(int index, E e)) {
     final list = this.toList();
-    return list.asMap().keys.map((i) => toElement(i,list[i]));
+    return list.asMap().keys.map((i) => toElement(i, list[i]));
+  }
 }
+extension ListIterateExt<E> on List<E> {
+  E? getOrNull(int index){
+    try {
+      return this[index];
+    }catch (e) {
+      return null;
+    }
+  }
 }
 
 typedef ItemBuilder<T> =T Function(int index);

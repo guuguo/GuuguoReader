@@ -18,6 +18,7 @@ import '../../../page/view/my_appbar.dart';
 
 abstract class IReaderPageDrawer{
   Picture getPrePagePicture();
+  Picture getCurrentPagePicture();
   Picture getNextPagePicture();
 }
 class PageAnimManager{
@@ -31,6 +32,7 @@ class PageAnimManager{
 
   void gesturePanChange(ReaderGestureDetail detail) {
     debug("downDelta:${detail.panDownDelta} fingerPosition:${detail.fingerPosition} lastDelta:${detail.lastDelta}");
+
   }
 
   onDraw(Canvas canvas){

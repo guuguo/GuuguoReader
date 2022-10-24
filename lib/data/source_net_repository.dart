@@ -189,6 +189,9 @@ class SourceNetRepository {
   Future<BookChapterBean?> queryBookContent(BookChapterBean bean) async {
     var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent);
     result = dealHtmlContentResult(result) ?? "";
+    if(result.isEmpty){
+      result="没找到内容";
+    }
     if (result.isNotEmpty) bean.content = ChapterContent.FromChapter(bean, result);
     return bean;
   }

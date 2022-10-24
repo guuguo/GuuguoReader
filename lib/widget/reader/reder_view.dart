@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_content_config.dart';
 import 'package:read_info/widget/reader/reader_menu.dart';
+import 'package:read_info/widget/reader/reader_page_progress.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_gesture.dart';
 import 'package:read_info/widget/reader/reder_painter.dart';
@@ -29,19 +30,15 @@ class InheritedReader extends InheritedWidget {
 class NovelReader extends StatefulWidget {
   const NovelReader({
     Key? key,
-    required this.chapterProvider,
-    required this.readChangeCallback,
-    required this.startChapterIndex,
-    required this.startReadPageIndex,
-    required this.showIndex,
+    required this.pageProgress,
+    required this.showCategory,
     required this.pageSize,
   }) : super(key: key);
-  final ChapterProvider chapterProvider;
-  final ReadPageChangeCallback readChangeCallback;
-  final VoidCallback showIndex;
-  final int startChapterIndex;
-  final int startReadPageIndex;
+  final VoidCallback showCategory;
+  // final int startChapterIndex;
+  // final int startReadPageIndex;
   final Size pageSize;
+  final ReaderPageProgress pageProgress;
 
   static InheritedReader? of(BuildContext context) {
     final InheritedReader? inheritedReader = context.dependOnInheritedWidgetOfExactType<InheritedReader>();
@@ -62,10 +59,7 @@ class NovelReaderState extends State<NovelReader> {
   initState() {
     super.initState();
     viewModel = ReaderViewModel(
-      widget.chapterProvider,
-      widget.readChangeCallback,
-      widget.startChapterIndex,
-      widget.startReadPageIndex,
+      widget.pageProgress,
       ReaderConfigEntity().copyWith(
         pageSize: widget.pageSize,
       ),
@@ -85,7 +79,7 @@ class NovelReaderState extends State<NovelReader> {
   Widget build(BuildContext context) {
     return InheritedReader(
       onMenuChange: changeMenuShow,
-      showChapterIndex: widget.showIndex,
+      showChapterIndex: widget.showCategory,
       child: Stack(
         children: [
           Positioned.fill(
@@ -111,7 +105,7 @@ class NovelReaderState extends State<NovelReader> {
             ),
           ),
           if (menuShow) ReaderMenu(
-            chapterName: viewModel.currentChapter?.chapterName,
+            chapterName: widget.pageProgress.currentChapter?.chapterName,
           ),
         ],
       ),

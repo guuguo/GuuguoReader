@@ -8,6 +8,8 @@ import 'package:read_info/global/custom/my_theme.dart';
 import 'package:read_info/page/view/dash_divider.dart';
 import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_content.dart';
+import 'package:read_info/widget/reader/reader_page_progress.dart';
+import 'package:read_info/widget/reader/reader_viewmodel.dart';
 
 import '../../bean/book_item_bean.dart';
 import '../../widget/reader/reder_view.dart';
@@ -40,21 +42,24 @@ class _BookContentPageState extends State<BookContentPage> {
       body: Builder(
         builder: (context) {
           return NovelReader(
-            key:readerKey,
+            key: readerKey,
             pageSize: Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - MediaQuery.of(context).padding.bottom),
-            chapterProvider: (i) async {
-              var chapter = logic.getChapterByIndex(i);
-              if (chapter?.hasContent() != true) await logic.loadChapterContent(chapter);
-              return ReaderChapterData()
-                ..content = chapter?.content?.content
-                ..chapterName = chapter?.chapterName
-                ..totalChapterCount = logic.bookDetail.chapters!.length
-                ..chapterIndex = i;
-            },
-            startChapterIndex: logic.currentChapterIndex(),
-            startReadPageIndex: logic.bookDetail.readPageIndex,
-            readChangeCallback: logic.updateReadPage,
-            showIndex: () {
+            pageProgress: ReaderPageProgress(
+              logic.currentChapterIndex(),
+              logic.bookDetail.readPageIndex,
+              logic.bookDetail.totalChapterCount,
+              readChangeCallback: logic.updateReadPage,
+              chapterProvider: (i) async {
+                var chapter = logic.getChapterByIndex(i);
+                if (chapter?.hasContent() != true) await logic.loadChapterContent(chapter);
+                return ReaderChapterData.FromIndex(chapterIndex: i)
+                  ..content = chapter?.content?.content
+                  ..chapterName = chapter?.chapterName;
+              },
+            ),
+            // startChapterIndex: logic.currentChapterIndex(),
+            // startReadPageIndex: logic.bookDetail.readPageIndex,
+            showCategory: () {
               Scaffold.of(context).openDrawer();
             },
           );
@@ -71,42 +76,40 @@ class _BookContentPageState extends State<BookContentPage> {
         color: Theme.of(context).cardColor,
         child: GetX<ContentLogic>(builder: (ContentLogic logic) {
           return ListView(
-            prototypeItem: ChapterItem(context,0,"第一章", true),
+            prototypeItem: ChapterItem(context, 0, "第一章", true),
             children: logic.bookDetail.chapters!
                 .mapIndexed(
-                  (i, e) => ChapterItem(context,i,e.chapterName ?? "", i == logic.readChapterIndex.value),
+                  (i, e) => ChapterItem(context, i, e.chapterName ?? "", i == logic.readChapterIndex.value),
                 )
                 .toList(),
           );
         }));
   }
 
-  Widget ChapterItem(BuildContext context, index,String name, bool selected) {
+  Widget ChapterItem(BuildContext context, index, String name, bool selected) {
     final logic = Get.find<ContentLogic>();
-    return Builder(
-      builder: (context) {
-        return GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: (){
-              Scaffold.of(context).closeDrawer();
-            if(index==logic.bookDetail.readChapterIndex){
-              return;
-            }
-            readerKey.currentState?.jumpToChapter(index);
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.only(top: 10,bottom: 10,left:16),
-                child: Text(name + (selected ? "    ☜" : ""), style: MyTheme(context).textTheme.bodyMedium,maxLines: 1,overflow: TextOverflow.ellipsis),
-              ),
-              DashDivider()
-            ],
-          ),
-        );
-      }
-    );
+    return Builder(builder: (context) {
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          Scaffold.of(context).closeDrawer();
+          if (index == logic.bookDetail.readChapterIndex) {
+            return;
+          }
+          readerKey.currentState?.jumpToChapter(index);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.only(top: 10, bottom: 10, left: 16),
+              child: Text(name + (selected ? "    ☜" : ""), style: MyTheme(context).textTheme.bodyMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ),
+            DashDivider()
+          ],
+        ),
+      );
+    });
   }
 }
