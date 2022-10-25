@@ -106,6 +106,7 @@ class ReaderContentDrawer {
   }
 
   ui.Picture? bgPicture;
+  ui.Image? bgImage;
 
   ui.Picture drawBackground( [bool forceRedraw = false]) {
     if (bgPicture == null || forceRedraw) {
@@ -113,7 +114,10 @@ class ReaderContentDrawer {
       Canvas pageCanvas = new Canvas(pageRecorder);
       bgPaint.color = model.config.currentCanvasBgColor;
       pageCanvas.drawRect(Offset.zero & model.config.pageSize, bgPaint);
-      bgPicture= pageRecorder.endRecording();
+      bgPicture = pageRecorder.endRecording();
+      bgPicture!.toImage(model.config.pageSize.width.toInt(), model.config.pageSize.height.toInt()).then((value) {
+        bgImage = value;
+      });
     }
     return bgPicture!;
   }
@@ -290,8 +294,7 @@ class ReaderContentPageData {
 
   List<String> paragraphContents;
   ui.Picture? pagePicture;
-
-  // ui.Image? pageImage;
+  ui.Image? pageImage;
 
   ReaderContentPageData({
     required this.currentContentFontSize,

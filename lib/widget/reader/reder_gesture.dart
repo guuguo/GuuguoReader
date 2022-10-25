@@ -25,12 +25,14 @@ class ReaderGesture extends StatelessWidget {
     this.onNextTap,
     this.onPreTap,
     this.onPanChange,
+    this.onPanEnd,
   }) : super(key: key);
   final Widget? child;
   final GestureTapCallback? onCenterTap;
   final GestureTapCallback? onNextTap;
   final GestureTapCallback? onPreTap;
   final GesturePanCallback? onPanChange;
+  final GestureDragEndCallback? onPanEnd;
   late Offset dragDownPosition;
 
   @override
@@ -57,7 +59,9 @@ class ReaderGesture extends StatelessWidget {
       onPanUpdate: (DragUpdateDetails details){
         onPanChange?.call(ReaderGestureDetail(details.localPosition-dragDownPosition, details.localPosition,details.delta));
       },
-      onPanEnd: (DragEndDetails details){},
+      onPanEnd: (DragEndDetails details){
+        onPanEnd?.call(details);
+      },
       child: child,
     );
   }

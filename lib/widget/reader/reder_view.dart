@@ -49,15 +49,20 @@ class NovelReader extends StatefulWidget {
   State<NovelReader> createState() => NovelReaderState();
 }
 
-class NovelReaderState extends State<NovelReader> {
+class NovelReaderState extends State<NovelReader> with TickerProviderStateMixin {
   NovelPagePainter? mPainter;
   late ReaderViewModel viewModel;
   GlobalKey canvasKey = new GlobalKey();
   var menuShow = false;
+  late PageAnimManager animManager;
+  late AnimationController controller ;
 
   @override
   initState() {
     super.initState();
+    controller= AnimationController(
+        duration: const Duration(milliseconds: 150), vsync: this);
+
     viewModel = ReaderViewModel(
       widget.pageProgress,
       ReaderConfigEntity().copyWith(
@@ -65,10 +70,12 @@ class NovelReaderState extends State<NovelReader> {
       ),
       canvasKey,
     );
+
+    animManager= PageAnimManager(canvasKey, viewModel, widget.pageSize,controller);
     viewModel.addListener(() {
       setState(() {});
     });
-    mPainter = NovelPagePainter(viewModel);
+    mPainter = NovelPagePainter(animManager,viewModel);
   }
 
   void jumpToChapter(int chapterIndex) {
@@ -95,7 +102,8 @@ class NovelReaderState extends State<NovelReader> {
               onCenterTap: () {
                 changeMenuShow();
               },
-              onPanChange: viewModel.animManager.gesturePanChange,
+              onPanChange: animManager.gesturePanChange,
+              onPanEnd: animManager.onPanEnd,
               child: CustomPaint(
                 key: canvasKey,
                 isComplex: true,

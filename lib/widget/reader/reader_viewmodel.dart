@@ -9,15 +9,14 @@ import 'reader_content_config.dart';
 
 typedef ChapterProvider = Future<ReaderChapterData> Function(int);
 
-class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
+class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
   ReaderViewModel(
     this.pageProgress,
     this.config,
     GlobalKey canvasKey,
   ) {
     readerContentDrawer = ReaderContentDrawer(this);
-    animManager=PageAnimManager(canvasKey,this,config.pageSize);
-    pageProgress.chapterPrepare=(chapter){
+    pageProgress.chapterPrepare = (chapter) {
       applyConfig(chapter);
     };
     init();
@@ -29,7 +28,6 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
     prepareNextAndPrePage();
   }
 
-  late PageAnimManager animManager;
   final ReaderPageProgress pageProgress;
 
   //第一次加载阅读器
@@ -52,16 +50,10 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
     canvas.drawPicture(readerContentDrawer.drawBackground());
   }
 
-  //绘制当前页面
-  drawCurrentPage(Canvas canvas) {
-    var currentPage = pageProgress.currentChapter!.currentPageData();
-    if (currentPage?.pagePicture != null) canvas.drawPicture(currentPage!.pagePicture!);
-  }
-
   //是否在跳转页面加载中
   var loading = false;
 
-//跳转到下一页
+  //跳转到下一页
   Future toNextPage() async {
     await pageProgress.toNextPage();
     notifyListeners();
@@ -69,20 +61,21 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
       await pageProgress.ensureCurrentChapter();
       prepareCurrentPage();
       notifyListeners();
-    }else{
+    } else {
       prepareCurrentPage();
     }
     pageProgress.preloadData();
   }
+
   //跳转到前一页
   Future toPrePage() async {
-    await  pageProgress.toPrePage();
+    await pageProgress.toPrePage();
     notifyListeners();
     if (!pageProgress.currentChapterReady()) {
-      await  pageProgress.ensureCurrentChapter();
+      await pageProgress.ensureCurrentChapter();
       prepareCurrentPage();
       notifyListeners();
-    }else{
+    } else {
       prepareCurrentPage();
     }
     prepareCurrentPage();
@@ -97,11 +90,12 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
       await pageProgress.ensureCurrentChapter();
       prepareCurrentPage();
       notifyListeners();
-    }else{
+    } else {
       prepareCurrentPage();
     }
     pageProgress.preloadData();
   }
+
   prepareCurrentPage() {
     preparePagePicture(pageProgress.currentChapter!, pageProgress.currentChapter!.currentPageIndex);
   }
@@ -110,7 +104,7 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
     if (pageProgress.currentChapter?.canToPrePage() == true) {
       preparePagePicture(pageProgress.currentChapter!, pageProgress.currentPageIndex - 1);
     } else if (pageProgress.preChapter != null) {
-      preparePagePicture(pageProgress.preChapter!, pageProgress.preChapter!.chapterContentConfigs.length-1);
+      preparePagePicture(pageProgress.preChapter!, pageProgress.preChapter!.chapterContentConfigs.length - 1);
     }
     if (pageProgress.currentChapter?.canToNextPage() == true) {
       preparePagePicture(pageProgress.currentChapter!, pageProgress.currentPageIndex + 1);
@@ -118,8 +112,6 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
       preparePagePicture(pageProgress.nextChapter!, 0);
     }
   }
-
-
 
   setConfig(ReaderConfigEntity config) {
     final newConfig = config.copyWith();
@@ -167,25 +159,47 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageDrawer {
   void preparePagePicture(ReaderChapterData chapter, int pageIndex) {
     var pageConfig = chapter.pageDate(pageIndex);
     if (pageConfig?.pagePicture == null) {
-      var picture = readerContentDrawer.drawContent(chapter, pageIndex,pageProgress);
+      var picture = readerContentDrawer.drawContent(chapter, pageIndex, pageProgress);
       pageConfig?.pagePicture = picture;
+      prepareImage(pageConfig);
     }
+  }
+
+  prepareImage(ReaderContentPageData? pageConfig) async {
+    pageConfig?.pageImage = await pageConfig.pagePicture?.toImage(config.pageSize.width.toInt(), config.pageSize.height.toInt());
   }
 
   @override
   ui.Picture getNextPagePicture() {
-    // preparePagePicture(chapter, pageIndex)
-    return pageProgress.currentChapter?.currentPageData()?.pagePicture??readerContentDrawer.drawBackground();
+    final res = pageProgress.nextPage();
+    final chapter = pageProgress.getChapterFromIndex(res.first);
+    if (chapter != null) preparePagePicture(chapter, res.seconed);
+    return chapter?.pageDate(res.seconed)?.pagePicture ?? readerContentDrawer.drawBackground();
   }
 
   @override
   ui.Picture getPrePagePicture() {
-    return pageProgress.currentChapter?.currentPageData()?.pagePicture??readerContentDrawer.drawBackground();
+    final res = pageProgress.prePage();
+    final chapter = pageProgress.getChapterFromIndex(res.first);
+    if (chapter != null) preparePagePicture(chapter, res.seconed);
+    return chapter?.pageDate(res.seconed)?.pagePicture ?? readerContentDrawer.drawBackground();
   }
 
   @override
   ui.Picture getCurrentPagePicture() {
-    // TODO: implement getCurrentPagePicture
-    throw UnimplementedError();
+    return pageProgress.currentChapter?.currentPageData()?.pagePicture ?? readerContentDrawer.drawBackground();
   }
+  @override
+  ui.Image? getNextPageImage() {
+    return pageProgress.nextChapter?.currentPageData()?.pageImage??readerContentDrawer.bgImage;
+  }
+  @override
+  ui.Image? getCurrentPageImage() {
+    return pageProgress.currentChapter?.currentPageData()?.pageImage??readerContentDrawer.bgImage;
+  }
+  @override
+  ui.Image? getPrePageImage() {
+    return pageProgress.preChapter?.currentPageData()?.pageImage??readerContentDrawer.bgImage;
+  }
+
 }

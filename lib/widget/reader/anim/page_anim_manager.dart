@@ -16,26 +16,63 @@ import 'package:read_info/widget/reader/reder_painter.dart';
 
 import '../../../page/view/my_appbar.dart';
 
-abstract class IReaderPageDrawer{
-  Picture getPrePagePicture();
-  Picture getCurrentPagePicture();
-  Picture getNextPagePicture();
+abstract class NovelReaderAnim {
+  drawCanvas(Canvas canvas);
+
+  bool gestureChange(ReaderGestureDetail detail);
+
+  Animation? onPanEnd(DragEndDetails detail);
+
+  Function(Animation<double>)? flingAnimStart;
 }
-class PageAnimManager{
+
+abstract class IReaderPageVm {
+  Picture getPrePagePicture();
+
+  Picture getCurrentPagePicture();
+
+  Picture getNextPagePicture();
+
+  ui.Image? getPrePageImage();
+
+  ui.Image? getCurrentPageImage();
+
+  ui.Image? getNextPageImage();
+
+  toNextPage();
+
+  toPrePage();
+}
+
+class PageAnimManager {
   GlobalKey canvasKey;
-  IReaderPageDrawer pageDrawer;
+  IReaderPageVm pageDrawer;
   Size pageSize;
-  late NovelReaderAnim anim;
-  PageAnimManager(this.canvasKey,this.pageDrawer,this.pageSize){
-    anim=ReaderSlideAnim();
+  AnimationController controller;
+
+  late NovelReaderAnim readerAnim;
+
+  PageAnimManager(this.canvasKey, this.pageDrawer, this.pageSize, this.controller) {
+    readerAnim = ReaderSlideAnim(pageSize, controller, pageDrawer);
+    readerAnim.flingAnimStart = (anim) {};
   }
 
   void gesturePanChange(ReaderGestureDetail detail) {
-    debug("downDelta:${detail.panDownDelta} fingerPosition:${detail.fingerPosition} lastDelta:${detail.lastDelta}");
-
+    if(controller.isAnimating) return;
+    if (readerAnim.gestureChange(detail)) {
+      (canvasKey.currentContext?.findRenderObject() as RenderCustomPaint?)?.markNeedsPaint();
+    }
   }
 
-  onDraw(Canvas canvas){
+  void onPanEnd(DragEndDetails detail) {
+    var anim = readerAnim.onPanEnd(detail);
+    anim?.addListener(() {
+      (canvasKey.currentContext?.findRenderObject() as RenderCustomPaint?)?.markNeedsPaint();
+    });
+    controller.forward();
+  }
 
+  onDraw(Canvas canvas) {
+    readerAnim.drawCanvas(canvas);
   }
 }

@@ -49,7 +49,19 @@ class ReaderPageProgress {
     return true;
   }
 
-//跳转到下一页
+  Pair<int, int> prePage() {
+    if (currentChapter!.canToPrePage()) {
+      return Pair(currentChapterIndex, currentPageIndex - 1);
+    }
+    return Pair(currentChapterIndex - 1, (preChapter?.chapterContentConfigs.length ?? 1) - 1);
+  }
+  Pair<int, int> nextPage() {
+    if (currentChapter!.canToNextPage()) {
+      return Pair(currentChapterIndex, currentPageIndex + 1);
+    }
+    return Pair(currentChapterIndex + 1,0);
+  }
+  //跳转到下一页
   Future toNextPage() async {
     await ensureChapterContent(currentChapterIndex);
     if (currentChapter!.toNextPage()) {
@@ -65,6 +77,7 @@ class ReaderPageProgress {
     await ensureChapterContent(currentChapterIndex);
     try {
       if (currentChapter!.toPrePage()) {
+        currentPageIndex=currentChapter!.currentPageIndex;
         readChangeCallback(currentChapter!.currentPageIndex, currentChapterIndex);
       } else {
         final chapter=await ensureChapterContent(currentChapterIndex-1);
@@ -145,4 +158,11 @@ class ReaderPageProgress {
     }
     return chapter;
   }
+}
+
+class Pair<T, K> {
+  const Pair(this.first, K this.seconed);
+
+  final T first;
+  final K seconed;
 }
