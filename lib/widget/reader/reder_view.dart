@@ -93,11 +93,11 @@ class NovelReaderState extends State<NovelReader> with TickerProviderStateMixin 
             child: ReaderGesture(
               onNextTap: () {
                 hideMenu();
-                viewModel.toNextPage();
+                animManager.toNextPage();
               },
               onPreTap: () {
                 hideMenu();
-                viewModel.toPrePage();
+                animManager.toPrePage();
               },
               onCenterTap: () {
                 changeMenuShow();

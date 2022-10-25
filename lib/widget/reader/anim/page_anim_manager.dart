@@ -22,8 +22,6 @@ abstract class NovelReaderAnim {
   bool gestureChange(ReaderGestureDetail detail);
 
   Animation? onPanEnd(DragEndDetails detail);
-
-  Function(Animation<double>)? flingAnimStart;
 }
 
 abstract class IReaderPageVm {
@@ -54,7 +52,6 @@ class PageAnimManager {
 
   PageAnimManager(this.canvasKey, this.pageDrawer, this.pageSize, this.controller) {
     readerAnim = ReaderSlideAnim(pageSize, controller, pageDrawer);
-    readerAnim.flingAnimStart = (anim) {};
   }
 
   void gesturePanChange(ReaderGestureDetail detail) {
@@ -63,7 +60,14 @@ class PageAnimManager {
       (canvasKey.currentContext?.findRenderObject() as RenderCustomPaint?)?.markNeedsPaint();
     }
   }
-
+  void toNextPage() {
+    DragEndDetails details=DragEndDetails(velocity:Velocity(pixelsPerSecond: Offset(-1,0)));
+    onPanEnd(details);
+  }
+  void toPrePage() {
+    DragEndDetails details=DragEndDetails(velocity:Velocity(pixelsPerSecond: Offset(1,0)));
+    onPanEnd(details);
+  }
   void onPanEnd(DragEndDetails detail) {
     var anim = readerAnim.onPanEnd(detail);
     anim?.addListener(() {

@@ -60,7 +60,6 @@ class ReaderSlideAnim extends NovelReaderAnim {
   @override
   Animation? onPanEnd(DragEndDetails detail) {
     debug("页面滑动放手了");
-    if (deltaX == 0 || deltaX == pageSize.width) return null;
     double begin = 0;
     double end = 0;
 
@@ -68,17 +67,13 @@ class ReaderSlideAnim extends NovelReaderAnim {
     int target = 0;
 
     ///这一页往左走，到下一页
-    if (deltaX < 0 && detail.velocity.pixelsPerSecond.dx < 0) {
+    if (deltaX <= 0 && detail.velocity.pixelsPerSecond.dx < 0) {
       begin = deltaX;
       end = -pageSize.width;
       target = 1;
 
       ///上一页往右走，到上一页
-    } else if (deltaX <= 0 && detail.velocity.pixelsPerSecond.dx >= 0) {
-      begin = deltaX;
-      end = 0;
-      target = 0;
-    } else if (deltaX > 0 && detail.velocity.pixelsPerSecond.dx > 0) {
+    }else if (deltaX >= 0 && detail.velocity.pixelsPerSecond.dx > 0) {
       begin = deltaX;
       end = pageSize.width;
       target = -1;
