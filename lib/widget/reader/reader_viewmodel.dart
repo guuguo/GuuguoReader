@@ -116,6 +116,9 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
 
   setConfig(ReaderConfigEntity config) {
     final newConfig = config.copyWith();
+    if(this.config.currentCanvasBgImage!= newConfig.currentCanvasBgImage || this.config.currentCanvasBgColor!= newConfig.currentCanvasBgColor){
+      readerContentDrawer.drawBackground(true);
+    }
     if (this.config != newConfig) {
       this.config = newConfig;
       reApplyConfig();
@@ -141,7 +144,7 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
       var chapterPageList = ReaderContentDrawer.getChapterPageContentConfigList(
         0,
         chapter!.content!,
-        config.pageSize.height - config.contentPaddingVertical * 2,
+        config.pageSize.height - config.contentPaddingVertical * 2-config.lineHeight,
         config.pageSize.width - config.contentPaddingHorizontal * 2,
         config.fontSize,
         config.lineHeight,
@@ -162,13 +165,12 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
     if (pageConfig?.pagePicture == null) {
       var picture = readerContentDrawer.drawContent(chapter, pageIndex, pageProgress);
       pageConfig?.pagePicture = picture;
-      prepareImage(pageConfig);
     }
   }
 
-  prepareImage(ReaderContentPageData? pageConfig) async {
-    pageConfig?.pageImage = await pageConfig.pagePicture?.toImage(config.pageSize.width.toInt(), config.pageSize.height.toInt());
-  }
+  // prepareImage(ReaderContentPageData? pageConfig) async {
+  //   pageConfig?.pageImage = await pageConfig.pagePicture?.toImage(config.pageSize.width.toInt(), config.pageSize.height.toInt());
+  // }
 
   @override
   ui.Picture getNextPagePicture() {
@@ -190,17 +192,4 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
   ui.Picture getCurrentPagePicture() {
     return pageProgress.currentChapter?.currentPageData()?.pagePicture ?? readerContentDrawer.drawBackground();
   }
-  @override
-  ui.Image? getNextPageImage() {
-    return pageProgress.nextChapter?.currentPageData()?.pageImage??readerContentDrawer.bgImage;
-  }
-  @override
-  ui.Image? getCurrentPageImage() {
-    return pageProgress.currentChapter?.currentPageData()?.pageImage??readerContentDrawer.bgImage;
-  }
-  @override
-  ui.Image? getPrePageImage() {
-    return pageProgress.preChapter?.currentPageData()?.pageImage??readerContentDrawer.bgImage;
-  }
-
 }

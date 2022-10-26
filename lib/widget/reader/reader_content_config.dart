@@ -1,4 +1,5 @@
 
+import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -15,15 +16,15 @@ class ReaderConfigEntity {
 
   /// 背景色
   Color currentCanvasBgColor = Color(0xfffff2cc);
-  String currentCanvasBgRes = Res.p01;
+  ui.Image? currentCanvasBgImage;
 
   int currentPageIndex = 0;
   int currentChapterIndex = 0;
   String? novelId;
 
-  int fontSize = 20;
+  int fontSize = 18;
   int lineHeight = 30;
-  int paragraphSpacing = 10;
+  int paragraphSpacing = 24;
   Color contentTextColor = Color(0xff040604);
 
 
@@ -40,6 +41,7 @@ class ReaderConfigEntity {
   ReaderConfigEntity.New({
     required this.currentAnimationMode,
     required this.currentCanvasBgColor,
+    this.currentCanvasBgImage,
     required this.currentPageIndex,
     required this.currentChapterIndex,
     required this.novelId,
@@ -58,6 +60,7 @@ class ReaderConfigEntity {
   ReaderConfigEntity copyWith({
     int? currentAnimationMode,
     Color? currentCanvasBgColor,
+    ui.Image? currentCanvasBgImage,
     int? currentPageIndex,
     int? currentChapterIndex,
     String? novelId,
@@ -75,6 +78,7 @@ class ReaderConfigEntity {
     return ReaderConfigEntity.New(
       currentAnimationMode: currentAnimationMode ?? this.currentAnimationMode,
       currentCanvasBgColor: currentCanvasBgColor ?? this.currentCanvasBgColor,
+      currentCanvasBgImage: currentCanvasBgImage ?? this.currentCanvasBgImage,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       currentChapterIndex: currentChapterIndex ?? this.currentChapterIndex,
       novelId: novelId ?? this.novelId,

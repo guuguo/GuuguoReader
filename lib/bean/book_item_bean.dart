@@ -81,7 +81,7 @@ class BookDetailBean extends BookBean {
       this.lastChapter,
       this.tocUrl,
       List<BookChapterBean>? chapters,
-      this.sourceUrl,
+        required this.sourceUrl,
       this.readChapterIndex = 0,
       this.readPageIndex = 0,
       this.totalChapterCount = 0}) {

@@ -36,7 +36,6 @@ class SourceNetRepository {
     }
     var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
     var bookList = list?.map((e) {
-      debug(e.innerHtml);
       return BookItemBean.FormSource(source)
         ..name = e.parseRule(rule?.name)?.trim()
         ..intro = e.parseRule(rule?.intro)?.trim()
@@ -151,7 +150,7 @@ class SourceNetRepository {
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     var rule = source.ruleBookInfo;
-    var bookBean = BookDetailBean(id: Uuid().v1())
+    var bookBean = BookDetailBean(id: Uuid().v1(),sourceUrl: source.bookSourceUrl)
       ..name = element.parseRule(rule?.name) ?? bean.name
       ..author = element.parseRule(rule?.author) ?? bean.author
       ..coverUrl = urlFix(element.parseRule(rule?.coverUrl) ?? bean.coverUrl, source.bookSourceUrl!)
@@ -202,7 +201,7 @@ class SourceNetRepository {
     var element = parse(res.data).documentElement;
     if (element == null) return "";
 
-    var originContent = element.parseRule("${rule?.content}")?.trim();
+    var originContent = element.parseRule("${rule?.content}");
     var result = originContent;
     var nextUrl = element.parseRule("${rule?.nextContentUrl}")?.trim();
 

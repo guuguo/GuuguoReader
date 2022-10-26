@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
 import 'package:read_info/data/source_net_repository.dart';
+import 'package:read_info/global/constant.dart';
 import 'package:read_info/utils/developer.dart';
 import 'package:read_info/utils/ext/list_ext.dart';
 
@@ -11,15 +12,15 @@ class ContentLogic extends GetxController {
   late BookDetailBean bookDetail;
   late SourceNetRepository repository;
   var readChapterIndex = 0.obs;
-  SourceEntity source;
+  late SourceEntity source;
 
-  ContentLogic(this.source) {
+  ContentLogic() {
+    source=Get.arguments[ARG_ITEM_SOURCE_BEAN];
     repository = SourceNetRepository(source);
   }
 
   void init(BookDetailBean bean) async {
     this.bookDetail = bean;
-    bean.sourceUrl = source.bookSourceUrl;
     LocalRepository.saveBookIfNone(bean);
     readChapterIndex.value = bean.readChapterIndex;
     // await loadContent();
@@ -67,4 +68,5 @@ class ContentLogic extends GetxController {
       LocalRepository.updateChapterContent(chapter);
     }
   }
+
 }

@@ -31,12 +31,6 @@ abstract class IReaderPageVm {
 
   Picture getNextPagePicture();
 
-  ui.Image? getPrePageImage();
-
-  ui.Image? getCurrentPageImage();
-
-  ui.Image? getNextPageImage();
-
   toNextPage();
 
   toPrePage();

@@ -164,7 +164,7 @@ class ComicReaderState extends State<ComicReader> {
     return Container(
       constraints: BoxConstraints(minHeight: 200),
       child: CachedNetworkImage(
-          imageRenderMethodForWeb: ImageRenderMethodForWeb.HtmlImage,
+          imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
         progressIndicatorBuilder: (c, u, p) => Center(
           child: SizedBox(
             width: 20,
@@ -173,7 +173,7 @@ class ComicReaderState extends State<ComicReader> {
           ),
         ),
         errorWidget: (c, u, e) {
-          debug("$index $dealUrl 出错了-url:${u}");
+          // debug("$index $dealUrl 出错了-url:${u}");
           return Center(child: Text("该图片无法加载"));
         },
         imageUrl: dealUrl,

@@ -107,20 +107,21 @@ class ReaderContentDrawer {
 
     return pageConfigList;
   }
-
   ui.Picture? bgPicture;
-  ui.Image? bgImage;
 
   ui.Picture drawBackground( [bool forceRedraw = false]) {
     if (bgPicture == null || forceRedraw) {
-      ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
-      Canvas pageCanvas = new Canvas(pageRecorder);
-      bgPaint.color = model.config.currentCanvasBgColor;
-      pageCanvas.drawRect(Offset.zero & model.config.pageSize, bgPaint);
-      bgPicture = pageRecorder.endRecording();
-      bgPicture!.toImage(model.config.pageSize.width.toInt(), model.config.pageSize.height.toInt()).then((value) {
-        bgImage = value;
-      });
+        ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
+        Canvas pageCanvas = new Canvas(pageRecorder);
+        final image=model.config.currentCanvasBgImage;
+        if(image!=null) {
+          pageCanvas.drawImageRect(image,Offset.zero & Size(image.width.toDouble(),image.height.toDouble()),Offset.zero & model.config.pageSize, bgPaint);
+        }else{
+          bgPaint.color = model.config.currentCanvasBgColor;
+          pageCanvas.drawRect(Offset.zero & model.config.pageSize, bgPaint);
+        }
+        bgPicture = pageRecorder.endRecording();
+
     }
     return bgPicture!;
   }
@@ -259,7 +260,6 @@ class ReaderChapterData {
 
   void clearCalculateResult() {
     chapterContentConfigs.clear();
-    // chapterCanvasDataMap.clear();
   }
 
   void clear() {
@@ -299,7 +299,6 @@ class ReaderContentPageData {
 
   List<String> paragraphContents;
   ui.Picture? pagePicture;
-  ui.Image? pageImage;
 
   ReaderContentPageData({
     required this.currentContentFontSize,

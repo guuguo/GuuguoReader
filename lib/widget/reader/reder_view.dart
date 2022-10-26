@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:read_info/res.dart';
 import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_content_config.dart';
 import 'package:read_info/widget/reader/reader_menu.dart';
@@ -63,22 +64,24 @@ class NovelReaderState extends State<NovelReader> with TickerProviderStateMixin 
   @override
   initState() {
     super.initState();
-    controller= AnimationController(
-        duration: const Duration(milliseconds: 150), vsync: this);
+    AssetImage(Res.p04, bundle: rootBundle).resolve(ImageConfiguration.empty).addListener(ImageStreamListener((img, sync) {
+      final image = img.image;
+      controller = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
+      viewModel = ReaderViewModel(
+        widget.pageProgress,
+        ReaderConfigEntity().copyWith(
+          pageSize: widget.pageSize,
+          currentCanvasBgImage: image,
+        ),
+        canvasKey,
+      );
+      animManager = PageAnimManager(canvasKey, viewModel, widget.pageSize, controller);
+      viewModel.addListener(() {
+        setState(() {});
+      });
+      mPainter = NovelPagePainter(animManager, viewModel);
 
-    viewModel = ReaderViewModel(
-      widget.pageProgress,
-      ReaderConfigEntity().copyWith(
-        pageSize: widget.pageSize,
-      ),
-      canvasKey,
-    );
-
-    animManager= PageAnimManager(canvasKey, viewModel, widget.pageSize,controller);
-    viewModel.addListener(() {
-      setState(() {});
-    });
-    mPainter = NovelPagePainter(animManager,viewModel);
+    }));
   }
 
   void jumpToChapter(int chapterIndex) {
@@ -87,7 +90,7 @@ class NovelReaderState extends State<NovelReader> with TickerProviderStateMixin 
 
   @override
   Widget build(BuildContext context) {
-    return InheritedReader(
+    return mPainter==null?SizedBox():InheritedReader(
       onMenuChange: changeMenuShow,
       showChapterIndex: widget.showCategory,
       loadChapter: (int? type)async{
@@ -112,7 +115,9 @@ class NovelReaderState extends State<NovelReader> with TickerProviderStateMixin 
               onCenterTap: () {
                 changeMenuShow();
               },
-              onPanChange: animManager.gesturePanChange,
+              onPanChange: (d) async {
+                animManager.gesturePanChange(d);
+              },
               onPanEnd: animManager.onPanEnd,
               child: CustomPaint(
                 key: canvasKey,
@@ -130,25 +135,32 @@ class NovelReaderState extends State<NovelReader> with TickerProviderStateMixin 
     );
   }
 
-  void changeMenuShow([bool? bool = null]) {
+  bool changeMenuShow([bool? bool = null]) {
     if (bool == null) {
       setState(() {
         menuShow = !menuShow;
       });
+      return true;
+
     } else if (bool) {
-      if (menuShow == false)
+      if (menuShow == false) {
         setState(() {
           menuShow = true;
         });
+        return true;
+      }
     } else {
-      if (menuShow == true)
+      if (menuShow == true){
         setState(() {
           menuShow = false;
         });
+        return true;
+      }
     }
+    return false;
   }
 
-  void hideMenu() {
-    changeMenuShow(false);
+  bool hideMenu() {
+    return changeMenuShow(false);
   }
 }
