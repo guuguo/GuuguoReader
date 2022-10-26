@@ -8,9 +8,11 @@ import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/global/custom/component/limit_width_box.dart';
 import 'package:read_info/global/custom/my_theme.dart';
+import 'package:read_info/page/view/context_menu.dart';
 import 'package:read_info/page/view/icon.dart';
 import 'package:read_info/page/view/my_appbar.dart';
 import 'package:read_info/widget/container.dart';
+import 'package:read_info/widget/reader/reader_page_progress.dart';
 
 import 'logic.dart';
 
@@ -87,35 +89,26 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
   }
 
   Widget withContextMenu(Widget child, SourceEntity bean) {
-    return CupertinoContextMenu(
-      actions: [
-        CupertinoContextMenuAction(
-          onPressed: () {
-            Get.snackbar("提示", "暂未实现");
-          },
-          child: Text("编辑"),
-        ),
-        CupertinoContextMenuAction(
-          onPressed: () {
-            Get.defaultDialog(
-                title: "提示",
-                middleText: "确定删除该源？",
-                textConfirm: "确定",
-                textCancel: "取消",
-                onConfirm: () async {
-                  await Get.find<SourceLogic>().deleteSource(bean);
-                  Get.back();
-                  Get.back();
-                },
-                onCancel: () {
-                  Get.back();
-                });
-          },
-          child: Text("删除"),
-        ),
-      ],
-      child: child,
-    );
+    return ContextMenu(child: child, list: [
+      Pair("编辑", () {
+        Get.snackbar("提示", "暂未实现");
+      }),
+      Pair("删除", () {
+        Get.defaultDialog(
+            title: "提示",
+            middleText: "确定删除该源？",
+            textConfirm: "确定",
+            textCancel: "取消",
+            onConfirm: () async {
+              await Get.find<SourceLogic>().deleteSource(bean);
+              Get.back();
+              Get.back();
+            },
+            onCancel: () {
+              Get.back();
+            });
+      }),
+    ]);
   }
 
   @override

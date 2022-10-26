@@ -17,9 +17,12 @@ import 'anim/page_anim_manager.dart';
 typedef ReadPageChangeCallback = void Function(int pageIndex, int chapterIndex);
 
 class InheritedReader extends InheritedWidget {
-  InheritedReader({required Widget child, this.onMenuChange, this.showChapterIndex}) : super(child: child);
+  InheritedReader({required Widget child, this.onMenuChange, this.showChapterIndex,this.loadChapter}) : super(child: child);
   ValueChanged<bool?>? onMenuChange;
   VoidCallback? showChapterIndex;
+  /// loadChapter(null) [null] 代表重新加载本章
+  ///
+  ValueChanged<int?>? loadChapter;
 
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) {
@@ -87,6 +90,13 @@ class NovelReaderState extends State<NovelReader> with TickerProviderStateMixin 
     return InheritedReader(
       onMenuChange: changeMenuShow,
       showChapterIndex: widget.showCategory,
+      loadChapter: (int? type)async{
+        ///重新加载本章
+        if (type == null) {
+          await widget.pageProgress.reloadCurrentPageCache();
+          setState(() { });
+        }
+      },
       child: Stack(
         children: [
           Positioned.fill(

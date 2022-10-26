@@ -2,24 +2,26 @@ import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
 import 'package:read_info/data/source_net_repository.dart';
 import 'package:read_info/utils/developer.dart';
+import 'package:read_info/utils/ext/list_ext.dart';
 
 import '../../bean/book_item_bean.dart';
 import '../../bean/entity/source_entity.dart';
 
 class ContentLogic extends GetxController {
-
   late BookDetailBean bookDetail;
   late SourceNetRepository repository;
-  var readChapterIndex=0.obs;
+  var readChapterIndex = 0.obs;
   SourceEntity source;
+
   ContentLogic(this.source) {
-    repository=SourceNetRepository(source);
+    repository = SourceNetRepository(source);
   }
+
   void init(BookDetailBean bean) async {
     this.bookDetail = bean;
-    bean.sourceUrl=source.bookSourceUrl;
+    bean.sourceUrl = source.bookSourceUrl;
     LocalRepository.saveBookIfNone(bean);
-    readChapterIndex.value=bean.readChapterIndex;
+    readChapterIndex.value = bean.readChapterIndex;
     // await loadContent();
   }
 
@@ -35,12 +37,20 @@ class ContentLogic extends GetxController {
     return bookDetail.readChapterIndex;
   }
 
+  Future deleteChapter(int chapterIndex) async {
+    final chapter = bookDetail.chapters?.getOrNull(chapterIndex);
+    if (chapter != null) {
+      await LocalRepository.deleteChapterContent(chapter.id);
+      chapter.content = null;
+    }
+  }
+
   ///更新阅读进度
   void updateReadPage(int pageIndex, int chapterIndex) {
     debug("更新当前页面chapterIndex:${chapterIndex}  pageIndex:${pageIndex} chapterTotal:${bookDetail.totalChapterCount}");
     bookDetail.readPageIndex = pageIndex;
     bookDetail.readChapterIndex = chapterIndex;
-    readChapterIndex.value=chapterIndex;
+    readChapterIndex.value = chapterIndex;
     LocalRepository.updateBook(bookDetail);
   }
 
@@ -53,7 +63,7 @@ class ContentLogic extends GetxController {
     if (!chapter.hasContent()) {
       await repository.queryBookContent(chapter);
       debug("文章内容规则：${source.ruleContent}");
-      debug("加载文章内容：${chapter.content?.content??"没找到内容"}");
+      debug("加载文章内容：${chapter.content?.content ?? "没找到内容"}");
       LocalRepository.updateChapterContent(chapter);
     }
   }

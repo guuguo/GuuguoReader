@@ -17,7 +17,11 @@ class ReadHistoryLogic extends GetxController {
     state.books=books;
     update();
   }
-
+  deleteBook(BookDetailBean bean)async{
+    LocalRepository.deleteBook(bean);
+    state.books=[...state.books..remove(bean)];
+    update();
+  }
   Future toSearchPage() async {
     await Get.toNamed(RouteConfig.search);
   }

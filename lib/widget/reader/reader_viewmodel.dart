@@ -8,6 +8,7 @@ import 'anim/page_anim_manager.dart';
 import 'reader_content_config.dart';
 
 typedef ChapterProvider = Future<ReaderChapterData> Function(int);
+typedef ChapterCacheDeleter = Future Function(int);
 
 class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
   ReaderViewModel(

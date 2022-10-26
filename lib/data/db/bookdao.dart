@@ -21,7 +21,10 @@ abstract class BookDao {
   Future<ChapterContent?> findChapterContentById(String id);
 
   @Query('DELETE FROM BookChapterBean where bookId = :bookId')
-  Future<List<BookChapterBean>> deleteBookChapters(String bookId);
+  Future<int?> deleteBookChapters(String bookId);
+
+  @Query('DELETE FROM ChapterContent where bookId = :bookId')
+  Future<int?> deleteBookContents(String bookId);
 
   @Query('SELECT * FROM BookDetailBean where name = :bookName')
   Future<List<BookDetailBean>> queryBookDetail(String bookName);
@@ -38,9 +41,14 @@ abstract class BookDao {
   @update
   Future<int> updateChapter(BookChapterBean chapter);
 
+  @Query('DELETE FROM ChapterContent where chapter_id = :chapterId')
+  Future<int?> deleteChapterContent(String chapterId);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<int> insertAndUpdateChapterContent(ChapterContent content);
 
   @update
   Future<int> updateBook(BookDetailBean bean);
+  @delete
+  Future<int> deleteBook(BookDetailBean bean);
 }

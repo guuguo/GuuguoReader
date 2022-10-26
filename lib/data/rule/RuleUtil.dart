@@ -82,10 +82,10 @@ extension ElementExt on Element {
   ///将其作为$1和$2替换到结果中
   ///
   String? parseRule(String? rule) {
-    if (rule == null) return null;
+    if (rule?.isNotEmpty != true) return null;
 
     ///正则 处理 ##分割
-    var regexSpan = rule.split('##');
+    var regexSpan = rule!.split('##');
     String? regex;
     String? replace;
     if (regexSpan.length > 1) {

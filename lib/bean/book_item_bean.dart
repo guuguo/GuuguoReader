@@ -147,6 +147,7 @@ class BookChapterBean {
 class ChapterContent {
   @PrimaryKey()
   String id = "";
+  String? bookId = "";
   @ColumnInfo(name: "chapter_id")
   String chapterId = "";
   String content = "";
@@ -155,6 +156,7 @@ class ChapterContent {
 
   ChapterContent.FromChapter(BookChapterBean chapter, String content) {
     id = chapter.id;
+    bookId = chapter.bookId;
     this.chapterId = chapter.id;
     this.content = content;
   }

@@ -79,6 +79,18 @@ class LocalRepository {
     await myDataBase.bookDao.insertBookChapters(bean.chapters ?? []);
   }
 
+  static Future deleteBook(BookDetailBean bean) async {
+    final db = await LocalRepository.database();
+    await db.bookDao.deleteBookContents(bean.id);
+    await db.bookDao.deleteBookChapters(bean.id);
+    await db.bookDao.deleteBook(bean);
+  }
+
+  static Future deleteChapterContent(String  chapterId) async {
+    final db = await LocalRepository.database();
+    await db.bookDao.deleteChapterContent(chapterId);
+  }
+
   static Future updateBook(BookDetailBean bean) async {
     var myDataBase = await database();
     await myDataBase.bookDao.updateBook(bean);

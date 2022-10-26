@@ -71,7 +71,7 @@ class _$MyDataBase extends MyDataBase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 6,
+      version: 7,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -93,7 +93,7 @@ class _$MyDataBase extends MyDataBase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, `chapterIndex` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ChapterContent` (`id` TEXT NOT NULL, `chapter_id` TEXT NOT NULL, `content` TEXT NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `ChapterContent` (`id` TEXT NOT NULL, `bookId` TEXT, `chapter_id` TEXT NOT NULL, `content` TEXT NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE INDEX `index_BookDetailBean_name` ON `BookDetailBean` (`name`)');
 
@@ -218,6 +218,7 @@ class _$BookDao extends BookDao {
             'ChapterContent',
             (ChapterContent item) => <String, Object?>{
                   'id': item.id,
+                  'bookId': item.bookId,
                   'chapter_id': item.chapterId,
                   'content': item.content
                 }),
@@ -332,15 +333,16 @@ class _$BookDao extends BookDao {
   }
 
   @override
-  Future<List<BookChapterBean>> deleteBookChapters(String bookId) async {
-    return _queryAdapter.queryList(
+  Future<int?> deleteBookChapters(String bookId) async {
+    await _queryAdapter.queryNoReturn(
         'DELETE FROM BookChapterBean where bookId = ?1',
-        mapper: (Map<String, Object?> row) => BookChapterBean(
-            id: row['id'] as String,
-            bookId: row['bookId'] as String?,
-            chapterName: row['chapterName'] as String?,
-            chapterUrl: row['chapterUrl'] as String?,
-            chapterIndex: row['chapterIndex'] as int),
+        arguments: [bookId]);
+  }
+
+  @override
+  Future<int?> deleteBookContents(String bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM ChapterContent where bookId = ?1',
         arguments: [bookId]);
   }
 
@@ -362,6 +364,13 @@ class _$BookDao extends BookDao {
             readPageIndex: row['readPageIndex'] as int,
             totalChapterCount: row['totalChapterCount'] as int),
         arguments: [bookName]);
+  }
+
+  @override
+  Future<int?> deleteChapterContent(String chapterId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM ChapterContent where chapter_id = ?1',
+        arguments: [chapterId]);
   }
 
   @override
@@ -408,6 +417,11 @@ class _$BookDao extends BookDao {
 
   @override
   Future<int> deleteSource(BookDetailBean bean) {
+    return _bookDetailBeanDeletionAdapter.deleteAndReturnChangedRows(bean);
+  }
+
+  @override
+  Future<int> deleteBook(BookDetailBean bean) {
     return _bookDetailBeanDeletionAdapter.deleteAndReturnChangedRows(bean);
   }
 }

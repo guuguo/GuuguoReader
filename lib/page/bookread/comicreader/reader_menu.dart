@@ -4,8 +4,8 @@ import 'package:read_info/page/view/icon.dart';
 import 'package:read_info/page/view/my_appbar.dart';
 import 'package:read_info/widget/reader/reder_view.dart';
 
-class ReaderMenu extends StatelessWidget {
-  const ReaderMenu({Key? key, this.chapterName}) : super(key: key);
+class ComicReaderMenu extends StatelessWidget {
+  const ComicReaderMenu({Key? key, this.chapterName}) : super(key: key);
   final String? chapterName;
   final bgColor = Colors.black87;
 
@@ -41,7 +41,7 @@ class ReaderMenu extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: MyBackButton(),
               ),
-              Text(chapterName ?? "", style: TextStyle(fontSize: 18)),
+              Text(chapterName ?? "", style: TextStyle(fontSize: 18, color: Colors.white)),
               Expanded(child: SizedBox()),
               menuButton(),
             ],
@@ -54,7 +54,7 @@ class ReaderMenu extends StatelessWidget {
         PopupMenuItem(
             child: Row(
               children: [
-                Icon(Icons.import_contacts),
+                Icon(Icons.import_contacts,color:Theme.of(context).textTheme.bodyMedium?.color),
                 SizedBox(width: 10),
                 Text("重新下载本章"),
               ],
@@ -84,6 +84,7 @@ class ReaderMenu extends StatelessWidget {
             IconMenu(Icons.format_list_bulleted, onPressed: () {
               NovelReader.of(context)?.onMenuChange?.call(false);
               NovelReader.of(context)?.showChapterIndex?.call();
+              NovelReader.of(context)?.loadChapter?.call(null);
             }),
             IconMenu(Icons.format_size),
             IconMenu(Icons.light_mode),
@@ -96,6 +97,6 @@ class ReaderMenu extends StatelessWidget {
   }
 
   Widget IconMenu(IconData icon, {VoidCallback? onPressed}) {
-    return Expanded(child: GestureDetector(behavior:HitTestBehavior.translucent,onTap: onPressed, child: Center(child: Icon(icon))));
+    return Expanded(child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: onPressed, child: Center(child: Icon(icon))));
   }
 }

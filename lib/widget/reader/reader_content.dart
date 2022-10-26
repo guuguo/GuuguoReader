@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:ui' as ui;
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:read_info/bean/book_item_bean.dart';
 import 'package:read_info/data/rule/novel_string_deal.dart';
+import 'package:read_info/utils/developer.dart';
 import 'package:read_info/utils/ext/list_ext.dart';
 import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
@@ -209,7 +212,6 @@ class ReaderContentDrawer {
 }
 
 class ReaderChapterData {
-
   List<ReaderContentPageData> chapterContentConfigs = [];
 
   // HashMap<int, ReaderContentCanvasDataValue> chapterCanvasDataMap = HashMap();
@@ -217,13 +219,15 @@ class ReaderChapterData {
   String? chapterName;
   int chapterIndex;
   int currentPageIndex = 0;
-  // int totalChapterCount = 0;
+  List<String> comics = [];
+
 
   bool canToNextPage() {
     return currentPageIndex < chapterContentConfigs.length - 1;
   }
 
   bool toNextPage() {
+    if(chapterContentConfigs.isEmpty) return false;
     if (canToNextPage()) {
       currentPageIndex++;
       return true;
@@ -237,6 +241,7 @@ class ReaderChapterData {
 
 
   bool toPrePage() {
+    if(chapterContentConfigs.isEmpty) return false;
     if (canToPrePage()) {
       currentPageIndex--;
       return true;

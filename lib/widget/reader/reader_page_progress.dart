@@ -13,7 +13,9 @@ class ReaderPageProgress {
   ReaderChapterData? nextChapter;
 
   final ChapterProvider chapterProvider;
+  final ChapterCacheDeleter chapterCacheDeleter;
   final ReadPageChangeCallback readChangeCallback;
+  ///准备chapter页面 计算当前章节段落和页数,小说使用
   ValueChanged<ReaderChapterData?>? chapterPrepare;
 
   bool canToTargetChapter(int chapter) {
@@ -25,8 +27,15 @@ class ReaderPageProgress {
     this.currentPageIndex,
     this.totalChapterCount, {
     required this.chapterProvider,
+    required this.chapterCacheDeleter,
     required this.readChangeCallback,
   });
+
+  Future reloadCurrentPageCache() async {
+    currentChapter?.content = "";
+    await chapterCacheDeleter.call(currentChapterIndex);
+    await ensureCurrentChapter();
+  }
 
   Future toTargetChapter(int chapterIndex, [int targetPageIndex = 0]) async {
     if (!canToTargetChapter(chapterIndex)) {
@@ -72,7 +81,7 @@ class ReaderPageProgress {
     }
   }
 
-//跳转到下一页
+//跳转到上一页
   Future toPrePage() async {
     await ensureChapterContent(currentChapterIndex);
     try {
