@@ -123,7 +123,6 @@ class ComicReaderState extends State<ComicReader> {
               },
               onPreTap: () {
                 hideMenu();
-                // animManager.toPrePage();
               },
               onCenterTap: () {
                 changeMenuShow();

@@ -4,9 +4,12 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:read_info/res.dart';
-import 'package:read_info/utils/utils_screen.dart';
+class BackgroundImage{
+  ui.Image bg;
+  BoxFit fit;
 
+  BackgroundImage(this.bg, this.fit);
+}
 class ReaderConfigEntity {
   static const TYPE_ANIMATION_SIMULATION_TURN = 1;
   static const TYPE_ANIMATION_COVER_TURN = 2;
@@ -16,7 +19,7 @@ class ReaderConfigEntity {
 
   /// 背景色
   Color currentCanvasBgColor = Color(0xfffff2cc);
-  ui.Image? currentCanvasBgImage;
+  BackgroundImage? currentCanvasBgImage;
 
   int currentPageIndex = 0;
   int currentChapterIndex = 0;
@@ -55,12 +58,13 @@ class ReaderConfigEntity {
     required this.bottomTipHeight,
     required this.titleFontSize,
     required this.bottomTipFontSize,
+    required this.contentTextColor,
   });
 
   ReaderConfigEntity copyWith({
     int? currentAnimationMode,
     Color? currentCanvasBgColor,
-    ui.Image? currentCanvasBgImage,
+    BackgroundImage? currentCanvasBgImage,
     int? currentPageIndex,
     int? currentChapterIndex,
     String? novelId,
@@ -74,6 +78,7 @@ class ReaderConfigEntity {
     int? bottomTipHeight,
     int? titleFontSize,
     int? bottomTipFontSize,
+    Color? contentTextColor,
   }) {
     return ReaderConfigEntity.New(
       currentAnimationMode: currentAnimationMode ?? this.currentAnimationMode,
@@ -92,6 +97,7 @@ class ReaderConfigEntity {
       bottomTipHeight: bottomTipHeight ?? this.bottomTipHeight,
       titleFontSize: titleFontSize ?? this.titleFontSize,
       bottomTipFontSize: bottomTipFontSize ?? this.bottomTipFontSize,
+      contentTextColor: contentTextColor ?? this.contentTextColor,
     );
   }
 
@@ -102,6 +108,7 @@ class ReaderConfigEntity {
           runtimeType == other.runtimeType &&
           currentAnimationMode == other.currentAnimationMode &&
           currentCanvasBgColor == other.currentCanvasBgColor &&
+          currentCanvasBgImage == other.currentCanvasBgImage &&
           currentPageIndex == other.currentPageIndex &&
           currentChapterIndex == other.currentChapterIndex &&
           fontSize == other.fontSize &&
@@ -120,6 +127,7 @@ class ReaderConfigEntity {
   int get hashCode =>
       currentAnimationMode.hashCode ^
       currentCanvasBgColor.hashCode ^
+      currentCanvasBgImage.hashCode ^
       currentPageIndex.hashCode ^
       currentChapterIndex.hashCode ^
       fontSize.hashCode ^

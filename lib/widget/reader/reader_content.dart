@@ -115,7 +115,18 @@ class ReaderContentDrawer {
         Canvas pageCanvas = new Canvas(pageRecorder);
         final image=model.config.currentCanvasBgImage;
         if(image!=null) {
-          pageCanvas.drawImageRect(image,Offset.zero & Size(image.width.toDouble(),image.height.toDouble()),Offset.zero & model.config.pageSize, bgPaint);
+          paintImage(
+              canvas: pageCanvas,
+              rect: Offset.zero & model.config.pageSize,
+              image: image.bg,
+              fit: image.fit,
+              repeat: ImageRepeat.repeat,
+              scale: 1.0,
+              alignment: Alignment.center,
+              flipHorizontally: false,
+              filterQuality: FilterQuality.high
+          );
+          // pageCanvas.drawImageRect(image,Offset.zero & Size(image.width.toDouble(),image.height.toDouble()),Offset.zero & model.config.pageSize, bgPaint);
         }else{
           bgPaint.color = model.config.currentCanvasBgColor;
           pageCanvas.drawRect(Offset.zero & model.config.pageSize, bgPaint);

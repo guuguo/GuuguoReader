@@ -5,9 +5,11 @@ import 'package:read_info/res.dart';
 import '../../bean/book_item_bean.dart';
 
 class BookCover extends StatelessWidget {
-  const BookCover(this.book, {Key? key,this.radius=0}) : super(key: key);
+  const BookCover(this.book, {Key? key,this.radius=0,this.textBottomHeight=42,this.fontSize=12}) : super(key: key);
   final BookBean? book;
   final double radius;
+  final double textBottomHeight;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class BookCover extends StatelessWidget {
             bottom: 0,
             right: 4,
             left: 4,
-            height: 42,
+            height: textBottomHeight,
             child: Container(
               alignment: Alignment.topCenter,
               child: Text(
@@ -30,7 +32,7 @@ class BookCover extends StatelessWidget {
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.clip,
                 maxLines: 2,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color:Colors.black54),
+                style: TextStyle(color:Colors.black54,fontSize:fontSize),
               ),
             ),
           )

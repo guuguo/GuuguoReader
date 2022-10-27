@@ -20,6 +20,16 @@ class GlobalLogic extends GetxController {
     }
     update();
   }
+
+  isDark(BuildContext context) {
+    if (themeMode == ThemeMode.dark) {
+      return true;
+    } else if (themeMode == ThemeMode.light) {
+      return false;
+    }
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+
   late final SharedPreferences sp;
   void loadThemeMode() async {
     sp=await SharedPreferences.getInstance();

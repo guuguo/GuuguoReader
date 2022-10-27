@@ -24,26 +24,39 @@ class BookContentPage extends StatefulWidget {
   State<BookContentPage> createState() => _BookContentPageState();
 }
 
-class _BookContentPageState extends State<BookContentPage> {
+class _BookContentPageState extends State<BookContentPage> with WidgetsBindingObserver {
   late BookChapterBean tocBean;
   late BookDetailBean detailBean;
   late ReaderPageProgress pageProgress;
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      initStatus();
+    }
+  }
+
+  initStatus() {
+    OrientationPlugin.forceOrientation(DeviceOrientation.portraitUp);
+    OrientationPlugin.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
+  }
+
+  @override
   void dispose() {
     super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     OrientationPlugin.setPreferredOrientations([...DeviceOrientation.values]..remove(DeviceOrientation.portraitDown));
     OrientationPlugin.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(systemNavigationBarColor: Theme.of(context).bottomAppBarColor));
+
     Get.delete<ContentLogic>();
   }
 
   @override
   initState() {
     super.initState();
-    OrientationPlugin.forceOrientation(DeviceOrientation.portraitUp);
-    OrientationPlugin.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
-    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [SystemUiOverlay.top]);
-
+    WidgetsBinding.instance.addObserver(this);
+    initStatus();
     detailBean = Get.arguments[ARG_BOOK_DETAIL_BEAN];
     final logic = Get.find<ContentLogic>();
     logic.init(detailBean);
@@ -91,7 +104,7 @@ class _BookContentPageState extends State<BookContentPage> {
           if (logic.source.bookSourceType == source_type_novel)
             return NovelReader(
               key: readerKey,
-              pageSize: Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() ),
+              pageSize: Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight()),
               pageProgress: pageProgress,
               showCategory: () {
                 Scaffold.of(context).openDrawer();
@@ -101,7 +114,7 @@ class _BookContentPageState extends State<BookContentPage> {
             return ComicReader(
               key: comicKey,
               pageProgress: pageProgress,
-              pageSize: Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() ),
+              pageSize: Size(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight()),
               showCategory: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -137,7 +150,7 @@ class _BookContentPageState extends State<BookContentPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical:8,horizontal:10),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                   child: Row(children: [
                     Text(
                       "${currentChapter.chapterName} (${logic.readChapterIndex.value}/${logic.bookDetail.totalChapterCount})",

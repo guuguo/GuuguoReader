@@ -1,13 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:read_info/page/view/icon.dart';
-import 'package:read_info/page/view/my_appbar.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:orientation/orientation.dart';
+import 'package:read_info/widget/reader/reader_menu.dart';
 import 'package:read_info/widget/reader/reder_view.dart';
+
+import '../../../global/logic.dart';
 
 class ComicReaderMenu extends StatelessWidget {
   const ComicReaderMenu({Key? key, this.chapterName}) : super(key: key);
   final String? chapterName;
-  final bgColor = Colors.black87;
 
   @override
   Widget build(BuildContext context) {
@@ -18,85 +21,55 @@ class ComicReaderMenu extends StatelessWidget {
           data: IconTheme.of(context).copyWith(color: Colors.white),
           child: Column(
             children: [
-              MenuHeader(context),
               Expanded(child: SizedBox()),
-              MenuBottom(context),
+              ComicMenuBottom(context),
             ],
           )),
     ));
   }
 
-  Widget MenuHeader(BuildContext context) {
-    return Container(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-        width: double.infinity,
-        color: bgColor,
-        child: Container(
-          height: kToolbarHeight,
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: MyBackButton(),
-              ),
-              Text(chapterName ?? "", style: TextStyle(fontSize: 18, color: Colors.white)),
-              Expanded(child: SizedBox()),
-              menuButton(),
-            ],
-          ),
-        ));
-  }
-  Widget menuButton() {
-    return PopupMenuButton(
-      itemBuilder: (BuildContext context) => [
-        PopupMenuItem(
-            child: Row(
-              children: [
-                Icon(Icons.import_contacts,color:Theme.of(context).textTheme.bodyMedium?.color),
-                SizedBox(width: 10),
-                Text("重新下载本章"),
-              ],
-            ),
-            onTap: () async {
-              NovelReader.of(context)?.loadChapter?.call(null);
-            })
-      ],
-      child: PrimaryIconButton(
-        Icons.more_vert,
-        color: Colors.white,
+}
+Widget ComicMenuBottom(BuildContext context) {
+  return Container(
+    padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+    width: double.infinity,
+    color: bgColor,
+    child: Container(
+      height: 80,
+      constraints: BoxConstraints.loose(Size(600, double.infinity)),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          IconMenu(Icons.format_list_bulleted, onPressed: () {
+            NovelReader.of(context)?.onMenuChange?.call(false);
+            NovelReader.of(context)?.showChapterIndex?.call();
+            NovelReader.of(context)?.loadChapter?.call(null);
+          }),
+          IconMenu(Icons.format_size),
+          IconMenu(Icons.light_mode),
+          IconMenu(Icons.search,onPressed: (){
+            brightnessChange(context);
+          }),
+          IconMenu(Icons.screen_rotation, onPressed: () {
+            rotationChange(context);
+          }),
+        ],
       ),
-    );
-  }
-  Widget MenuBottom(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-      width: double.infinity,
-      color: bgColor,
-      child: Container(
-        height: 80,
-        constraints: BoxConstraints.loose(Size(600, double.infinity)),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            IconMenu(Icons.format_list_bulleted, onPressed: () {
-              NovelReader.of(context)?.onMenuChange?.call(false);
-              NovelReader.of(context)?.showChapterIndex?.call();
-              NovelReader.of(context)?.loadChapter?.call(null);
-            }),
-            IconMenu(Icons.format_size),
-            IconMenu(Icons.light_mode),
-            IconMenu(Icons.search),
-            IconMenu(Icons.screen_rotation),
-          ],
-        ),
-      ),
-    );
-  }
+    ),
+  );
+}
+void brightnessChange(BuildContext context) {
+  Get.find<GlobalLogic>().changeThemeMode(context);
+  // Future.delayed(Duration(milliseconds: 20),(){
+    NovelReader.of(context)?.onBrightnessChange?.call();
+  // });
+}
 
-  Widget IconMenu(IconData icon, {VoidCallback? onPressed}) {
-    return Expanded(child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: onPressed, child: Center(child: Icon(icon))));
+void rotationChange(BuildContext context) {
+  if (MediaQuery.of(context).orientation == Orientation.portrait) {
+    OrientationPlugin.forceOrientation(DeviceOrientation.landscapeLeft);
+  } else if (MediaQuery.of(context).orientation == Orientation.landscape) {
+    OrientationPlugin.forceOrientation(DeviceOrientation.portraitUp);
   }
 }
