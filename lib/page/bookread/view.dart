@@ -121,30 +121,40 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
         },
       ),
       drawerEnableOpenDragGesture: false,
+
       drawer: logic.bookDetail.chapters?.isNotEmpty == true ? Drawer(logic) : null,
     );
   }
 
   Widget Drawer(ContentLogic logic) {
     return Container(
-        width: 280,
+        width: 290,
         padding: EdgeInsets.only(bottom: 20),
         color: Theme.of(context).cardColor,
         child: GetX<ContentLogic>(builder: (ContentLogic logic) {
           final itemHeight = 35.0;
           final currentChapter = logic.bookDetail.chapters![logic.readChapterIndex.value];
+          final controller = ScrollController(initialScrollOffset: max(logic.readChapterIndex.value - 8, 0) * itemHeight);
           return SafeArea(
             child: Column(
               children: [
                 Expanded(
-                  child: ListView(
-                    controller: ScrollController(initialScrollOffset: max(logic.readChapterIndex.value - 8, 0) * itemHeight),
-                    itemExtent: itemHeight,
-                    children: logic.bookDetail.chapters!
-                        .mapIndexed(
-                          (i, e) => ChapterItem(context, i, e, i == logic.readChapterIndex.value),
-                        )
-                        .toList(),
+                  child: Scrollbar(
+                    interactive: true,
+                    thickness: 8,
+                    thumbVisibility: true,
+                    controller: controller,
+                    child: ScrollConfiguration(
+                      behavior: MyBehavior(),
+                      child:ListView(
+                      controller: controller,
+                      itemExtent: itemHeight,
+                      children: logic.bookDetail.chapters!
+                          .mapIndexed(
+                            (i, e) => ChapterItem(context, i, e, i == logic.readChapterIndex.value),
+                          )
+                          .toList(),
+                    )),
                   ),
                 ),
                 Padding(
@@ -164,8 +174,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
 
   Widget ChapterItem(BuildContext context, index, BookChapterBean bean, bool selected) {
     final logic = Get.find<ContentLogic>();
-    return Builder(builder: (context) {
-      return GestureDetector(
+    return GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
           Scaffold.of(context).closeDrawer();
@@ -190,6 +199,13 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
           ],
         ),
       );
-    });
+  }
+}
+
+class MyBehavior extends ScrollBehavior {
+  @override
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
   }
 }
