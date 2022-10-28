@@ -9,31 +9,37 @@ import '../../../data/source_manager.dart';
 import 'state.dart';
 
 class SearchResultLogic extends GetxController {
-  late SearchResultState state;
+  late SearchResultState novelState;
+  late SearchResultState comicState;
+  var currentIndex = 0;
+  late SourceManager manager = SourceManager();
 
-  late SourceManager manager=SourceManager();
   @override
   onInit() {
     super.onInit();
     final searchKey = Get.arguments[ARG_SEARCH_KEY];
-    state = SearchResultState(searchKey);
+    novelState = SearchResultState(searchKey);
+    comicState = SearchResultState(searchKey);
     searchBook();
   }
-  void searchBook(){
-    if(state.searchKey.isEmpty) return;
-    state.loading=true;
-    state.donnSourceCount=0;
+  void searchBook([bool isComic=false]){
+    var state= isComic ? comicState:novelState;
+    if (state.searchKey.isEmpty) return;
+    state.loading = true;
+    state.donnSourceCount = 0;
     update();
     SourceManager.instance.searchFromSources(state.searchKey, (list, totalCount, doneCount) {
-      var result=combineAndSortListWithScore(state.searchKey,list,state.books);
-      state.books=result;
-      state.donnSourceCount =doneCount;
-      if(doneCount>=totalCount){
-        state.loading=false;
+      var result = combineAndSortListWithScore(state.searchKey, list, state.books);
+      state.books = result;
+      state.donnSourceCount = doneCount;
+      state.totalSearchCount = totalCount;
+      if (doneCount >= totalCount) {
+        state.loading = false;
       }
       update();
-    });
+    }, isComic: isComic);
   }
+
   ///按照相似度评分，并按照相似度排序合并
   Map<String,List<BookItemBean>> combineAndSortListWithScore(String keyword,List<BookItemBean> books,Map<String,List<BookItemBean>> books2){
     var i=0;var j=0;
@@ -64,5 +70,14 @@ class SearchResultLogic extends GetxController {
       books2[name]=[...(books2[name]??[]),element];
     });
     return LinkedHashMap.fromEntries(books2.entries.sorted((a,b)=>calcScore(b.value.first).compareTo(calcScore(a.value.first))));
+  }
+  void updateIndex(int index) {
+    if(index==1){
+      if(comicState.books.isEmpty){
+        searchBook(true);
+      }
+    }
+    currentIndex=index;
+    update();
   }
 }

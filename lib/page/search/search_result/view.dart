@@ -14,17 +14,49 @@ import 'package:read_info/utils/developer.dart';
 import 'package:read_info/widget/container.dart';
 import 'logic.dart';
 
-class SearchResultPage extends StatelessWidget {
+class SearchResultPage extends StatefulWidget {
+  @override
+  State<SearchResultPage> createState() => _SearchResultPageState();
+}
+
+class _SearchResultPageState extends State<SearchResultPage> with SingleTickerProviderStateMixin {
+  TabController? _tabController;
+
+  @override
+  void initState() {
+    _tabController = TabController(
+      initialIndex: 0,
+      length: 2,
+      vsync: this,
+    );
+    _tabController!.addListener(() {
+      final logic = Get.find<SearchResultLogic>();
+      logic.updateIndex(_tabController!.index);
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tabController!.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final logic = Get.put(SearchResultLogic());
-    final state = Get
-        .find<SearchResultLogic>()
-        .state;
-
+    final novelState = Get.find<SearchResultLogic>().novelState;
+    final comicState = Get.find<SearchResultLogic>().comicState;
     return Scaffold(
         appBar: MyAppBar(
+            bottom: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabs: [
+                Tab(text: "小说", height: 40),
+                Tab(text: "漫画", height: 40),
+              ],
+            ),
             leading: Row(
               children: [
                 MyBackButton(),
@@ -32,47 +64,68 @@ class SearchResultPage extends StatelessWidget {
                 GetBuilder<SearchResultLogic>(
                   assignId: true,
                   builder: (logic) {
-                    return Text("${state.searchKey}" + (state.donnSourceCount > 0 ? "(${state.donnSourceCount})" : ""));
+                    final isNovel=logic.currentIndex == 0;
+                    final state =isNovel  ? novelState : comicState;
+                    return Text("${state.searchKey}" + (state.donnSourceCount > 0 ? "(${state.donnSourceCount}/${state.totalSearchCount})" : "")+"${isNovel?"  --->小说":"  --->漫画"}");
                   },
                 ),
               ],
             ),
             trail: [
-              SizedBox(
-                  width: 15,
-                  height: 15,
-                  child: GetBuilder<SearchResultLogic>(
-                    assignId: true,
-                    builder: (logic) {
-                      if (state.loading)
-                        return CircularProgressIndicator(strokeWidth: 2);
-                      else
-                        return SizedBox();
-                    },
-                  )),
-              IconButton(
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-                icon: Icon(Icons.stop),
-                tooltip: MaterialLocalizations
-                    .of(context)
-                    .backButtonTooltip,
-                onPressed: () {},
-              ),
+              GetBuilder<SearchResultLogic>(
+                  assignId: true,
+                  builder: (logic) {
+                    final currentState = logic.currentIndex == 0 ? novelState : comicState;
+                    if (currentState.loading)
+                      return Row(
+                        children: [
+                          SizedBox(
+                              width: 15,
+                              height: 15,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                visualDensity: VisualDensity.compact,
+                                icon: Icon(Icons.stop),
+                                tooltip: MaterialLocalizations
+                                    .of(context)
+                                    .backButtonTooltip,
+                                onPressed: () {},
+                              )
+                          ),
+                        ],
+                      ); else
+                      return SizedBox();
+                  })
+
             ]),
         body: GetBuilder<SearchResultLogic>(
           assignId: true,
           builder: (logic) {
-            return ListView(
-                children: state.books.entries
-                    .map((e) => BookSearchItemWidget(
-                          list: e.value,
-                        ))
-                    .toList());
+            return TabBarView(
+                // physics: NeverScrollableScrollPhysics(),
+                controller: _tabController,
+                children: [
+                  ListView(
+                      children: novelState.books.entries
+                          .map((e) => BookSearchItemWidget(
+                                list: e.value,
+                              ))
+                          .toList()),
+                  ListView(
+                      children: comicState.books.entries
+                          .map((e) => BookSearchItemWidget(
+                                list: e.value,
+                              ))
+                          .toList())
+                ]);
           },
         ));
   }
 }
+
 class BookSearchItemWidget extends StatelessWidget {
   const BookSearchItemWidget({Key? key, required this.list}) : super(key: key);
 
@@ -80,11 +133,11 @@ class BookSearchItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bean=list.first;
+    final bean = list.first;
     return GestureDetector(
       onTap: () async {
-        final source=await SourceManager.instance.getSourceFromUrl(bean.sourceUrl);
-        debug("跳转到详情页"+bean.toString());
+        final source = await SourceManager.instance.getSourceFromUrl(bean.sourceUrl);
+        debug("跳转到详情页" + bean.toString());
         return await Get.toNamed(RouteConfig.detailbook, arguments: {ARG_BOOK_ITEM_BEAN: bean, ARG_ITEM_SOURCE_BEAN: source});
       },
       child: Center(
@@ -97,10 +150,7 @@ class BookSearchItemWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                  SizedBox(
-                      width: 70,
-                      height: 100,
-                      child: BookCover(bean)),
+                SizedBox(width: 70, height: 100, child: BookCover(bean)),
                 SizedBox(width: 20),
                 Expanded(
                   child: Column(
@@ -113,8 +163,8 @@ class BookSearchItemWidget extends StatelessWidget {
                           Text(bean.author?.trim() ?? "", style: Theme.of(context).textTheme.bodySmall),
                         ],
                       ),
-                        SizedBox(height: 2),
-                        Text("书源："+list.map((e) => e.source?.bookSourceName??"").join(','), style: Theme.of(context).textTheme.bodySmall, maxLines: 3, overflow: TextOverflow.ellipsis),
+                      SizedBox(height: 2),
+                      Text("书源：" + list.map((e) => e.source?.bookSourceName ?? "").join(','), style: Theme.of(context).textTheme.bodySmall, maxLines: 3, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),

@@ -55,9 +55,14 @@ class SourceManager {
   }
 
   ///////书源搜索功能
-  Future searchFromSources(String searchKey, SearchCallBack callBack) async {
+  Future searchFromSources(String searchKey, SearchCallBack callBack,{isComic=false}) async {
     await ensureSources();
-    final bookSourcesRep = sources.where((e) => e.bookSourceType == source_type_novel).map((e) => SourceNetRepository(e)).toList();
+    final bookSourcesRep;
+    if (isComic)
+      bookSourcesRep = sources.where((e) => e.bookSourceType == source_type_comic).map((e) => SourceNetRepository(e)).toList();
+    else
+      bookSourcesRep = sources.where((e) => e.bookSourceType == source_type_novel).map((e) => SourceNetRepository(e)).toList();
+
     var sourceCount = bookSourcesRep.length;
     var okSourceCount = 0;
     var errorSourceCount = 0;
