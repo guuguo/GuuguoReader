@@ -1,9 +1,12 @@
+import 'package:collection/collection.dart';
 import 'package:floor/floor.dart';
 import 'package:read_info/bean/db/source_db.dart';
 import 'package:read_info/generated/json/base/json_convert_content.dart';
 import 'package:read_info/generated/json/base/json_field.dart';
 import 'package:read_info/generated/json/source_entity.g.dart';
 import 'dart:convert';
+
+import 'package:read_info/utils/ext/list_ext.dart';
 
 @JsonSerializable()
 class SourceEntity {
@@ -50,7 +53,16 @@ class SourceEntity {
     if (exploreUrl is List) {
       return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(exploreUrl);
     } else if (exploreUrl is String) {
-      return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(json.decode(exploreUrl!));
+      try {
+        return JsonConvert.fromJsonAsT<List<SourceExploreUrl>>(json.decode(exploreUrl!));
+      }catch (e) {
+        return (exploreUrl as String).split("&&").whereNotNull().map((e) {
+          var spliteTitle = e.split('::');
+          return SourceExploreUrl()
+            ..title = spliteTitle.getOrNull(0)
+            ..url = spliteTitle.getOrNull(1);
+        }).toList();
+      }
     }
     return null;
   }

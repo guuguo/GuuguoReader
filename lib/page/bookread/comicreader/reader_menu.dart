@@ -21,13 +21,13 @@ class ComicReaderMenu extends StatelessWidget {
           data: IconTheme.of(context).copyWith(color: Colors.white),
           child: Column(
             children: [
+              MenuHeader(context, chapterName),
               Expanded(child: SizedBox()),
               ComicMenuBottom(context),
             ],
           )),
     ));
   }
-
 }
 Widget ComicMenuBottom(BuildContext context) {
   return Container(
@@ -45,11 +45,6 @@ Widget ComicMenuBottom(BuildContext context) {
             NovelReader.of(context)?.onMenuChange?.call(false);
             NovelReader.of(context)?.showChapterIndex?.call();
             NovelReader.of(context)?.loadChapter?.call(null);
-          }),
-          IconMenu(Icons.format_size),
-          IconMenu(Icons.light_mode),
-          IconMenu(Icons.search,onPressed: (){
-            brightnessChange(context);
           }),
           IconMenu(Icons.screen_rotation, onPressed: () {
             rotationChange(context);

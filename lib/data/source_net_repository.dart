@@ -216,7 +216,7 @@ class SourceNetRepository {
     });
 
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
-      result = (result ?? "") + await queryBookContentByUrl(nextUrl, rule);
+      result = (result ?? "") +"\n"+ await queryBookContentByUrl(nextUrl, rule);
     }
 
     return result ?? "";
