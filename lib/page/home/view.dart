@@ -18,6 +18,7 @@ class HomePage extends StatelessWidget {
         .toList();
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
         body: GetBuilder<HomeLogic>(
             assignId: true,
             builder: (logic) {

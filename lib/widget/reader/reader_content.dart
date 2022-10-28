@@ -1,18 +1,12 @@
-import 'dart:convert';
 import 'dart:ui' as ui;
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:read_info/bean/book_item_bean.dart';
 import 'package:read_info/data/rule/novel_string_deal.dart';
-import 'package:read_info/utils/developer.dart';
 import 'package:read_info/utils/ext/list_ext.dart';
-import 'package:read_info/utils/utils_screen.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 
-import 'reader_content_config.dart';
 
 class ReaderContentDrawer {
   TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
@@ -148,19 +142,20 @@ class ReaderContentDrawer {
 
     var pageContentConfig = chapterData.chapterContentConfigs[index];
 
-    final validContentHeight = (model.config.pageSize.height -model.config.contentPaddingVertical * 2);
+    final validContentHeight = (model.config.pageSize.height - model.config.contentPaddingVertical * 2);
     pageCanvas.drawPicture(drawBackground());
+    var textColor = model.config.isDark ? Colors.white : model.config.contentTextColor;
 
     ///第一页画上章节名
     if (index == 0) {
-      var entry=getChapterIndexName(chapterData.chapterName);
+      var entry = getChapterIndexName(chapterData.chapterName);
 
       ///绘制  章节名
       textPainter.textAlign=TextAlign.center;
       textPainter.text = TextSpan(
           text: "${entry.value}",
           style: TextStyle(
-            color: model.config.contentTextColor,
+            color: textColor,
             height: 1.2,
             fontSize: model.config.bottomTipFontSize.toDouble() * 2.5,
             fontWeight: FontWeight.bold,
@@ -174,7 +169,7 @@ class ReaderContentDrawer {
         textPainter.text = TextSpan(
             text: "${entry.key}",
             style: TextStyle(
-              color: model.config.contentTextColor.withAlpha(100),
+              color: textColor.withAlpha(100),
               height: 1.2,
               fontSize: model.config.bottomTipFontSize.toDouble()*1.4 ,
             ));
@@ -194,7 +189,7 @@ class ReaderContentDrawer {
       textPainter.text = TextSpan(
           text: content,
           style: TextStyle(
-              color: model.config.contentTextColor,
+              color: textColor,
               height: pageContentConfig.currentContentLineHeight / pageContentConfig.currentContentFontSize,
               fontSize: pageContentConfig.currentContentFontSize.toDouble()));
       textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
@@ -208,7 +203,7 @@ class ReaderContentDrawer {
     ///绘制  章节名（1/5)
     textPainter.text = TextSpan(
         text: "${chapterData.chapterName}(${index + 1}/${chapterData.chapterContentConfigs.length})",
-        style: TextStyle(color: model.config.contentTextColor, height:1.2, fontSize: model.config.bottomTipFontSize.toDouble()));
+        style: TextStyle(color: textColor.withOpacity(0.8), height:1.2, fontSize: model.config.bottomTipFontSize.toDouble()));
     textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
     textPainter.paint(pageCanvas, Offset((model.config.pageSize.width - textPainter.width) / 2, model.config.pageSize.height - model.config.bottomTipHeight.toDouble()));
 
@@ -216,7 +211,7 @@ class ReaderContentDrawer {
     ///绘制  1/100章
     textPainter.text = TextSpan(
         text: "${chapterData.chapterIndex + 1}/${pageProgress.totalChapterCount}章",
-        style: TextStyle(color: model.config.contentTextColor, height: 1.2, fontSize: model.config.bottomTipFontSize.toDouble()));
+        style: TextStyle(color: textColor.withOpacity(0.8), height: 1.2, fontSize: model.config.bottomTipFontSize.toDouble()));
     textPainter.layout(maxWidth: model.config.pageSize.width - (2 * model.config.contentPaddingHorizontal));
     textPainter.paint(pageCanvas, Offset(model.config.pageSize.width - model.config.contentPaddingHorizontal.toDouble() - textPainter.width, model.config.pageSize.height - model.config.bottomTipHeight.toDouble()));
     return pageRecorder.endRecording();

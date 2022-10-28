@@ -20,10 +20,10 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
     pageProgress.chapterPrepare = (chapter) {
       applyConfig(chapter);
     };
-    init();
   }
 
   init() async {
+    await config.initBGImage();
     reApplyConfig();
     pageProgress.preloadData();
     prepareNextAndPrePage();
@@ -114,16 +114,18 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
     }
   }
 
-  setConfig(ReaderConfigEntity config) {
+  setConfig(ReaderConfigEntity config)async {
     final configChange=this.config != config;
     this.config = config;
     if (configChange) {
-      readerContentDrawer.drawBackground(true);
+      await config.initBGImage();
       reApplyConfig();
     }
   }
 
-  void reApplyConfig() async {
+  Future reApplyConfig() async {
+    readerContentDrawer.drawBackground(true);
+    notifyListeners();
     pageProgress.currentChapter?.clearCalculateResult();
     pageProgress.nextChapter?.clearCalculateResult();
     pageProgress.preChapter?.clearCalculateResult();

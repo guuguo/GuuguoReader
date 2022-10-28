@@ -73,30 +73,32 @@ class NovelReaderState extends State<NovelReader> with MenuShowBehavior, TickerP
   @override
   initState() {
     super.initState();
+  }
+
+  @override
+  didChangeDependencies() {
+    super.didChangeDependencies();
     init();
   }
 
   init() async {
     var pageSize = widget.pageSize;
     final isDarkMode = Get.find<GlobalLogic>().isDark(context);
-    final img = isDarkMode ? await BgImage.getDark() : await BgImage.getLight();
-    final textColor = isDarkMode ? Colors.white : Color(0xff040604);
+    final config=await Get.find<GlobalLogic>().getConfig();
 
     controller = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
     viewModel = ReaderViewModel(
       widget.pageProgress,
-      ReaderConfigEntity().copyWith(
+      (config??ReaderConfigEntity()).copyWith(
         pageSize: widget.pageSize,
-        currentCanvasBgImage: img,
-        contentTextColor: textColor,
+        isDark: isDarkMode,
       ),
       canvasKey,
     );
+    await viewModel.init();
     animManager = PageAnimManager(canvasKey, viewModel, pageSize, controller);
-    viewModel.addListener(() {
-      setState(() {});
-    });
     mPainter = NovelPagePainter(animManager, viewModel);
+    setState(() {});
   }
 
   void jumpToChapter(int chapterIndex) {
@@ -109,14 +111,13 @@ class NovelReaderState extends State<NovelReader> with MenuShowBehavior, TickerP
         ? SizedBox()
         : InheritedReader(
             onConfigChange: (config) {
+              Get.find<GlobalLogic>().saveConfig(config);
               viewModel.setConfig(config);
             },
             onBrightnessChange: () async {
               hideMenu();
               final isDarkMode=Get.find<GlobalLogic>().isDark(context);
-              final img = isDarkMode ?await BgImage.getDark():await BgImage.getLight();
-              final textColor = isDarkMode ? Colors.white : Color(0xff040604);
-              viewModel.setConfig(viewModel.config.copyWith(currentCanvasBgImage: img, contentTextColor: textColor));
+              viewModel.setConfig(viewModel.config.copyWith(isDark: isDarkMode));
             },
             onMenuChange: changeMenuShow,
             showChapterIndex: widget.showCategory,
@@ -148,7 +149,7 @@ class NovelReaderState extends State<NovelReader> with MenuShowBehavior, TickerP
                     onPanEnd: animManager.onPanEnd,
                     child: Builder(builder: (context) {
                       return OrientationBuilder(builder: (context, orientation) {
-                        final size = orientation == Orientation.portrait ? Size(widget.pageSize.width, widget.pageSize.height) : Size(widget.pageSize.height, widget.pageSize.width);
+                        final size = orientation == Orientation.portrait ? Size(widget.pageSize.width, widget.pageSize.height) : Size(widget.pageSize.height-MediaQuery.of(context).padding.top, widget.pageSize.width);
                         viewModel.setConfig(viewModel.config.copyWith(pageSize: size));
                         return CustomPaint(
                           key: canvasKey,
@@ -182,10 +183,10 @@ mixin MenuShowBehavior<T extends StatefulWidget> on State<T> {
     if (menuShow)
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     else {
-      if (MediaQuery.of(context).platformBrightness == Brightness.light) {
-        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-      } else {
+      if (Get.find<GlobalLogic>().isDark(context)) {
         SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+      } else {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
       }
     }
     ;

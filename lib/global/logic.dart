@@ -1,6 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../data/net_repository.dart';
+import 'package:read_info/widget/reader/reader_content_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'constant.dart';
@@ -10,7 +12,8 @@ class GlobalLogic extends GetxController {
   GlobalLogic(){
     loadThemeMode();
   }
-  void changeThemeMode(BuildContext context) {
+  void changeThemeMode(BuildContext context)async {
+    final sp=await spf;
     if (Theme.of(context).brightness == Brightness.dark) {
       themeMode = ThemeMode.light;
       sp.setBool(sp_dark_mode,false);
@@ -27,12 +30,21 @@ class GlobalLogic extends GetxController {
     } else if (themeMode == ThemeMode.light) {
       return false;
     }
-    return Theme.of(context).brightness == Brightness.dark;
+    return MediaQuery.of(context).platformBrightness == Brightness.dark;
   }
 
-  late final SharedPreferences sp;
+   SharedPreferences? _sp;
+
+  Future<SharedPreferences> get spf async {
+    if(_sp==null){
+       _sp= await SharedPreferences.getInstance();
+       return _sp!;
+    }
+    return _sp!;
+  }
+
   void loadThemeMode() async {
-    sp=await SharedPreferences.getInstance();
+    final sp=await spf;
     final darkMode = sp.getBool(sp_dark_mode);
     if (darkMode == null)
       this.themeMode = ThemeMode.system;
@@ -43,5 +55,17 @@ class GlobalLogic extends GetxController {
       this.themeMode = ThemeMode.dark;
       update();
     }
+  }
+  void saveConfig(ReaderConfigEntity entity) async {
+    final sp=await spf;
+    var map=entity.toMap();
+    sp.setString(sp_novel_config, json.encode(map));
+  }
+  Future<ReaderConfigEntity?> getConfig() async {
+    final sp=await spf;
+    final jsonStr=sp.getString(sp_novel_config);
+    if(jsonStr!=null)
+      return ReaderConfigEntity.fromMap(json.decode(jsonStr));
+    return null;
   }
 }

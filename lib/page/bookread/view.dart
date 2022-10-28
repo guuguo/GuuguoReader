@@ -47,8 +47,6 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
     WidgetsBinding.instance.removeObserver(this);
     OrientationPlugin.setPreferredOrientations([...DeviceOrientation.values]..remove(DeviceOrientation.portraitDown));
     OrientationPlugin.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(systemNavigationBarColor: Theme.of(context).bottomAppBarColor));
-
     Get.delete<ContentLogic>();
   }
 

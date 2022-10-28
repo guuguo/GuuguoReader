@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:read_info/global/constant.dart';
 class BackgroundImage{
   ui.Image bg;
   BoxFit fit;
@@ -19,12 +20,17 @@ class ReaderConfigEntity {
 
   /// 背景色
   Color currentCanvasBgColor = Color(0xfffff2cc);
+  int? bgImageStyle = BgImage.bgStyleLight1;
+  bool isDark=false;
+
   BackgroundImage? currentCanvasBgImage;
+
+  initBGImage()async {
+    currentCanvasBgImage= await BgImage.getBgImage(bgImageStyle,isDark);
+  }
 
   int currentPageIndex = 0;
   int currentChapterIndex = 0;
-  String? novelId;
-
   int fontSize = 18;
   int lineHeight = 30;
   int paragraphSpacing = 24;
@@ -44,10 +50,10 @@ class ReaderConfigEntity {
   ReaderConfigEntity.New({
     required this.currentAnimationMode,
     required this.currentCanvasBgColor,
-    this.currentCanvasBgImage,
+    this.bgImageStyle,
+    this.isDark=false,
     required this.currentPageIndex,
     required this.currentChapterIndex,
-    required this.novelId,
     required this.fontSize,
     required this.lineHeight,
     required this.paragraphSpacing,
@@ -64,7 +70,8 @@ class ReaderConfigEntity {
   ReaderConfigEntity copyWith({
     int? currentAnimationMode,
     Color? currentCanvasBgColor,
-    BackgroundImage? currentCanvasBgImage,
+    int? bgImageStyle,
+    bool? isDark,
     int? currentPageIndex,
     int? currentChapterIndex,
     String? novelId,
@@ -83,10 +90,10 @@ class ReaderConfigEntity {
     return ReaderConfigEntity.New(
       currentAnimationMode: currentAnimationMode ?? this.currentAnimationMode,
       currentCanvasBgColor: currentCanvasBgColor ?? this.currentCanvasBgColor,
-      currentCanvasBgImage: currentCanvasBgImage ?? this.currentCanvasBgImage,
+      bgImageStyle: bgImageStyle ?? this.bgImageStyle,
+      isDark: isDark??this.isDark,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       currentChapterIndex: currentChapterIndex ?? this.currentChapterIndex,
-      novelId: novelId ?? this.novelId,
       fontSize: fontSize ?? this.fontSize,
       lineHeight: lineHeight ?? this.lineHeight,
       paragraphSpacing: paragraphSpacing ?? this.paragraphSpacing,
@@ -108,7 +115,8 @@ class ReaderConfigEntity {
           runtimeType == other.runtimeType &&
           currentAnimationMode == other.currentAnimationMode &&
           currentCanvasBgColor == other.currentCanvasBgColor &&
-          currentCanvasBgImage == other.currentCanvasBgImage &&
+          bgImageStyle == other.bgImageStyle &&
+          isDark == other.isDark &&
           currentPageIndex == other.currentPageIndex &&
           currentChapterIndex == other.currentChapterIndex &&
           fontSize == other.fontSize &&
@@ -127,7 +135,8 @@ class ReaderConfigEntity {
   int get hashCode =>
       currentAnimationMode.hashCode ^
       currentCanvasBgColor.hashCode ^
-      currentCanvasBgImage.hashCode ^
+      bgImageStyle.hashCode ^
+      isDark.hashCode ^
       currentPageIndex.hashCode ^
       currentChapterIndex.hashCode ^
       fontSize.hashCode ^
@@ -141,4 +150,46 @@ class ReaderConfigEntity {
       bottomTipHeight.hashCode ^
       titleFontSize.hashCode ^
       bottomTipFontSize.hashCode;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'currentAnimationMode': currentAnimationMode,
+      'currentCanvasBgColor': currentCanvasBgColor.value,
+      'bgImageStyle': bgImageStyle,
+      'currentPageIndex': currentPageIndex,
+      'currentChapterIndex': currentChapterIndex,
+      'fontSize': fontSize,
+      'lineHeight': lineHeight,
+      'paragraphSpacing': paragraphSpacing,
+      'contentTextColor': contentTextColor.value,
+      'contentPaddingHorizontal': contentPaddingHorizontal,
+      'contentPaddingVertical': contentPaddingVertical,
+      'titleHeight': titleHeight,
+      'bottomTipHeight': bottomTipHeight,
+      'titleFontSize': titleFontSize,
+      'bottomTipFontSize': bottomTipFontSize,
+    };
+  }
+
+  factory ReaderConfigEntity.fromMap(dynamic map) {
+    if (null == map) return ReaderConfigEntity();
+    return ReaderConfigEntity.New(
+      currentAnimationMode: map['currentAnimationMode'].toInt(),
+      currentCanvasBgColor:Color(map['currentCanvasBgColor'].toInt()),
+      bgImageStyle:map['bgImageStyle'].toInt(),
+      currentPageIndex:map['currentPageIndex'].toInt(),
+      currentChapterIndex:map['currentChapterIndex'].toInt(),
+      fontSize:map['fontSize'].toInt(),
+      lineHeight:map['lineHeight'].toInt(),
+      paragraphSpacing:map['paragraphSpacing'].toInt(),
+      titleHeight:map['titleHeight'].toInt(),
+      bottomTipHeight:map['bottomTipHeight'].toInt(),
+      bottomTipFontSize:map['bottomTipFontSize'].toInt(),
+      titleFontSize:map['titleFontSize'].toInt(),
+      contentPaddingHorizontal:map['contentPaddingHorizontal'].toInt(),
+      contentPaddingVertical:map['contentPaddingVertical'].toInt(),
+      contentTextColor:Color(map['contentTextColor'].toInt()),
+      pageSize:Size(MediaQueryData.fromWindow(window).size.width, MediaQueryData.fromWindow(window).size.height),
+    );
+  }
 }

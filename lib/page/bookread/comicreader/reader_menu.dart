@@ -61,9 +61,9 @@ Widget ComicMenuBottom(BuildContext context) {
 }
 void brightnessChange(BuildContext context) {
   Get.find<GlobalLogic>().changeThemeMode(context);
-  // Future.delayed(Duration(milliseconds: 20),(){
+  Future.delayed(Duration(milliseconds: 20),(){
     NovelReader.of(context)?.onBrightnessChange?.call();
-  // });
+  });
 }
 
 void rotationChange(BuildContext context) {
