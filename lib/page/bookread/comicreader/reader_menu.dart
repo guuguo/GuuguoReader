@@ -44,7 +44,6 @@ Widget ComicMenuBottom(BuildContext context) {
           IconMenu(Icons.format_list_bulleted, onPressed: () {
             NovelReader.of(context)?.onMenuChange?.call(false);
             NovelReader.of(context)?.showChapterIndex?.call();
-            NovelReader.of(context)?.loadChapter?.call(null);
           }),
           IconMenu(Icons.screen_rotation, onPressed: () {
             rotationChange(context);

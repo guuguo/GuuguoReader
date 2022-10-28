@@ -54,9 +54,10 @@ class ComicReaderState extends State<ComicReader> {
    return  render?.localToGlobal(Offset.zero).dy;
   }
   double? getHeightFromKey(GlobalKey key){
-    final render= secondColumnKey.currentContext?.findRenderObject() as RenderBox?;
+    final render= key.currentContext?.findRenderObject() as RenderBox?;
     return  render?.size.height;
   }
+  var loadingMore = false;
   @override
   initState() {
     super.initState();
@@ -73,17 +74,22 @@ class ComicReaderState extends State<ComicReader> {
 
       ///滚动到下一页
       if(dy!=null && dy<0 ) {
-        final currentPage = logic.comics[1].first;
-        if (currentPage != widget.pageProgress.currentChapterIndex) await widget.pageProgress.toNextPage();
+        try {
+          final currentPage = logic.comics[1].first;
+          if (currentPage != widget.pageProgress.currentChapterIndex) await widget.pageProgress.toNextPage();
+        } catch(e){}
       }
 
       if (height == null) return;
-      var loadingMore = false;
 
       ///离底部还有200距离的时候，加载下一章的数据
       if (controller.offset > height - widget.pageSize.height-200) {
         if (!loadingMore) {
           loadingMore = true;
+          try {
+          debug("第${logic.comics[0].first}章高度：${getHeightFromKey(firstColumnKey)}");
+          debug("第${logic.comics[1].first}章高度：${getHeightFromKey(secondColumnKey)}");
+          }catch(e){}
           await logic.addNextComicChapter(getHeightFromKey(firstColumnKey));
           loadingMore = false;
         }
@@ -139,7 +145,7 @@ class ComicReaderState extends State<ComicReader> {
                       children: logic.comics
                           .mapIndexed((i, pair) => Column(
                                 key: i == 0 ? firstColumnKey : (i == 1 ? secondColumnKey : null),
-                                children: pair.seconed.mapIndexed((i,e) => ImageItem(i,e)).toList(),
+                                children: pair.seconed.mapIndexed((i,e) => ImageItem(pair.first,i,e)).toList(),
                               ))
                           .toList(),
                     );
@@ -157,23 +163,17 @@ class ComicReaderState extends State<ComicReader> {
     );
   }
 
-  Widget ImageItem(int index,String url) {
+  Widget ImageItem(int chapterIndex,int index,String url) {
     final dealUrl = url.replaceAll(RegExp("\/\/\/+"), '//');
-    debug("$index $dealUrl");
     return Container(
       constraints: BoxConstraints(minHeight: 200),
       child: CachedNetworkImage(
-          imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
         progressIndicatorBuilder: (c, u, p) => Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          child: Text("加载中(${chapterIndex+1}-${index+1})"),
         ),
         errorWidget: (c, u, e) {
           // debug("$index $dealUrl 出错了-url:${u}");
-          return Center(child: Text("该图片无法加载"));
+          return Center(child: Text("该图片无法加载(${chapterIndex+1}-${index+1})"));
         },
         imageUrl: dealUrl,
       ),
