@@ -145,6 +145,7 @@ class SourceRuleContent {
 
 @JsonSerializable()
 class SourceRuleExplore {
+  String? type;
   String? author;
   String? bookList;
   String? bookUrl;

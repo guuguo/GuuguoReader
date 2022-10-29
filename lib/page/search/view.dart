@@ -34,8 +34,8 @@ class SearchPage extends StatelessWidget {
 }
 
 class SearchEditItem extends StatefulWidget {
-  const SearchEditItem({Key? key,required this.onSearch}) : super(key: key);
-final ValueChanged<String> onSearch;
+  const SearchEditItem({Key? key, required this.onSearch}) : super(key: key);
+  final ValueChanged<String> onSearch;
 
   @override
   State<SearchEditItem> createState() => _SearchEditItemState();
@@ -84,7 +84,7 @@ class _SearchEditItemState extends State<SearchEditItem> {
                           color:  MyTheme(context).searchTextColor,
                         ),
                         onPressed: () {
-                          widget.onSearch(value);
+                          if (value != null) widget.onSearch(value);
                         }),
                     hintText: "输入书名或作者名",
                     contentPadding: EdgeInsets.zero,

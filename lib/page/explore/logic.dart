@@ -41,7 +41,7 @@ class ExploreLogic extends GetxController {
   }
 
   Future toSearchPage()async {
-    await Get.offAndToNamed(RouteConfig.search, arguments: {
+    await Get.toNamed(RouteConfig.search, arguments: {
       ARG_SOURCE_LIST: [source]
     });
   }

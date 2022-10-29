@@ -1,10 +1,14 @@
 import 'package:read_info/generated/json/base/json_convert_content.dart';
 import 'package:read_info/bean/entity/source_entity.dart';
+import 'package:collection/collection.dart';
+
 import 'package:floor/floor.dart';
 
 import 'package:read_info/bean/db/source_db.dart';
 
 import 'package:read_info/generated/json/base/json_convert_content.dart';
+
+import 'package:read_info/utils/ext/list_ext.dart';
 
 
 SourceEntity $SourceEntityFromJson(Map<String, dynamic> json) {
@@ -244,6 +248,10 @@ Map<String, dynamic> $SourceRuleContentToJson(SourceRuleContent entity) {
 
 SourceRuleExplore $SourceRuleExploreFromJson(Map<String, dynamic> json) {
 	final SourceRuleExplore sourceRuleExplore = SourceRuleExplore();
+	final String? type = jsonConvert.convert<String>(json['type']);
+	if (type != null) {
+		sourceRuleExplore.type = type;
+	}
 	final String? author = jsonConvert.convert<String>(json['author']);
 	if (author != null) {
 		sourceRuleExplore.author = author;
@@ -281,6 +289,7 @@ SourceRuleExplore $SourceRuleExploreFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> $SourceRuleExploreToJson(SourceRuleExplore entity) {
 	final Map<String, dynamic> data = <String, dynamic>{};
+	data['type'] = entity.type;
 	data['author'] = entity.author;
 	data['bookList'] = entity.bookList;
 	data['bookUrl'] = entity.bookUrl;

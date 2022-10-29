@@ -86,14 +86,16 @@ class SourceNetRepository {
     String? searchUrl = source.searchUrl;
     if (searchUrl?.isNotEmpty != true) return [];
 
-    final index = searchUrl!.indexOf(',');
-
+    searchUrl = searchUrl!.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
+    var index = -1;
+    if (searchUrl.contains(RegExp('{.*}'))) {
+      index = searchUrl.lastIndexOf(',');
+    }
     var method = "get";
     var charset = "utf-8";
     String? contentType;
     ;
     dynamic body;
-    searchUrl = searchUrl.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
 
     if (index >= 0) {
       final methodJson = json.decode(searchUrl.substring(index + 1));
@@ -129,9 +131,28 @@ class SourceNetRepository {
       ),
     );
 
-    var document = parse(res.data);
     //header.title@a@text
     var rule = source.ruleSearch;
+
+    ///json 规则
+    if (rule?.type == "json") {
+      dynamic map= json.decode(res.data??"");
+      var list = parseRuleJsonList(map,rule?.bookList);
+      var bookList = list
+          ?.map((e) => BookItemBean.FormSource(source)
+            ..name = parseRuleJson(e,rule?.name)?.trim()
+            ..intro = parseRuleJson(e,rule?.intro)?.trim()
+            ..author = parseRuleJson(e,rule?.author)
+            ..lastChapter = parseRuleJson(e,rule?.lastChapter)
+            ..coverUrl = urlFix(parseRuleJson(e,rule?.coverUrl), source.bookSourceUrl!)
+            ..bookUrl = parseRuleJson(e,rule?.bookUrl))
+          .toList();
+
+      return bookList ?? [];
+    }
+
+    var document = parse(res.data);
+    /// css selector 规则
     var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
     var bookList = list
         ?.map((e) => BookItemBean.FormSource(source)
@@ -151,14 +172,14 @@ class SourceNetRepository {
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     var rule = source.ruleBookInfo;
-    var bookBean = BookDetailBean(id: Uuid().v1(),sourceUrl: source.bookSourceUrl)
+    var bookBean = BookDetailBean(id: Uuid().v1(), sourceUrl: source.bookSourceUrl)
       ..name = element.parseRule(rule?.name) ?? bean.name
       ..author = element.parseRule(rule?.author) ?? bean.author
       ..coverUrl = urlFix(element.parseRule(rule?.coverUrl) ?? bean.coverUrl, source.bookSourceUrl!)
       ..kind = element.parseRule(rule?.kind)?.trim()
       ..lastChapter = element.parseRule(rule?.lastChapter)
       ..intro = element.parseRule(rule?.intro)?.trim()
-      ..tocUrl = urlFix(checkUrlRule(bean.bookUrl!, rule?.tocUrl) ?? element.parseRule(rule?.tocUrl) ?? bean.bookUrl,source.bookSourceUrl!);
+      ..tocUrl = urlFix(checkUrlRule(bean.bookUrl!, rule?.tocUrl) ?? element.parseRule(rule?.tocUrl) ?? bean.bookUrl, source.bookSourceUrl!);
     if (bookBean.tocUrl == bean.bookUrl) {
       bookBean.chapters = getChapters(element, bookBean);
     }
@@ -181,7 +202,7 @@ class SourceNetRepository {
     var resList = list
         .mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
           ..chapterName = e.parseRule(rule?.chapterName)?.trim()
-          ..chapterUrl = urlFix(e.parseRule(rule?.chapterUrl),source.bookSourceUrl!))
+          ..chapterUrl = urlFix(e.parseRule(rule?.chapterUrl), source.bookSourceUrl!))
         .toList();
     return resList;
   }
@@ -189,8 +210,8 @@ class SourceNetRepository {
   Future<BookChapterBean?> queryBookContent(BookChapterBean bean) async {
     var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent);
     result = dealHtmlContentResult(result) ?? "";
-    if(result.isEmpty){
-      result="没找到内容";
+    if (result.isEmpty) {
+      result = "没找到内容";
     }
     if (result.isNotEmpty) bean.content = ChapterContent.FromChapter(bean, result);
     return bean;
@@ -222,12 +243,12 @@ class SourceNetRepository {
       result = result?.replaceAll(RegExp(reg), replace);
     });
 
-    result= result?.split(RegExp('\n')).map((e) {
+    result = result?.split(RegExp('\n')).map((e) {
       return "　　${e.trim()}";
     }).join('\n');
 
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
-      result = (result ?? "") +"\n"+ await queryBookContentByUrl(nextUrl, rule);
+      result = (result ?? "") + "\n" + await queryBookContentByUrl(nextUrl, rule);
     }
 
     return result ?? "";

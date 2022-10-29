@@ -67,7 +67,7 @@ class SearchResultLogic extends GetxController {
   }
 ///////书源搜索功能
   Future searchFromSources(String searchKey, SearchCallBack callBack,{isComic=false}) async {
-    final bookSourcesRep;
+    List<SourceNetRepository> bookSourcesRep;
     if (isComic)
       bookSourcesRep = selectedSources.where((e) => e.bookSourceType == source_type_comic).map((e) => SourceNetRepository(e)).toList();
     else

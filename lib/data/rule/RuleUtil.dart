@@ -139,23 +139,7 @@ extension ElementExt on Element {
       resultStr = resultElement.map((e) => e.attributes[attr]).whereNotNull().join('\n');
     }
 
-    if (resultStr.isNotEmpty==true && regex != null) {
-      final originReg = RegExp(regex);
-      if (urlReplace) {
-
-        final allMatches = originReg.allMatches(resultStr!);
-        var s1 = allMatches.firstOrNull?.groupOrNull(1);
-        var s2 = allMatches.firstOrNull?.groupOrNull(2);
-        var s3 = allMatches.firstOrNull?.groupOrNull(3);
-
-        replace = replace?.replaceAll(RegExp(r"\$1"), s1 ?? "");
-        replace = replace?.replaceAll(RegExp(r"\$2"), s2 ?? "");
-        replace = replace?.replaceAll(RegExp(r"\$3"), s3 ?? "");
-        resultStr=replace;
-      } else {
-        resultStr = resultStr.replaceAll(originReg, replace ?? "");
-      }
-    }
+    resultStr = replaceContentWithRule(resultStr, regex, replace,urlReplace);
     if (resultStr?.isEmpty == true) return null;
     return resultStr;
   }
@@ -217,6 +201,66 @@ extension ElementExt on Element {
     }
   }
 }
+
+String? replaceContentWithRule(String resultStr, String? regex, String? replace, bool urlReplace) {
+  String? result = resultStr;
+  if (resultStr.isNotEmpty == true && regex != null) {
+    final originReg = RegExp(regex);
+    if (urlReplace) {
+      final allMatches = originReg.allMatches(resultStr);
+      var s1 = allMatches.firstOrNull?.groupOrNull(1);
+      var s2 = allMatches.firstOrNull?.groupOrNull(2);
+      var s3 = allMatches.firstOrNull?.groupOrNull(3);
+
+      replace = replace?.replaceAll(RegExp(r"\$1"), s1 ?? "");
+      replace = replace?.replaceAll(RegExp(r"\$2"), s2 ?? "");
+      replace = replace?.replaceAll(RegExp(r"\$3"), s3 ?? "");
+      result = replace;
+    } else {
+      result = resultStr.replaceAll(originReg, replace ?? "");
+    }
+  }
+  return result;
+}
+///支持的格式 data.1.booName
+String? parseRuleJson(dynamic jsonObj,String? rule) {
+  if (rule?.isNotEmpty != true) return null;
+
+  ///正则 处理 ##分割
+  var regexSpan = rule!.split('##');
+  String? regex;
+  String? replace;
+  if (regexSpan.length > 1) {
+    regex = regexSpan[1];
+  }
+  if (regexSpan.length > 2) {
+    replace = regexSpan[2];
+  }
+  dynamic res = jsonObj;
+  regexSpan[0].split('.').forEach((element) {
+    final index = int.tryParse(element);
+    if (index != null) {
+      res = res[index];
+    }else {
+      res = res[element];
+    }
+  });
+  String? resultStr=replaceContentWithRule(res.toString(), regex, replace, rule.endsWith("###"));
+  return resultStr;
+}
+
+List? parseRuleJsonList(dynamic jsonObj, String? rule) {
+  if (rule?.isNotEmpty != true) return null;
+  dynamic res = jsonObj;
+  rule!.split('.').forEach((element) {
+    res = res[element];
+  });
+  if (res is List) {
+    return res;
+  }
+  return [];
+}
+
 main() {
   final reg=RegExp(r'data-bid="([^"]+)"');
   var str='<a href="//book.qidian.com/info/1031777108" target="_blank" data-eid="qd_C39" data-bid="1031777108"><img src="//bookcover.yuewen.com/qdbimg/349573/1031777108/150" alt="光阴之外在线阅读"></a>';
