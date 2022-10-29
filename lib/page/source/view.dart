@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:read_info/bean/entity/source_entity.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
@@ -8,6 +11,7 @@ import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/global/custom/component/limit_width_box.dart';
 import 'package:read_info/global/custom/my_theme.dart';
+import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/page/view/context_menu.dart';
 import 'package:read_info/page/view/icon.dart';
 import 'package:read_info/page/view/my_appbar.dart';
@@ -34,9 +38,7 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
     return Scaffold(
       appBar: MyAppBar(
         middle: Text("源列表"),
-        trail: [
-          menuButton(logic)
-        ],
+        trail: [menuButton(logic)],
       ),
       backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
       body: GetX<SourceLogic>(
@@ -63,24 +65,29 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
   Widget menuButton(SourceLogic logic) {
     return PopupMenuButton(
       itemBuilder: (BuildContext context) => [
-        PopupMenuItem(
-            child: Row(
-              children: [
-                Icon(Icons.import_contacts),
-                SizedBox(width: 10),
-                Text("获取常用源"),
-              ],
-            ),
+        popItem(
+            icon: Icons.import_contacts,
+            text: "获取常用源",
             onTap: () async {
-              final controller = Get.snackbar("提示", "正在更新源", showProgressIndicator: true, duration: Duration(seconds: 100));
+              final cancel = "正在更新源".showLoading();
               try {
-                await logic.importSource();
-                controller.close();
-                Get.snackbar("提示", "更新源完成", duration: Duration(milliseconds: 1500));
+                final list = await logic.importSource();
+                cancel();
+                "更新源完成,获取到${list.length}个书源".showMessage();
               } catch (e) {
-                controller.close();
+                cancel();
               }
-            })
+            }),
+        popItem(
+            icon: Icons.import_contacts,
+            text: "导入剪贴板书源",
+            onTap: () async {
+              ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+              final list = await logic.importSourceFromText(data?.text);
+              if (list.isEmpty) {
+                "未在剪贴板找到书源信息".showMessage();
+              }
+            }),
       ],
       child: PrimaryIconButton(
         Icons.more_vert,
@@ -88,10 +95,25 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
     );
   }
 
+  PopupMenuEntry popItem({IconData? icon, String? text, VoidCallback? onTap}) {
+    return PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(icon),
+            if (text != null) ...[SizedBox(width: 10), Text(text)]
+          ],
+        ),
+        onTap: onTap);
+  }
   Widget withContextMenu(Widget child, SourceEntity bean) {
     return ContextMenu(child: child, list: [
       Pair("编辑", () {
+        Get.back();
         Get.snackbar("提示", "暂未实现");
+      }),
+      Pair("导出到剪贴板", () {
+        Get.back();
+        Clipboard.setData(ClipboardData(text: json.encode(bean.toJson())));
       }),
       Pair("删除", () {
         Get.defaultDialog(
@@ -131,13 +153,13 @@ class SourceItemWidget extends StatelessWidget {
         logic.toSourcePage(bean);
       },
       child: Container(
-          padding: EdgeInsets.symmetric(horizontal:14,vertical:14),
+          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: RoundedBoxDecoration(radius: 10, color: Theme.of(context).cardColor),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(getTypeDesc(bean.bookSourceType)),
-              SizedBox(width:6),
+              SizedBox(width: 6),
               SizedBox(child: Text(bean.bookSourceName ?? "", style: Theme.of(context).textTheme.titleMedium?.copyWith(height: 1.3))),
             ],
           )),

@@ -79,7 +79,6 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
     } else {
       prepareCurrentPage();
     }
-    prepareCurrentPage();
     pageProgress.preloadData();
   }
 

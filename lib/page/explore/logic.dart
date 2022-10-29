@@ -40,6 +40,12 @@ class ExploreLogic extends GetxController {
     init();
   }
 
+  Future toSearchPage()async {
+    await Get.offAndToNamed(RouteConfig.search, arguments: {
+      ARG_SOURCE_LIST: [source]
+    });
+  }
+
   Future toDetailPage(BookItemBean item) async {
     var routeRouteConfig = RouteConfig.detailbook;
     if (source.bookSourceType == source_type_sms) {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -37,6 +38,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
   }
 
   initStatus() {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
     OrientationPlugin.forceOrientation(DeviceOrientation.portraitUp);
     OrientationPlugin.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
   }
@@ -45,9 +47,10 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    Get.delete<ContentLogic>();
+    if (!Platform.isIOS && !Platform.isAndroid) return;
     OrientationPlugin.setPreferredOrientations([...DeviceOrientation.values]..remove(DeviceOrientation.portraitDown));
     OrientationPlugin.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    Get.delete<ContentLogic>();
   }
 
   @override
@@ -80,7 +83,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
           } catch (e) {
             debug(e);
           }
-          final _comics = (array ?? (chapterData.content?.split("\n")))?.where((e) => Uri.tryParse(e) != null).toList() ?? [];
+          final _comics = (array ?? (chapterData.content?.split("\n")))?.where((e) => e.isNotEmpty&&(Uri.tryParse(e) != null)).toList() ?? [];
           chapterData.comics = _comics;
           print(chapterData.comics.join("   "));
         }
@@ -174,31 +177,35 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
 
   Widget ChapterItem(BuildContext context, index, BookChapterBean bean, bool selected) {
     final logic = Get.find<ContentLogic>();
-    return GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () {
-          Scaffold.of(context).closeDrawer();
-          if (index == logic.bookDetail.readChapterIndex) {
-            return;
-          }
-          readerKey.currentState?.jumpToChapter(index);
-          comicKey.currentState?.jumpToChapter(index);
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-                child: Container(
-              alignment: Alignment.centerLeft,
-              padding: EdgeInsets.only(left: 16),
-              child: Text((bean.chapterName ?? "") + (selected ? "  ✔" : ""),
-                  style: MyTheme(context).textTheme.caption?.copyWith(color: bean.content != null ? MyTheme(context).textTheme.bodyMedium?.color : null), maxLines: 1, overflow: TextOverflow.ellipsis),
-            )),
-            DashDivider()
-          ],
-        ),
-      );
+    return Builder(
+      builder: (context) {
+        return GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              Scaffold.of(context).closeDrawer();
+              if (index == logic.bookDetail.readChapterIndex) {
+                return;
+              }
+              readerKey.currentState?.jumpToChapter(index);
+              comicKey.currentState?.jumpToChapter(index);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                    child: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.only(left: 16),
+                  child: Text((bean.chapterName ?? "") + (selected ? "  ✔" : ""),
+                      style: MyTheme(context).textTheme.caption?.copyWith(color: bean.content != null ? MyTheme(context).textTheme.bodyMedium?.color : null), maxLines: 1, overflow: TextOverflow.ellipsis),
+                )),
+                DashDivider()
+              ],
+            ),
+          );
+      }
+    );
   }
 }
 

@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:ui' as ui show Image, Codec, FrameInfo;
-import 'package:cached_network_image_platform_interface/cached_network_image_platform_interface.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -105,8 +102,9 @@ class ComicReaderState extends State<ComicReader> {
   void jumpToChapter(int chapterIndex) async {
     final loading = "正在加载数据".showLoading();
     await widget.pageProgress.toTargetChapter(chapterIndex);
-    loading.close();
-    logic.loadCurrentPage();
+    await logic.loadCurrentPage();
+    controller.jumpTo(0);
+    loading();
   }
 
   @override

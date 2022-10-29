@@ -13,6 +13,7 @@ final ARG_BOOK_ITEM_BEAN="item_bean";
 final ARG_BOOK_DETAIL_BEAN="book_detail";
 final ARG_ITEM_SOURCE_BEAN="source_bean";
 final ARG_SEARCH_KEY="seach_key";
+final ARG_SOURCE_LIST="source_list";
 final source_type_novel = 0;
 final source_type_sms = 1;
 final source_type_comic = 2;

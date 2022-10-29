@@ -31,9 +31,9 @@ abstract class IReaderPageVm {
 
   Picture getNextPagePicture();
 
-  toNextPage();
+  Future  toNextPage();
 
-  toPrePage();
+  Future  toPrePage();
 }
 
 class PageAnimManager {

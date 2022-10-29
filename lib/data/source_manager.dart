@@ -54,31 +54,5 @@ class SourceManager {
     sourcesRx.value =[...sources..remove(entity)];
   }
 
-  ///////书源搜索功能
-  Future searchFromSources(String searchKey, SearchCallBack callBack,{isComic=false}) async {
-    await ensureSources();
-    final bookSourcesRep;
-    if (isComic)
-      bookSourcesRep = sources.where((e) => e.bookSourceType == source_type_comic).map((e) => SourceNetRepository(e)).toList();
-    else
-      bookSourcesRep = sources.where((e) => e.bookSourceType == source_type_novel).map((e) => SourceNetRepository(e)).toList();
-
-    var sourceCount = bookSourcesRep.length;
-    var okSourceCount = 0;
-    var errorSourceCount = 0;
-    if(bookSourcesRep.isEmpty) {
-      callBack.call([],sourceCount,okSourceCount+errorSourceCount);
-      return;
-    }
-    for (final book in bookSourcesRep) {
-      book.searchBookList(searchKey).then((res) {
-        okSourceCount++;
-        callBack.call(res,sourceCount,okSourceCount+errorSourceCount);
-      }).catchError((e) {
-        errorSourceCount++;
-        callBack.call([],sourceCount,okSourceCount+errorSourceCount);
-      });
-    }
-  }
 }
 typedef SearchCallBack = Function(List<BookItemBean>,int totalCount,int doneCount);

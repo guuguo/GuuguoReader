@@ -24,7 +24,7 @@ class ReaderSlideAnim extends NovelReaderAnim {
 
   @override
   drawCanvas(Canvas canvas) {
-    if (deltaX == 0 || deltaX == pageSize.width) {
+    if (deltaX == 0 ) {
       canvas.drawPicture(pageDrawer.getCurrentPagePicture());
       return;
     }
@@ -90,14 +90,14 @@ class ReaderSlideAnim extends NovelReaderAnim {
       deltaX = fling.value;
     });
     AnimationStatusListener? listener;
-    listener=(status) {
+    listener=(status)async {
       if (status == AnimationStatus.completed) {
-        deltaX=0;
         if (target == -1) {
-          pageDrawer.toPrePage();
+          await pageDrawer.toPrePage();
         }else if(target ==1){
-          pageDrawer.toNextPage();
+          await pageDrawer.toNextPage();
         }
+        deltaX=0;
         fling.removeStatusListener(listener!);
       }
     };

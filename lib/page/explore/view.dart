@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:read_info/bean/book_item_bean.dart';
 import 'package:read_info/config/route_config.dart';
-import 'package:read_info/data/rule/RuleUtil.dart';
 import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/data/source_manager.dart';
 import 'package:read_info/global/constant.dart';
@@ -15,6 +14,7 @@ import 'package:read_info/utils/ext/list_ext.dart';
 import 'package:read_info/widget/container.dart';
 
 import '../../bean/entity/source_entity.dart';
+import '../view/icon.dart';
 import '../view/my_appbar.dart';
 import 'logic.dart';
 
@@ -43,6 +43,7 @@ class _ExplorePageState extends State<ExplorePage> with SingleTickerProviderStat
   @override
   void dispose() {
     _tabController!.dispose();
+    Get.delete<ExploreLogic>();
     super.dispose();
   }
 
@@ -52,6 +53,12 @@ class _ExplorePageState extends State<ExplorePage> with SingleTickerProviderStat
     return Scaffold(
         appBar: MyAppBar(
           middle: Text(logic.source.bookSourceName ?? ""),
+          trail: [
+            if (logic.source.bookSourceType != source_type_sms)
+              PrimaryIconButton(Icons.search_sharp, onPressed: () {
+                logic.toSearchPage();
+              })
+          ],
           bottom: logic.exploreTabs.length > 1
               ? TabBar(
                   controller: _tabController,
@@ -90,7 +97,7 @@ class _ExplorePageState extends State<ExplorePage> with SingleTickerProviderStat
       itemBuilder: (c, i) {
         if (i == itemCount - 1) {
           if (!state.loadEnd) {
-            Future.delayed(Duration(milliseconds: 20),(){
+            Future.delayed(Duration(milliseconds: 20), () {
               logic.loadMore(index);
             });
           }
@@ -163,7 +170,7 @@ class BookItemWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 70, height: 100, child: ClipRRect(borderRadius:BorderRadius.circular(4),child: BookCover(bean, radius: 6))),
+                SizedBox(width: 70, height: 100, child: ClipRRect(borderRadius: BorderRadius.circular(4), child: BookCover(bean, radius: 6))),
                 SizedBox(width: 20),
                 Expanded(
                   child: Column(

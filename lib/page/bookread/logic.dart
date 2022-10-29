@@ -68,5 +68,4 @@ class ContentLogic extends GetxController {
       LocalRepository.updateChapterContent(chapter);
     }
   }
-
 }

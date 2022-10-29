@@ -34,6 +34,7 @@ class SourceNetRepository {
     if (rule?.bookList?.isNotEmpty != true) {
       rule = source.ruleSearch;
     }
+    print("发现页:$rule");
     var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
     var bookList = list?.map((e) {
       return BookItemBean.FormSource(source)
@@ -197,7 +198,13 @@ class SourceNetRepository {
 
   Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule) async {
     if (url?.isNotEmpty != true) return "";
-    var res = await getDio().get<dynamic>(url ?? "");
+
+    Response res;
+    try {
+      res = await getDio().get<dynamic>(url ?? "");
+    } catch (e) {
+      return "";
+    }
     var element = parse(res.data).documentElement;
     if (element == null) return "";
 
@@ -214,6 +221,10 @@ class SourceNetRepository {
       }
       result = result?.replaceAll(RegExp(reg), replace);
     });
+
+    result= result?.split(RegExp('\n')).map((e) {
+      return "　　${e.trim()}";
+    }).join('\n');
 
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
       result = (result ?? "") +"\n"+ await queryBookContentByUrl(nextUrl, rule);

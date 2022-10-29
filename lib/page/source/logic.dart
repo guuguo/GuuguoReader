@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
 import 'package:read_info/data/source_manager.dart';
@@ -39,13 +41,32 @@ class SourceLogic extends GetxController {
     update();
   }
 
-  importSource({String url = defaultSourceUrl})async{
+  Future<List<SourceEntity>> importSource({String url = defaultSourceUrl})async{
     try {
       var sourcesResult = await NetRepository.getSources(url);
-      await SourceManager.instance.insertOrUpdateSources(sourcesResult);
+      final list=await SourceManager.instance.insertOrUpdateSources(sourcesResult);
       update();
+      return sourcesResult;
     }catch (e) {
       print(e);
+      return [];
+    }
+  }
+
+  Future<List<SourceEntity>> importSourceFromText(String? text)async{
+    var textStr=text?.trim();
+    if(textStr?.startsWith('{')==true){
+      textStr="[${textStr}]";
+    }
+    try {
+      List<dynamic>? resJson = json.decode(textStr??"");
+      List<SourceEntity> list= resJson?.map((e) => SourceEntity.fromJson(e)).toList() ?? [];
+      await SourceManager.instance.insertOrUpdateSources(list);
+      update();
+      return list;
+    }catch (e) {
+      print(e);
+      return [];
     }
   }
   refreshList() async {

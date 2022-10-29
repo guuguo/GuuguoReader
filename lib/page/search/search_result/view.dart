@@ -11,6 +11,7 @@ import 'package:read_info/page/explore/view.dart';
 import 'package:read_info/page/view/bookcover.dart';
 import 'package:read_info/page/view/my_appbar.dart';
 import 'package:read_info/utils/developer.dart';
+import 'package:read_info/utils/ext/list_ext.dart';
 import 'package:read_info/widget/container.dart';
 import 'logic.dart';
 
@@ -24,14 +25,17 @@ class _SearchResultPageState extends State<SearchResultPage> with SingleTickerPr
 
   @override
   void initState() {
+    final logic = Get.put(SearchResultLogic());
     _tabController = TabController(
       initialIndex: 0,
-      length: 2,
+      length: logic.tags.length,
       vsync: this,
     );
     _tabController!.addListener(() {
-      final logic = Get.find<SearchResultLogic>();
-      logic.updateIndex(_tabController!.index);
+      if (!_tabController!.indexIsChanging) {
+        final logic = Get.find<SearchResultLogic>();
+        logic.updateIndex(_tabController!.index);
+      }
     });
     super.initState();
   }
@@ -44,7 +48,7 @@ class _SearchResultPageState extends State<SearchResultPage> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final logic = Get.put(SearchResultLogic());
+    final logic = Get.find<SearchResultLogic>();
     final novelState = Get.find<SearchResultLogic>().novelState;
     final comicState = Get.find<SearchResultLogic>().comicState;
     return Scaffold(
@@ -52,10 +56,7 @@ class _SearchResultPageState extends State<SearchResultPage> with SingleTickerPr
             bottom: TabBar(
               controller: _tabController,
               isScrollable: true,
-              tabs: [
-                Tab(text: "小说", height: 40),
-                Tab(text: "漫画", height: 40),
-              ],
+              tabs: logic.tags.map((e) => Tab(text: e, height: 40)).toList(),
             ),
             leading: Row(
               children: [
@@ -64,9 +65,9 @@ class _SearchResultPageState extends State<SearchResultPage> with SingleTickerPr
                 GetBuilder<SearchResultLogic>(
                   assignId: true,
                   builder: (logic) {
-                    final isNovel=logic.currentIndex == 0;
-                    final state =isNovel  ? novelState : comicState;
-                    return Text("${state.searchKey}" + (state.donnSourceCount > 0 ? "(${state.donnSourceCount}/${state.totalSearchCount})" : "")+"${isNovel?"  --->小说":"  --->漫画"}");
+                    final isNovel = logic.currentIndex == 0;
+                    final state = isNovel ? novelState : comicState;
+                    return Text("${state.searchKey}" + (state.donnSourceCount > 0 ? "(${state.donnSourceCount}/${state.totalSearchCount})" : "") +"  --->${logic.tags[logic.currentIndex]}");
                   },
                 ),
               ],
@@ -80,47 +81,39 @@ class _SearchResultPageState extends State<SearchResultPage> with SingleTickerPr
                       return Row(
                         children: [
                           SizedBox(
-                              width: 15,
-                              height: 15,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                            width: 15,
+                            height: 15,
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                           SizedBox(
                               child: IconButton(
-                                padding: EdgeInsets.zero,
-                                visualDensity: VisualDensity.compact,
-                                icon: Icon(Icons.stop),
-                                tooltip: MaterialLocalizations
-                                    .of(context)
-                                    .backButtonTooltip,
-                                onPressed: () {},
-                              )
-                          ),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                            icon: Icon(Icons.stop),
+                            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                            onPressed: () {},
+                          )),
                         ],
-                      ); else
+                      );
+                    else
                       return SizedBox();
                   })
-
             ]),
         body: GetBuilder<SearchResultLogic>(
           assignId: true,
           builder: (logic) {
             return TabBarView(
-                // physics: NeverScrollableScrollPhysics(),
-                controller: _tabController,
-                children: [
-                  ListView(
-                      children: novelState.books.entries
-                          .map((e) => BookSearchItemWidget(
-                                list: e.value,
-                              ))
-                          .toList()),
-                  ListView(
-                      children: comicState.books.entries
-                          .map((e) => BookSearchItemWidget(
-                                list: e.value,
-                              ))
-                          .toList())
-                ]);
+              // physics: NeverScrollableScrollPhysics(),
+              controller: _tabController,
+              children: logic.tags.mapIndexed((i,e) {
+                return ListView(
+                    children: logic.getState(i).books.entries
+                        .map<Widget>((e) => BookSearchItemWidget(
+                              list: e.value,
+                            ))
+                        .toList());
+              }).toList(),
+            );
           },
         ));
   }

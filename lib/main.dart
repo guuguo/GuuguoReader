@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:orientation/orientation.dart';
@@ -27,6 +28,12 @@ void main() async {
 
   HttpOverrides.global = MyHttpOverrides();
   runApp(MyApp());
+
+  initOrientation();
+}
+
+void initOrientation() {
+  if (!Platform.isIOS && !Platform.isAndroid) return;
   OrientationPlugin.setPreferredOrientations([...DeviceOrientation.values]..remove(DeviceOrientation.portraitDown));
 }
 
@@ -35,15 +42,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.lazyPut(() => GlobalLogic());
     return GetBuilder<GlobalLogic>(builder: (controller) {
-      final color=Theme.of(context).bottomAppBarTheme.color;
+      final color = Theme.of(context).bottomAppBarTheme.color;
       OrientationPlugin.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-          systemNavigationBarColor:color,
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Theme.of(context).brightness));
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(systemNavigationBarColor: color, statusBarColor: Colors.transparent, statusBarIconBrightness: Theme.of(context).brightness));
       return GetMaterialApp(
         initialRoute: RouteConfig.home,
         getPages: RouteConfig.getPages,
+        builder: BotToastInit(),
+        navigatorObservers: [BotToastNavigatorObserver()],
         title: '信息阅读',
         themeMode: Get.find<GlobalLogic>().themeMode,
         theme: kLightDiaryTheme.data,

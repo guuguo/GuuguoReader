@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -61,9 +63,14 @@ void brightnessChange(BuildContext context) {
 }
 
 void rotationChange(BuildContext context) {
-  if (MediaQuery.of(context).orientation == Orientation.portrait) {
-    OrientationPlugin.forceOrientation(DeviceOrientation.landscapeLeft);
-  } else if (MediaQuery.of(context).orientation == Orientation.landscape) {
-    OrientationPlugin.forceOrientation(DeviceOrientation.portraitUp);
-  }
+  if (!Platform.isAndroid && !Platform.isIOS) return;
+  if (MediaQuery.of(context)
+        .orientation == Orientation.portrait) {
+      OrientationPlugin.forceOrientation(DeviceOrientation.landscapeLeft);
+    } else if (MediaQuery
+        .of(context)
+        .orientation == Orientation.landscape) {
+      OrientationPlugin.forceOrientation(DeviceOrientation.portraitUp);
+    }
+
 }

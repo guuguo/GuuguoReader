@@ -30,6 +30,12 @@ class _DetailSmsPageState extends State<DetailBookPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    Get.delete<DetailLogic>();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final logic = Get.find<DetailLogic>();
     return Scaffold(
