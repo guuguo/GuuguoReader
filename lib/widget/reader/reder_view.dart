@@ -125,6 +125,7 @@ class NovelReaderState extends State<NovelReader> with MenuShowBehavior, TickerP
               ///重新加载本章
               if (type == null) {
                 await widget.pageProgress.reloadCurrentPageCache();
+                viewModel.prepareCurrentPage();
                 setState(() {});
               }
             },
