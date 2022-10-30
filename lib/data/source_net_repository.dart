@@ -12,6 +12,7 @@ import 'package:read_info/data/rule/RuleUtil.dart';
 import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/data/rule/novel_string_deal.dart';
 import 'package:read_info/generated/json/base/json_convert_content.dart';
+import 'package:read_info/global/constant.dart';
 import 'package:read_info/utils/developer.dart';
 import 'package:uuid/uuid.dart';
 
@@ -210,8 +211,14 @@ class SourceNetRepository {
   Future<BookChapterBean?> queryBookContent(BookChapterBean bean) async {
     var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent);
     result = dealHtmlContentResult(result) ?? "";
+
     if (result.isEmpty) {
       result = "没找到内容";
+    }
+    if(source.bookSourceType==source_type_novel) {
+      result = result.split(RegExp('\n')).map((e) {
+        return "　　${e.trim()}";
+      }).join('\n');
     }
     if (result.isNotEmpty) bean.content = ChapterContent.FromChapter(bean, result);
     return bean;
@@ -242,10 +249,6 @@ class SourceNetRepository {
       }
       result = result?.replaceAll(RegExp(reg), replace);
     });
-
-    result = result?.split(RegExp('\n')).map((e) {
-      return "　　${e.trim()}";
-    }).join('\n');
 
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
       result = (result ?? "") + "\n" + await queryBookContentByUrl(nextUrl, rule);
