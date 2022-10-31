@@ -10,10 +10,11 @@ extension LoadingExt on String {
         align: Alignment.center,
         enableKeyboardSafeArea: true,
         toastBuilder: (_) => LoadingWidget(text: this),
-        clickClose: false,
+        clickClose: true,
         allowClick: false,
         crossPage: true,
         ignoreContentClick: true,
+        backButtonBehavior: BackButtonBehavior.close,
         backgroundColor: Colors.black26);
   }
 

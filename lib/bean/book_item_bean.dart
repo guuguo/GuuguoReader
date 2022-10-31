@@ -137,10 +137,11 @@ class BookChapterBean {
   String? chapterName = "";
   String? chapterUrl = "";
   int chapterIndex = 0;
+  bool cached = false;
   @ignore
   ChapterContent? content;
 
-  BookChapterBean({required this.id,required this.bookId, this.chapterName, this.chapterUrl,required this.chapterIndex, this.content});
+  BookChapterBean({required this.id,required this.bookId, this.chapterName, this.chapterUrl,required this.chapterIndex, this.content,this.cached=false});
 
   bool hasContent() {
     return content?.content.isNotEmpty == true;

@@ -64,6 +64,9 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
 
   Widget menuButton(SourceLogic logic) {
     return PopupMenuButton(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 4,
+      padding: EdgeInsets.zero,
       itemBuilder: (BuildContext context) => [
         popItem(
             icon: Icons.import_contacts,

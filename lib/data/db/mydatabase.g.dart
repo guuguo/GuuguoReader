@@ -71,7 +71,7 @@ class _$MyDataBase extends MyDataBase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 8,
+      version: 10,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -91,11 +91,15 @@ class _$MyDataBase extends MyDataBase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `BookDetailBean` (`id` TEXT NOT NULL, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, `kind` TEXT, `lastChapter` TEXT, `tocUrl` TEXT, `sourceUrl` TEXT, `updateAt` INTEGER, `sourceSearchResult` TEXT, `readChapterIndex` INTEGER NOT NULL, `readPageIndex` INTEGER NOT NULL, `totalChapterCount` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, `chapterIndex` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, `chapterIndex` INTEGER NOT NULL, `cached` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ChapterContent` (`id` TEXT NOT NULL, `bookId` TEXT, `chapter_id` TEXT NOT NULL, `content` TEXT NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE INDEX `index_BookDetailBean_name` ON `BookDetailBean` (`name`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_chapter` ON `BookChapterBean` (`bookId`, `chapterName`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_chapter_content` ON `ChapterContent` (`chapter_id`)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -212,7 +216,8 @@ class _$BookDao extends BookDao {
                   'bookId': item.bookId,
                   'chapterName': item.chapterName,
                   'chapterUrl': item.chapterUrl,
-                  'chapterIndex': item.chapterIndex
+                  'chapterIndex': item.chapterIndex,
+                  'cached': item.cached ? 1 : 0
                 }),
         _chapterContentInsertionAdapter = InsertionAdapter(
             database,
@@ -232,7 +237,8 @@ class _$BookDao extends BookDao {
                   'bookId': item.bookId,
                   'chapterName': item.chapterName,
                   'chapterUrl': item.chapterUrl,
-                  'chapterIndex': item.chapterIndex
+                  'chapterIndex': item.chapterIndex,
+                  'cached': item.cached ? 1 : 0
                 }),
         _bookDetailBeanUpdateAdapter = UpdateAdapter(
             database,
@@ -322,7 +328,8 @@ class _$BookDao extends BookDao {
             bookId: row['bookId'] as String?,
             chapterName: row['chapterName'] as String?,
             chapterUrl: row['chapterUrl'] as String?,
-            chapterIndex: row['chapterIndex'] as int),
+            chapterIndex: row['chapterIndex'] as int,
+            cached: (row['cached'] as int) != 0),
         arguments: [bookId]);
   }
 

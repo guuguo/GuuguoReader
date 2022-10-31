@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:read_info/global/custom/my_theme.dart';
 import 'package:read_info/page/bookread/comicreader/reader_menu.dart';
 import 'package:read_info/page/view/icon.dart';
 import 'package:read_info/page/view/my_appbar.dart';
@@ -168,11 +169,13 @@ Widget MenuHeader(BuildContext context, String? chapterName) {
 
 Widget menuButton() {
   return PopupMenuButton(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    padding: EdgeInsets.zero,
     itemBuilder: (BuildContext context) => [
       PopupMenuItem(
           child: Row(
             children: [
-              Icon(Icons.import_contacts),
+              Icon(Icons.import_contacts,color: MyTheme.of(context).textColor),
               SizedBox(width: 10),
               Text("重新下载本章"),
             ],

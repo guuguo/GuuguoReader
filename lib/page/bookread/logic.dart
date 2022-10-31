@@ -69,4 +69,11 @@ class ContentLogic extends GetxController {
       LocalRepository.updateChapterContent(chapter);
     }
   }
+  loadChapters() async {
+    if (bookDetail == null)
+      return;
+    var chapters = await repository.queryBookTocs(bookDetail);
+    bookDetail = bookDetail.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0 );
+    update();
+  }
 }

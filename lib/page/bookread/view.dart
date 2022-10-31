@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/global/custom/my_theme.dart';
+import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/page/view/dash_divider.dart';
 import 'package:read_info/utils/developer.dart';
 import 'package:read_info/utils/utils_screen.dart';
@@ -83,7 +84,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
           } catch (e) {
             debug(e);
           }
-          final _comics = (array ?? (chapterData.content?.split("\n")))?.where((e) => e.isNotEmpty&&(Uri.tryParse(e) != null)).toList() ?? [];
+          final _comics = (array ?? (chapterData.content?.split("\n")))?.where((e) => e.isNotEmpty && (Uri.tryParse(e) != null)).toList() ?? [];
           chapterData.comics = _comics;
           print(chapterData.comics.join("   "));
         }
@@ -124,7 +125,6 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
         },
       ),
       drawerEnableOpenDragGesture: false,
-
       drawer: logic.bookDetail.chapters?.isNotEmpty == true ? Drawer(logic) : null,
     );
   }
@@ -148,27 +148,32 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
                     thumbVisibility: true,
                     controller: controller,
                     child: ScrollConfiguration(
-                      behavior: MyBehavior(),
-                      child:ListView(
-                      controller: controller,
-                      itemExtent: itemHeight,
-                      children: logic.bookDetail.chapters!
-                          .mapIndexed(
-                            (i, e) => ChapterItem(context, i, e, i == logic.readChapterIndex.value),
-                          )
-                          .toList(),
-                    )),
+                        behavior: MyBehavior(),
+                        child: ListView(
+                          controller: controller,
+                          itemExtent: itemHeight,
+                          children: logic.bookDetail.chapters!
+                              .mapIndexed(
+                                (i, e) => ChapterItem(context, i, e, i == logic.readChapterIndex.value),
+                              )
+                              .toList(),
+                        )),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                  child: Row(children: [
-                    Text(
-                      "${currentChapter.chapterName} (${logic.readChapterIndex.value}/${logic.bookDetail.totalChapterCount})",
-                      style: Theme.of(context).textTheme.caption?.copyWith(fontSize: 10),
-                    ),
-                  ]),
-                )
+                Row(children: [
+                  SizedBox(width: 10),
+                  Text("${currentChapter.chapterName} (${logic.readChapterIndex.value}/${logic.bookDetail.totalChapterCount})", style: Theme.of(context).textTheme.caption?.copyWith(fontSize: 10)),
+                  Expanded(child: SizedBox()),
+                  GestureDetector(
+                    onTap: () async {
+                      final cancel = "正在更新章节列表".showLoading();
+                      await logic.loadChapters();
+                      cancel();
+                      setState(() {});
+                    },
+                    child: Padding(padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10), child: Text("更新", style: Theme.of(context).textTheme.caption?.copyWith(fontSize: 10))),
+                  ),
+                ]),
               ],
             ),
           );
@@ -177,42 +182,39 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
 
   Widget ChapterItem(BuildContext context, index, BookChapterBean bean, bool selected) {
     final logic = Get.find<ContentLogic>();
-    return Builder(
-      builder: (context) {
-        return GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              Scaffold.of(context).closeDrawer();
-              if (index == logic.bookDetail.readChapterIndex) {
-                return;
-              }
-              readerKey.currentState?.jumpToChapter(index);
-              comicKey.currentState?.jumpToChapter(index);
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                    child: Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.only(left: 16),
-                  child: Text((bean.chapterName ?? "") + (selected ? "  ✔" : ""),
-                      style: MyTheme(context).textTheme.caption?.copyWith(color: bean.content != null ? MyTheme(context).textTheme.bodyMedium?.color : null), maxLines: 1, overflow: TextOverflow.ellipsis),
-                )),
-                DashDivider()
-              ],
-            ),
-          );
-      }
-    );
+    return Builder(builder: (context) {
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          Scaffold.of(context).closeDrawer();
+          if (index == logic.bookDetail.readChapterIndex) {
+            return;
+          }
+          readerKey.currentState?.jumpToChapter(index);
+          comicKey.currentState?.jumpToChapter(index);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+                child: Container(
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.only(left: 16),
+              child: Text((bean.chapterName ?? "") + (selected ? "  ✔" : ""),
+                  style: MyTheme(context).textTheme.caption?.copyWith(color: bean.cached||bean.content != null ? MyTheme(context).textTheme.bodyMedium?.color : null), maxLines: 1, overflow: TextOverflow.ellipsis),
+            )),
+            DashDivider()
+          ],
+        ),
+      );
+    });
   }
 }
 
 class MyBehavior extends ScrollBehavior {
   @override
-  Widget buildViewportChrome(
-      BuildContext context, Widget child, AxisDirection axisDirection) {
+  Widget buildViewportChrome(BuildContext context, Widget child, AxisDirection axisDirection) {
     return child;
   }
 }

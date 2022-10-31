@@ -46,7 +46,7 @@ class MyTheme {
   TextTheme get textTheme {
     return Theme.of(context).textTheme;
   }
-
+  Color? get textColor => textTheme.bodyText1?.color;
   TextStyle? get agreementTitleStyle {
     return Theme.of(context).textTheme.headline5?.copyWith(height: 2);
   }

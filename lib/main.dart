@@ -46,6 +46,7 @@ class MyApp extends StatelessWidget {
       OrientationPlugin.setEnabledSystemUIOverlays(SystemUiOverlay.values);
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(systemNavigationBarColor: color, statusBarColor: Colors.transparent, statusBarIconBrightness: Theme.of(context).brightness));
       return GetMaterialApp(
+        debugShowCheckedModeBanner: false,
         initialRoute: RouteConfig.home,
         getPages: RouteConfig.getPages,
         builder: BotToastInit(),

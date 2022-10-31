@@ -54,6 +54,8 @@ class LocalRepository {
   static Future updateChapterContent(BookChapterBean bean) async {
     var myDataBase = await database();
     if (bean.content != null) {
+      bean.cached=true;
+      await myDataBase.bookDao.updateChapter(bean);
       await myDataBase.bookDao.insertAndUpdateChapterContent(bean.content!);
     }
   }
