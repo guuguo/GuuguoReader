@@ -5,7 +5,7 @@ import '../../bean/book_item_bean.dart';
 
 @dao
 abstract class BookDao {
-  @Query('SELECT * FROM BookDetailBean')
+  @Query('SELECT * FROM BookDetailBean order by updateAt desc')
   Future<List<BookDetailBean>> findAllBooks();
 
   @Insert(onConflict: OnConflictStrategy.replace)

@@ -49,6 +49,7 @@ class BookDetailBean extends BookBean {
   String? lastChapter = "";
   String? tocUrl = "";
   String? sourceUrl = "";
+  int? updateAt = 0;
   @ignore
   ///搜索的源结果
   List<BookItemBean> searchResult=[];
@@ -80,6 +81,7 @@ class BookDetailBean extends BookBean {
       this.kind,
       this.lastChapter,
       this.tocUrl,
+      this.updateAt,
       List<BookChapterBean>? chapters,
         required this.sourceUrl,
       this.readChapterIndex = 0,
@@ -97,6 +99,7 @@ class BookDetailBean extends BookBean {
     String? kind,
     String? lastChapter,
     String? tocUrl,
+    int? updateAt,
     String? sourceUrl,
     @ignore List<BookChapterBean>? chapters,
     int? readChapterIndex,
@@ -113,6 +116,7 @@ class BookDetailBean extends BookBean {
       lastChapter: lastChapter ?? this.lastChapter,
       chapters: chapters ?? this.chapters,
       tocUrl: tocUrl ?? this.tocUrl,
+      updateAt: updateAt ?? this.updateAt,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       readChapterIndex: readChapterIndex ?? this.readChapterIndex,
       readPageIndex: readPageIndex ?? this.readPageIndex,

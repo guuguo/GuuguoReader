@@ -173,7 +173,7 @@ class SourceNetRepository {
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     var rule = source.ruleBookInfo;
-    var bookBean = BookDetailBean(id: Uuid().v1(), sourceUrl: source.bookSourceUrl)
+    var bookBean = BookDetailBean(id: Uuid().v1(), sourceUrl: source.bookSourceUrl,updateAt:  DateTime.now().millisecondsSinceEpoch)
       ..name = element.parseRule(rule?.name) ?? bean.name
       ..author = element.parseRule(rule?.author) ?? bean.author
       ..coverUrl = urlFix(element.parseRule(rule?.coverUrl) ?? bean.coverUrl, source.bookSourceUrl!)

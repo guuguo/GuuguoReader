@@ -11,7 +11,7 @@ import '../../bean/db/source_db.dart';
 part 'mydatabase.g.dart';
 
 // 执行命令 flutter pub run build_runner build --delete-conflicting-outputs
-@Database(version: 7, entities: [Source,BookDetailBean,BookChapterBean,ChapterContent])
+@Database(version: 8, entities: [Source,BookDetailBean,BookChapterBean,ChapterContent])
 abstract class MyDataBase extends FloorDatabase{
   SourceDao get sourceDao;
   BookDao get bookDao;
@@ -25,4 +25,7 @@ final migration4to5 = Migration(5, 6, (database) async {
 final migration6to7 = Migration(6, 7, (database) async {
   database.execute("alter table ChapterContent add column bookId text");
 });
-final applyMigration=[migration3to4,migration4to5,migration6to7];
+final migration7to8 = Migration(7, 8, (database) async {
+  database.execute("alter table BookDetailBean add column updateAt INTEGER");
+});
+final applyMigration=[migration3to4,migration4to5,migration6to7,migration7to8];

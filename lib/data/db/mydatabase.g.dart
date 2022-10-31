@@ -71,7 +71,7 @@ class _$MyDataBase extends MyDataBase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 7,
+      version: 8,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -89,7 +89,7 @@ class _$MyDataBase extends MyDataBase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Source` (`bookSourceUrl` TEXT, `detail` TEXT, PRIMARY KEY (`bookSourceUrl`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `BookDetailBean` (`id` TEXT NOT NULL, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, `kind` TEXT, `lastChapter` TEXT, `tocUrl` TEXT, `sourceUrl` TEXT, `sourceSearchResult` TEXT, `readChapterIndex` INTEGER NOT NULL, `readPageIndex` INTEGER NOT NULL, `totalChapterCount` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `BookDetailBean` (`id` TEXT NOT NULL, `name` TEXT, `intro` TEXT, `author` TEXT, `coverUrl` TEXT, `kind` TEXT, `lastChapter` TEXT, `tocUrl` TEXT, `sourceUrl` TEXT, `updateAt` INTEGER, `sourceSearchResult` TEXT, `readChapterIndex` INTEGER NOT NULL, `readPageIndex` INTEGER NOT NULL, `totalChapterCount` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `BookChapterBean` (`id` TEXT NOT NULL, `bookId` TEXT, `chapterName` TEXT, `chapterUrl` TEXT, `chapterIndex` INTEGER NOT NULL, FOREIGN KEY (`bookId`) REFERENCES `BookDetailBean` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, PRIMARY KEY (`id`))');
         await database.execute(
@@ -198,6 +198,7 @@ class _$BookDao extends BookDao {
                   'lastChapter': item.lastChapter,
                   'tocUrl': item.tocUrl,
                   'sourceUrl': item.sourceUrl,
+                  'updateAt': item.updateAt,
                   'sourceSearchResult': item.sourceSearchResult,
                   'readChapterIndex': item.readChapterIndex,
                   'readPageIndex': item.readPageIndex,
@@ -247,6 +248,7 @@ class _$BookDao extends BookDao {
                   'lastChapter': item.lastChapter,
                   'tocUrl': item.tocUrl,
                   'sourceUrl': item.sourceUrl,
+                  'updateAt': item.updateAt,
                   'sourceSearchResult': item.sourceSearchResult,
                   'readChapterIndex': item.readChapterIndex,
                   'readPageIndex': item.readPageIndex,
@@ -266,6 +268,7 @@ class _$BookDao extends BookDao {
                   'lastChapter': item.lastChapter,
                   'tocUrl': item.tocUrl,
                   'sourceUrl': item.sourceUrl,
+                  'updateAt': item.updateAt,
                   'sourceSearchResult': item.sourceSearchResult,
                   'readChapterIndex': item.readChapterIndex,
                   'readPageIndex': item.readPageIndex,
@@ -292,7 +295,8 @@ class _$BookDao extends BookDao {
 
   @override
   Future<List<BookDetailBean>> findAllBooks() async {
-    return _queryAdapter.queryList('SELECT * FROM BookDetailBean',
+    return _queryAdapter.queryList(
+        'SELECT * FROM BookDetailBean order by updateAt desc',
         mapper: (Map<String, Object?> row) => BookDetailBean(
             id: row['id'] as String,
             name: row['name'] as String?,
@@ -302,6 +306,7 @@ class _$BookDao extends BookDao {
             kind: row['kind'] as String?,
             lastChapter: row['lastChapter'] as String?,
             tocUrl: row['tocUrl'] as String?,
+            updateAt: row['updateAt'] as int?,
             sourceUrl: row['sourceUrl'] as String?,
             readChapterIndex: row['readChapterIndex'] as int,
             readPageIndex: row['readPageIndex'] as int,
@@ -359,6 +364,7 @@ class _$BookDao extends BookDao {
             kind: row['kind'] as String?,
             lastChapter: row['lastChapter'] as String?,
             tocUrl: row['tocUrl'] as String?,
+            updateAt: row['updateAt'] as int?,
             sourceUrl: row['sourceUrl'] as String?,
             readChapterIndex: row['readChapterIndex'] as int,
             readPageIndex: row['readPageIndex'] as int,

@@ -11,7 +11,7 @@ class SearchLogic extends GetxController {
   SearchLogic() {}
 
   Future toSearchResultPage(String key) async {
-    final souces = Get.arguments[ARG_SOURCE_LIST] ?? await SourceManager.instance.ensureSources();
+    final souces = Get.arguments?[ARG_SOURCE_LIST] ?? await SourceManager.instance.ensureSources();
     await Get.offAndToNamed(RouteConfig.searchResult, arguments: {ARG_SEARCH_KEY: key, ARG_SOURCE_LIST: souces});
   }
 }

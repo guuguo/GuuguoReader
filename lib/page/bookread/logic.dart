@@ -51,6 +51,7 @@ class ContentLogic extends GetxController {
     debug("更新当前页面chapterIndex:${chapterIndex}  pageIndex:${pageIndex} chapterTotal:${bookDetail.totalChapterCount}");
     bookDetail.readPageIndex = pageIndex;
     bookDetail.readChapterIndex = chapterIndex;
+    bookDetail.updateAt=DateTime.now().millisecondsSinceEpoch;
     readChapterIndex.value = chapterIndex;
     LocalRepository.updateBook(bookDetail);
   }

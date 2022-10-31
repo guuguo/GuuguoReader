@@ -24,7 +24,6 @@ class ReadHistoryLogic extends GetxController {
   }
   Future toSearchPage() async {
     await Get.toNamed(RouteConfig.search);
-    await getAllReadBooks();
   }
 
   Future toReadPage(BookDetailBean item) async {
@@ -37,6 +36,8 @@ class ReadHistoryLogic extends GetxController {
       return;
     }
     item.chapters = chapters;
-    return await Get.toNamed(routeRouteConfig, arguments: {ARG_BOOK_DETAIL_BEAN: item, ARG_ITEM_SOURCE_BEAN: source});
+    await Get.toNamed(routeRouteConfig, arguments: {ARG_BOOK_DETAIL_BEAN: item, ARG_ITEM_SOURCE_BEAN: source});
+    await getAllReadBooks();
+    return;
   }
 }
