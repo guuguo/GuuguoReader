@@ -18,10 +18,12 @@ final source_type_novel = 0;
 final source_type_sms = 1;
 final source_type_comic = 2;
 const defaultSourceUrl="https://gist.githubusercontent.com/guuguo/d1902049ba71149587dc074605e18f3a/raw";
-
+///是否夜间模式
 final sp_dark_mode="sp_dark_mode";
 ///小说阅读器配置
 final sp_novel_config="sp_novel_config";
+///搜索历史
+final sp_search_history="sp_search_history";
 
 class BgImage{
   static int  bgStyleLight1=0;

@@ -127,8 +127,8 @@ class BookDetailBean extends BookBean {
 
 @Entity(
   foreignKeys: [
-    ForeignKey(childColumns: ['bookId'], parentColumns: ['id'], entity: BookDetailBean, onDelete: ForeignKeyAction.cascade, onUpdate: ForeignKeyAction.noAction)
-  ],
+    ForeignKey(childColumns: ['bookId'], parentColumns: ['id'], entity: BookDetailBean, onDelete: ForeignKeyAction.cascade, onUpdate: ForeignKeyAction.noAction),
+  ], indices:[Index(value: ['bookId','chapterName'],unique: true,name: 'index_chapter')]
 )
 class BookChapterBean {
   @PrimaryKey()
@@ -147,7 +147,9 @@ class BookChapterBean {
   }
 }
 
-@Entity()
+@Entity(
+    indices:[Index(value: ['chapter_id'],unique: true,name: 'index_chapter_content')]
+)
 class ChapterContent {
   @PrimaryKey()
   String id = "";

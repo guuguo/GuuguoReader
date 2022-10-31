@@ -8,24 +8,34 @@ import 'package:read_info/data/db/sourcedao.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import '../../bean/db/source_db.dart';
+
 part 'mydatabase.g.dart';
 
 // 执行命令 flutter pub run build_runner build --delete-conflicting-outputs
-@Database(version: 8, entities: [Source,BookDetailBean,BookChapterBean,ChapterContent])
-abstract class MyDataBase extends FloorDatabase{
+@Database(version: 9, entities: [Source, BookDetailBean, BookChapterBean, ChapterContent])
+abstract class MyDataBase extends FloorDatabase {
   SourceDao get sourceDao;
+
   BookDao get bookDao;
 }
 
 // create migration
-final migration3to4 = Migration(3, 4, (database) async {
-});
-final migration4to5 = Migration(5, 6, (database) async {
-});
+final migration3to4 = Migration(3, 4, (database) async {});
+final migration4to5 = Migration(5, 6, (database) async {});
 final migration6to7 = Migration(6, 7, (database) async {
   database.execute("alter table ChapterContent add column bookId text");
 });
 final migration7to8 = Migration(7, 8, (database) async {
   database.execute("alter table BookDetailBean add column updateAt INTEGER");
 });
-final applyMigration=[migration3to4,migration4to5,migration6to7,migration7to8];
+final m8to9 = Migration(8, 9, (database) async {
+  database.execute("CREATE UNIQUE INDEX index_chapter on BookChapterBean (bookId,chapterName);");
+  database.execute("CREATE UNIQUE INDEX index_chapter_content on ChapterContent (chapter_id);");
+});
+final applyMigration = [
+  migration3to4,
+  migration4to5,
+  migration6to7,
+  migration7to8,
+  m8to9,
+];
