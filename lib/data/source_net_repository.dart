@@ -239,7 +239,7 @@ class SourceNetRepository {
       result = "没找到内容";
     }
     if (source.bookSourceType == source_type_novel) {
-      result = result.split(RegExp('\n')).map((e) {
+      result = result.split(RegExp('\n')).whereNot((element) => element.isEmpty).map((e) {
         return "　　${e.trim()}";
       }).join('\n');
     }
