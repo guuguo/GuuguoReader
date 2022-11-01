@@ -116,6 +116,7 @@ class ReaderPageProgress {
   bool currentChapterReady()  {
     return currentChapter?.content?.isNotEmpty==true;
   }
+  ///确认当前文章的内容可用
   Future<ReaderChapterData?> ensureCurrentChapter() async {
     final chapter= await ensureChapterContent(currentChapterIndex);
     currentChapter?.currentPageIndex=currentPageIndex;

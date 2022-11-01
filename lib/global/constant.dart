@@ -52,10 +52,11 @@ class BgImage{
     return completer.future;
   }
 
- static Future<BackgroundImage> _getLight()async{
-   final img= await getImage(Res.p04);
-    return BackgroundImage(img,BoxFit.fill);
+  static Future<BackgroundImage> _getLight() async {
+    final img = await getImage(Res.p04);
+    return BackgroundImage(img, BoxFit.fill);
   }
+
   static Future<BackgroundImage> _getLight2()async{
     final img= await getImage(Res.p05);
     return BackgroundImage(img,BoxFit.fill);

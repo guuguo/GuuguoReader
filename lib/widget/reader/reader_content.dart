@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:read_info/data/rule/novel_string_deal.dart';
 import 'package:read_info/utils/ext/list_ext.dart';
+import 'package:read_info/widget/reader/reader_content_config.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 
@@ -107,7 +108,11 @@ class ReaderContentDrawer {
     if (bgPicture == null || forceRedraw) {
         ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
         Canvas pageCanvas = new Canvas(pageRecorder);
-        final image=model.config.currentCanvasBgImage;
+        print("forceRedraw:${forceRedraw}");
+        print("bgImageStyle:${model.config.bgImageStyle}");
+        print("isDark:${model.config.isDark}");
+        print("image is nul:${ReaderConfigEntity.currentCanvasBgImage==null}");
+        final image=ReaderConfigEntity.currentCanvasBgImage;
         if(image!=null) {
           paintImage(
               canvas: pageCanvas,
@@ -126,7 +131,6 @@ class ReaderContentDrawer {
           pageCanvas.drawRect(Offset.zero & model.config.pageSize, bgPaint);
         }
         bgPicture = pageRecorder.endRecording();
-
     }
     return bgPicture!;
   }

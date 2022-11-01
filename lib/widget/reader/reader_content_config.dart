@@ -23,10 +23,12 @@ class ReaderConfigEntity {
   int? bgImageStyle = BgImage.bgStyleLight1;
   bool isDark=false;
 
-  BackgroundImage? currentCanvasBgImage;
+  static BackgroundImage? currentCanvasBgImage;
 
   initBGImage()async {
+    print("initBGImage start");
     currentCanvasBgImage= await BgImage.getBgImage(bgImageStyle,isDark);
+    print("initBGImage end ");
   }
 
   int currentPageIndex = 0;

@@ -117,7 +117,7 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
     final configChange=this.config != config;
     this.config = config;
     if (configChange) {
-      await config.initBGImage();
+      await this.config.initBGImage();
       reApplyConfig();
     }
   }

@@ -117,7 +117,6 @@ class NovelReaderState extends State<NovelReader> with MenuShowBehavior, TickerP
               viewModel.setConfig(config);
             },
             onBrightnessChange: () async {
-              hideMenu();
               final isDarkMode=Get.find<GlobalLogic>().isDark(context);
               viewModel.setConfig(viewModel.config.copyWith(isDark: isDarkMode));
             },
