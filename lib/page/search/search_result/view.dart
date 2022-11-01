@@ -131,7 +131,7 @@ class BookSearchItemWidget extends StatelessWidget {
       onTap: () async {
         final source = await SourceManager.instance.getSourceFromUrl(bean.sourceUrl);
         debug("跳转到详情页" + bean.toString());
-        return await Get.toNamed(RouteConfig.detailbook, arguments: {ARG_BOOK_ITEM_BEAN: bean, ARG_ITEM_SOURCE_BEAN: source});
+        return await Get.toNamed(RouteConfig.detailbook, arguments: {ARG_BOOK_ITEM_BEAN: list, ARG_ITEM_SOURCE_BEAN: source});
       },
       child: Center(
         child: Container(

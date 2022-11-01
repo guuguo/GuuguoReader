@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -90,8 +91,8 @@ class SourceNetRepository {
 
     searchUrl = searchUrl!.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
     var index = -1;
-    if (searchUrl.contains(RegExp('{.*}'))) {
-      index = searchUrl.lastIndexOf(',');
+    if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {
+      index = searchUrl.indexOf(',');
     }
     var method = "get";
     var charset = "utf-8";
@@ -197,7 +198,13 @@ class SourceNetRepository {
     if (element == null) return null;
     debug("获取所有章节列表${source.ruleToc}");
     List<BookChapterBean> resList = getChapters(element, bean);
-    return resList;
+
+    HashMap<String, BookChapterBean> maps = HashMap();
+    bean.chapters?.forEach((e) {
+      maps[e.chapterName ?? ""] = e;
+    });
+    var newChapters = resList.map((e) => maps[e.chapterName ?? ""] ?? e).toList();
+    return newChapters;
   }
 
   List<BookChapterBean> getChapters(Element element, BookDetailBean bookBean) {

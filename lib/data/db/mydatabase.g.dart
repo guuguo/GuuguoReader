@@ -316,6 +316,7 @@ class _$BookDao extends BookDao {
             sourceUrl: row['sourceUrl'] as String?,
             readChapterIndex: row['readChapterIndex'] as int,
             readPageIndex: row['readPageIndex'] as int,
+            sourceSearchResult: row['sourceSearchResult'] as String?,
             totalChapterCount: row['totalChapterCount'] as int));
   }
 
@@ -375,6 +376,7 @@ class _$BookDao extends BookDao {
             sourceUrl: row['sourceUrl'] as String?,
             readChapterIndex: row['readChapterIndex'] as int,
             readPageIndex: row['readPageIndex'] as int,
+            sourceSearchResult: row['sourceSearchResult'] as String?,
             totalChapterCount: row['totalChapterCount'] as int),
         arguments: [bookName]);
   }
@@ -407,7 +409,7 @@ class _$BookDao extends BookDao {
   @override
   Future<int> insertBookDetail(BookDetailBean bean) {
     return _bookDetailBeanInsertionAdapter.insertAndReturnId(
-        bean, OnConflictStrategy.ignore);
+        bean, OnConflictStrategy.replace);
   }
 
   @override

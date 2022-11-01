@@ -92,9 +92,7 @@ class SearchResultLogic extends GetxController {
   }
   ///按照相似度评分，并按照相似度排序合并
   Map<String, List<BookItemBean>> combineAndSortListWithScore(String keyword, List<BookItemBean> books, Map<String, List<BookItemBean>> books2) {
-    var i = 0;
-    var j = 0;
-    List<BookItemBean> result = [];
+    if (books.isEmpty) return books2;
 
     ///搜索计算相似度分值使用
     var searchScore = HashMap<String, int>();

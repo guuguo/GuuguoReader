@@ -296,7 +296,7 @@ class _SourceSelectDialogState extends State<SourceSelectDialog> {
                   return RadioListTile(
                     value: e.source?.bookSourceUrl??"",
                     title:  Text(e.source?.bookSourceName ?? ""),
-                    groupValue: e.source?.bookSourceUrl,
+                    groupValue: logic.source.bookSourceUrl,
                     onChanged: (v) {},
                   );
                 }),

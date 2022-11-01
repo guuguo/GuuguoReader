@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:get/get.dart';
 import 'package:read_info/config/route_config.dart';
 import 'package:read_info/data/net_repository.dart';
@@ -47,8 +49,8 @@ class DetailLogic extends GetxController {
     ///更新缓存的内容
     if(bookDetail!=null) {
       bean?.id = bookDetail.id;
-      bean?.searchResult = [...(bookDetail.searchResult), ...items];
     }
+    bean?.searchResult =(bookDetail?.searchResult?..addAll(items))??HashSet();
 
     detail.value = bean;
     refreshing.value = false;
@@ -57,10 +59,10 @@ class DetailLogic extends GetxController {
   }
 
   loadTocs() async {
-    if (detail.value == null)
-      return;
+    if (detail.value == null) return;
+
     var chapters = await repository.queryBookTocs(detail.value!);
-    detail.value = detail.value!.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0 );
+    detail.value = detail.value!.copyWith(chapters: chapters, totalChapterCount: chapters?.length ?? 0);
     update();
   }
 }

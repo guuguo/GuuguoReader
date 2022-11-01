@@ -35,7 +35,7 @@ abstract class BookDao {
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<List<int>> insertBookChapters(List<BookChapterBean> list);
 
-  @Insert(onConflict: OnConflictStrategy.ignore)
+  @Insert(onConflict: OnConflictStrategy.replace)
   Future<int> insertBookDetail(BookDetailBean bean);
 
   @update

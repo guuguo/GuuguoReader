@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -28,6 +29,14 @@ class BookItemBean extends BookBean {
   String? sourceUrl;
   SourceEntity? source;
 
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is BookItemBean && runtimeType == other.runtimeType && name == other.name && bookUrl == other.bookUrl && sourceUrl == other.sourceUrl;
+
+  @override
+  int get hashCode => name.hashCode ^ bookUrl.hashCode ^ sourceUrl.hashCode;
+
   BookItemBean({this.name, this.intro, this.coverUrl, this.bookUrl, this.author, this.lastChapter, required this.sourceUrl});
 
   BookItemBean.FormSource(SourceEntity source){
@@ -52,6 +61,7 @@ class BookItemBean extends BookBean {
       sourceUrl: map['sourceUrl']?.toString(),
     );
   }
+
   @override
   String toString() {
     return 'BookItemBean{name: $name, intro: $intro, coverUrl: $coverUrl, bookUrl: $bookUrl, author: $author, lastChapter: $lastChapter, sourceUrl: $sourceUrl, source: $source}';
@@ -76,18 +86,21 @@ class BookDetailBean extends BookBean {
   @ignore
 
   ///搜索的源结果
-  List<BookItemBean> _searchResult = [];
+  HashSet<BookItemBean> _searchResult = HashSet();
 
   ///搜索的源结果
-  List<BookItemBean> get searchResult {
-    if(_searchResult.isNotEmpty!=true &&sourceSearchResult?.isNotEmpty==true){
-      _searchResult =(json.decode(sourceSearchResult!) as List).map((e)=>BookItemBean.fromMap(e)).whereNotNull().toList();
+  HashSet<BookItemBean> get searchResult {
+    if (_searchResult.isNotEmpty != true && sourceSearchResult?.isNotEmpty == true) {
+      (json.decode(sourceSearchResult!) as List).forEach((e) {
+        final bean = BookItemBean.fromMap(e);
+        if (bean != null) _searchResult.add(bean);
+      });
     }
     return _searchResult;
   }
 
   ///搜索的源结果
-  set searchResult(List<BookItemBean> searchResult) {
+  set searchResult(HashSet<BookItemBean> searchResult) {
     _searchResult = searchResult;
     sourceSearchResult =json.encode( searchResult.map((e) => e.toMap()).toList());
   }

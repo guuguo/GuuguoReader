@@ -77,12 +77,7 @@ class ContentLogic extends GetxController {
     if (bookDetail == null)
       return;
     var chapters = await repository.queryBookTocs(bookDetail);
-    HashMap<String,BookChapterBean> maps=HashMap();
-    bookDetail.chapters?.forEach((e){
-      maps[e.chapterName??""]=e;
-    });
-    var newChapters =  chapters?.map((e) =>maps[e.chapterName??""]??e).toList()??[];
-    bookDetail = bookDetail.copyWith(chapters:newChapters,totalChapterCount:chapters?.length??0);
+    bookDetail = bookDetail.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0);
     LocalRepository.saveBookIfNone(bookDetail);
     update();
   }
