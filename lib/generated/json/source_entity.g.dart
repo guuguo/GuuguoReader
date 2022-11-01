@@ -248,9 +248,9 @@ Map<String, dynamic> $SourceRuleContentToJson(SourceRuleContent entity) {
 
 SourceRuleExplore $SourceRuleExploreFromJson(Map<String, dynamic> json) {
 	final SourceRuleExplore sourceRuleExplore = SourceRuleExplore();
-	final String? type = jsonConvert.convert<String>(json['type']);
-	if (type != null) {
-		sourceRuleExplore.type = type;
+	final String? jsonContent = jsonConvert.convert<String>(json['jsonContent']);
+	if (jsonContent != null) {
+		sourceRuleExplore.jsonContent = jsonContent;
 	}
 	final String? author = jsonConvert.convert<String>(json['author']);
 	if (author != null) {
@@ -289,7 +289,7 @@ SourceRuleExplore $SourceRuleExploreFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> $SourceRuleExploreToJson(SourceRuleExplore entity) {
 	final Map<String, dynamic> data = <String, dynamic>{};
-	data['type'] = entity.type;
+	data['jsonContent'] = entity.jsonContent;
 	data['author'] = entity.author;
 	data['bookList'] = entity.bookList;
 	data['bookUrl'] = entity.bookUrl;
@@ -313,6 +313,10 @@ Map<String, dynamic> $SourceRuleReviewToJson(SourceRuleReview entity) {
 
 SourceRuleToc $SourceRuleTocFromJson(Map<String, dynamic> json) {
 	final SourceRuleToc sourceRuleToc = SourceRuleToc();
+	final String? jsonContent = jsonConvert.convert<String>(json['jsonContent']);
+	if (jsonContent != null) {
+		sourceRuleToc.jsonContent = jsonContent;
+	}
 	final String? chapterList = jsonConvert.convert<String>(json['chapterList']);
 	if (chapterList != null) {
 		sourceRuleToc.chapterList = chapterList;
@@ -330,6 +334,7 @@ SourceRuleToc $SourceRuleTocFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> $SourceRuleTocToJson(SourceRuleToc entity) {
 	final Map<String, dynamic> data = <String, dynamic>{};
+	data['jsonContent'] = entity.jsonContent;
 	data['chapterList'] = entity.chapterList;
 	data['chapterName'] = entity.chapterName;
 	data['chapterUrl'] = entity.chapterUrl;

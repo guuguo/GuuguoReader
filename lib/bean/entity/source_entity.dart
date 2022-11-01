@@ -145,7 +145,8 @@ class SourceRuleContent {
 
 @JsonSerializable()
 class SourceRuleExplore {
-  String? type;
+  ///json 内容的规则，如果为空说明不是json 体
+  String? jsonContent;
   String? author;
   String? bookList;
   String? bookUrl;
@@ -183,6 +184,7 @@ class SourceRuleReview {
 
 @JsonSerializable()
 class SourceRuleToc {
+  String? jsonContent;
   String? chapterList;
   String? chapterName;
   String? chapterUrl;

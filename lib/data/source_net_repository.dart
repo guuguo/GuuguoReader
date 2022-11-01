@@ -18,6 +18,7 @@ import 'package:uuid/uuid.dart';
 
 import '../bean/book_item_bean.dart';
 import '../bean/entity/source_entity.dart';
+import '../config/config.dart';
 
 const int pageLimited = 20;
 
@@ -134,25 +135,28 @@ class SourceNetRepository {
 
     //header.title@a@text
     var rule = source.ruleSearch;
+    var jsonRule = rule?.jsonContent;
 
     ///json 规则
-    if (rule?.type == "json") {
-      dynamic map= json.decode(res.data??"");
-      var list = parseRuleJsonList(map,rule?.bookList);
+    final jsonContent = getJsonContent(res.data, jsonRule);
+    if (jsonContent != null) {
+      dynamic map = json.decode(jsonContent);
+      var list = parseRuleJsonList(map, rule?.bookList);
       var bookList = list
           ?.map((e) => BookItemBean.FormSource(source)
-            ..name = parseRuleJson(e,rule?.name)?.trim()
-            ..intro = parseRuleJson(e,rule?.intro)?.trim()
-            ..author = parseRuleJson(e,rule?.author)
-            ..lastChapter = parseRuleJson(e,rule?.lastChapter)
-            ..coverUrl = urlFix(parseRuleJson(e,rule?.coverUrl), source.bookSourceUrl!)
-            ..bookUrl = parseRuleJson(e,rule?.bookUrl))
+            ..name = parseRuleJson(e, rule?.name)?.trim()
+            ..intro = parseRuleJson(e, rule?.intro)?.trim()
+            ..author = parseRuleJson(e, rule?.author)
+            ..lastChapter = parseRuleJson(e, rule?.lastChapter)
+            ..coverUrl = urlFix(parseRuleJson(e, rule?.coverUrl), source.bookSourceUrl!)
+            ..bookUrl = parseRuleJson(e, rule?.bookUrl))
           .toList();
 
       return bookList ?? [];
     }
 
     var document = parse(res.data);
+
     /// css selector 规则
     var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
     var bookList = list
@@ -173,7 +177,7 @@ class SourceNetRepository {
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     var rule = source.ruleBookInfo;
-    var bookBean = BookDetailBean(id: Uuid().v1(), sourceUrl: source.bookSourceUrl,updateAt:  DateTime.now().millisecondsSinceEpoch)
+    var bookBean = BookDetailBean(id: Uuid().v1(), sourceUrl: source.bookSourceUrl, updateAt: DateTime.now().millisecondsSinceEpoch)
       ..name = element.parseRule(rule?.name) ?? bean.name
       ..author = element.parseRule(rule?.author) ?? bean.author
       ..coverUrl = urlFix(element.parseRule(rule?.coverUrl) ?? bean.coverUrl, source.bookSourceUrl!)
@@ -198,7 +202,20 @@ class SourceNetRepository {
   }
 
   List<BookChapterBean> getChapters(Element element, BookDetailBean bookBean) {
+    var attrBean=AttrBean(baseUrl: bookBean.tocUrl);
+    ///json 规则
+    final jsonContent = getJsonContent(element.outerHtml, source.ruleToc?.jsonContent);
     var rule = source.ruleToc;
+    if (jsonContent != null) {
+      dynamic map = json.decode(jsonContent);
+      var list = parseRuleJsonList(map, rule?.chapterList);
+      var resList = list
+          ?.mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
+            ..chapterName = parseRuleJson(e, rule?.chapterName,attrBean)?.trim()
+            ..chapterUrl = urlFix(parseRuleJson(e, rule?.chapterUrl), source.bookSourceUrl!))
+          .toList();
+      return resList ?? [];
+    }
     var list = element.parseRuleWithoutAttr(rule?.chapterList);
     var resList = list
         .mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
@@ -215,7 +232,7 @@ class SourceNetRepository {
     if (result.isEmpty) {
       result = "没找到内容";
     }
-    if(source.bookSourceType==source_type_novel) {
+    if (source.bookSourceType == source_type_novel) {
       result = result.split(RegExp('\n')).map((e) {
         return "　　${e.trim()}";
       }).join('\n');

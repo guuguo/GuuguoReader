@@ -81,8 +81,11 @@ extension ElementExt on Element {
   ///从 https://m.31xs.com/201/201996/ url中提取出 两个数字关键词 201， 201996
   ///将其作为$1和$2替换到结果中
   ///
-  String? parseRule(String? rule) {
+  String? parseRule(String? rule, [AttrBean? attrBean = null]) {
     if (rule?.isNotEmpty != true) return null;
+    if (attrBean != null) {
+      rule = attrBean.dealRes(rule);
+    }
 
     ///正则 处理 ##分割
     var regexSpan = rule!.split('##');
@@ -201,7 +204,22 @@ extension ElementExt on Element {
     }
   }
 }
-
+String? getJsonContent(String? httpRes,String? jsonRule){
+  if(jsonRule?.isNotEmpty!=true) return null;
+  ///正则 处理 ##分割
+  var regexSpan = jsonRule!.split('##');
+  String? regex;
+  String? replace;
+  if (regexSpan.length > 1) {
+    regex = regexSpan[1];
+  }
+  if (regexSpan.length > 2) {
+    replace = regexSpan[2];
+  }
+  final jsonContent = replaceContentWithRule(httpRes ?? "", regex, replace, jsonRule.endsWith('###'));
+  if(jsonContent?.isNotEmpty==true) return jsonContent;
+  return null;
+}
 String? replaceContentWithRule(String resultStr, String? regex, String? replace, bool urlReplace) {
   String? result = resultStr;
   if (resultStr.isNotEmpty == true && regex != null) {
@@ -222,9 +240,13 @@ String? replaceContentWithRule(String resultStr, String? regex, String? replace,
   }
   return result;
 }
+
 ///支持的格式 data.1.booName
-String? parseRuleJson(dynamic jsonObj,String? rule) {
+String? parseRuleJson(dynamic jsonObj, String? rule, [AttrBean? attrBean = null]) {
   if (rule?.isNotEmpty != true) return null;
+  if (attrBean != null) {
+    rule = attrBean.dealRes(rule);
+  }
 
   ///正则 处理 ##分割
   var regexSpan = rule!.split('##');
@@ -236,29 +258,46 @@ String? parseRuleJson(dynamic jsonObj,String? rule) {
   if (regexSpan.length > 2) {
     replace = regexSpan[2];
   }
-  dynamic res = jsonObj;
-  regexSpan[0].split('.').forEach((element) {
-    final index = int.tryParse(element);
-    if (index != null) {
-      res = res[index];
-    }else {
-      res = res[element];
-    }
-  });
+  final list=parseRuleJsonList(jsonObj,regexSpan[0]);
+  var res=list?.join('\n')??"";
   String? resultStr=replaceContentWithRule(res.toString(), regex, replace, rule.endsWith("###"));
   return resultStr;
 }
+class AttrBean{
 
+  String? baseUrl = "";
+
+  AttrBean({this.baseUrl = ""});
+
+  String? dealRes(String? rule) {
+    if (rule?.isNotEmpty != true) return null;
+    var result=rule!.replaceAll("{{baseUrl}}", baseUrl ?? "");
+    return result;
+  }
+}
 List? parseRuleJsonList(dynamic jsonObj, String? rule) {
   if (rule?.isNotEmpty != true) return null;
-  dynamic res = jsonObj;
-  rule!.split('.').forEach((element) {
-    res = res[element];
-  });
-  if (res is List) {
-    return res;
+  ///处理 && 分割
+  if(rule!.contains('&&')) {
+    var rules = rule.split('&&');
+    return rules.map((e) => parseRuleJsonList(jsonObj,e)).whereNotNull().flattened.toList();
   }
-  return [];
+
+  if(rule.contains("rawText")){
+    return [rule.split('.')[1]];
+  }
+  List<dynamic> res = jsonObj is List?jsonObj:[jsonObj];
+  rule.split('.').forEach((ruleE) {
+    res= res.fold<List<dynamic>>([], (previousValue, element) {
+      final newEle=element[ruleE];
+      if(newEle is List){
+        return [...previousValue,...newEle];
+      }else{
+        return [...previousValue,newEle];
+      }
+    }).whereNotNull().toList();
+  });
+  return res;
 }
 
 main() {
