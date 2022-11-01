@@ -11,8 +11,9 @@ import 'package:read_info/widget/reader/reder_view.dart';
 import '../../../global/logic.dart';
 
 class ComicReaderMenu extends StatelessWidget {
-  const ComicReaderMenu({Key? key, this.chapterName}) : super(key: key);
+  const ComicReaderMenu({Key? key, this.chapterName,this.sourceBuilder}) : super(key: key);
   final String? chapterName;
+  final WidgetBuilder? sourceBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,7 @@ class ComicReaderMenu extends StatelessWidget {
           data: IconTheme.of(context).copyWith(color: Colors.white),
           child: Column(
             children: [
-              MenuHeader(context, chapterName),
+              MenuHeader(context, chapterName,sourceBuilder),
               Expanded(child: SizedBox()),
               ComicMenuBottom(context),
             ],

@@ -25,8 +25,14 @@ class _DetailSmsPageState extends State<DetailBookPage> {
   @override
   initState() {
     super.initState();
-    itemBean = Get.arguments[ARG_BOOK_ITEM_BEAN];
-    Get.find<DetailLogic>().init(itemBean);
+    dynamic bean = Get.arguments[ARG_BOOK_ITEM_BEAN];
+    if (bean is List<BookItemBean>) {
+      itemBean = bean.first;
+      Get.find<DetailLogic>().init(bean);
+    } else {
+      itemBean = bean;
+      Get.find<DetailLogic>().init([bean]);
+    }
   }
 
   @override

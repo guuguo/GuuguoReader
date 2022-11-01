@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
 import 'package:read_info/data/source_net_repository.dart';
@@ -36,6 +38,9 @@ class ContentLogic extends GetxController {
   int currentChapterIndex() {
     return bookDetail.readChapterIndex;
   }
+  BookChapterBean? currentChapter() {
+    return bookDetail.chapters?[bookDetail.readChapterIndex];
+  }
 
   Future deleteChapter(int chapterIndex) async {
     final chapter = bookDetail.chapters?.getOrNull(chapterIndex);
@@ -72,7 +77,12 @@ class ContentLogic extends GetxController {
     if (bookDetail == null)
       return;
     var chapters = await repository.queryBookTocs(bookDetail);
-    bookDetail = bookDetail.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0);
+    HashMap<String,BookChapterBean> maps=HashMap();
+    bookDetail.chapters?.forEach((e){
+      maps[e.chapterName??""]=e;
+    });
+    var newChapters =  chapters?.map((e) =>maps[e.chapterName??""]??e).toList()??[];
+    bookDetail = bookDetail.copyWith(chapters:newChapters,totalChapterCount:chapters?.length??0);
     LocalRepository.saveBookIfNone(bookDetail);
     update();
   }

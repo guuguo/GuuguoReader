@@ -12,6 +12,7 @@ import '../search/search_result/logic.dart';
 class DetailLogic extends GetxController {
 
   Rx<BookDetailBean?> detail=Rx(null);
+  late List<BookItemBean> items;
   late BookItemBean item;
   var refreshing = false.obs;
 
@@ -20,8 +21,9 @@ class DetailLogic extends GetxController {
   DetailLogic(this.source) {
     repository=SourceNetRepository(source);
   }
-  void init(BookItemBean bean) async {
-    this.item = bean;
+  void init(List<BookItemBean> bean) async {
+    this.items = bean;
+    this.item=bean.first;
     await loadDetail();
   }
 
@@ -45,7 +47,7 @@ class DetailLogic extends GetxController {
     ///更新缓存的内容
     if(bookDetail!=null) {
       bean?.id = bookDetail.id;
-      bean?.searchResult = [...(bookDetail.searchResult), item];
+      bean?.searchResult = [...(bookDetail.searchResult), ...items];
     }
 
     detail.value = bean;

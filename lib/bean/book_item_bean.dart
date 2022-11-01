@@ -1,18 +1,23 @@
+import 'dart:convert';
+
+import 'package:collection/collection.dart';
 import 'package:floor/floor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:read_info/bean/entity/source_entity.dart';
 import 'package:uuid/uuid.dart';
 
-abstract class BookBean{
+abstract class BookBean {
   @ignore
   String? name;
   @ignore
   String? intro;
   @ignore
-  String? author ;
+  String? author;
+
   @ignore
-  String? coverUrl ;
+  String? coverUrl;
 }
+
 class BookItemBean extends BookBean {
   String? name = "";
   String? intro = "";
@@ -23,12 +28,30 @@ class BookItemBean extends BookBean {
   String? sourceUrl;
   SourceEntity? source;
 
-  BookItemBean({this.name, this.intro, this.coverUrl, this.bookUrl, this.author,required this.sourceUrl});
+  BookItemBean({this.name, this.intro, this.coverUrl, this.bookUrl, this.author, this.lastChapter, required this.sourceUrl});
+
   BookItemBean.FormSource(SourceEntity source){
-    this.source=source;
-    this.sourceUrl=source.bookSourceUrl;
+    this.source = source;
+    this.sourceUrl = source.bookSourceUrl;
   }
 
+  Map<String, dynamic> toMap() {
+    return {'name': name, 'intro': intro, 'coverUrl': coverUrl, 'bookUrl': bookUrl, 'author': author, 'lastChapter': lastChapter, 'sourceUrl': sourceUrl};
+  }
+
+
+  static BookItemBean? fromMap(dynamic map) {
+    if (null == map) return null;
+    var temp;
+    return BookItemBean(name: map['name']?.toString(),
+      intro: map['intro']?.toString(),
+      coverUrl: map['coverUrl']?.toString(),
+      bookUrl: map['bookUrl']?.toString(),
+      author: map['author']?.toString(),
+      lastChapter: map['lastChapter']?.toString(),
+      sourceUrl: map['sourceUrl']?.toString(),
+    );
+  }
   @override
   String toString() {
     return 'BookItemBean{name: $name, intro: $intro, coverUrl: $coverUrl, bookUrl: $bookUrl, author: $author, lastChapter: $lastChapter, sourceUrl: $sourceUrl, source: $source}';
@@ -51,8 +74,24 @@ class BookDetailBean extends BookBean {
   String? sourceUrl = "";
   int? updateAt = 0;
   @ignore
+
   ///搜索的源结果
-  List<BookItemBean> searchResult=[];
+  List<BookItemBean> _searchResult = [];
+
+  ///搜索的源结果
+  List<BookItemBean> get searchResult {
+    if(_searchResult.isNotEmpty!=true &&sourceSearchResult?.isNotEmpty==true){
+      _searchResult =(json.decode(sourceSearchResult!) as List).map((e)=>BookItemBean.fromMap(e)).whereNotNull().toList();
+    }
+    return _searchResult;
+  }
+
+  ///搜索的源结果
+  set searchResult(List<BookItemBean> searchResult) {
+    _searchResult = searchResult;
+    sourceSearchResult =json.encode( searchResult.map((e) => e.toMap()).toList());
+  }
+
   ///搜索的源结果存储数据库的内容
   String? sourceSearchResult = "";
   @ignore
@@ -72,22 +111,22 @@ class BookDetailBean extends BookBean {
   int readPageIndex;
   int totalChapterCount;
 
-  BookDetailBean(
-      {required this.id,
-      this.name,
-      this.intro,
-      this.author,
-      this.coverUrl,
-      this.kind,
-      this.lastChapter,
-      this.tocUrl,
-      this.updateAt,
-      List<BookChapterBean>? chapters,
-        required this.sourceUrl,
-      this.readChapterIndex = 0,
-      this.readPageIndex = 0,
-      this.totalChapterCount = 0}) {
-    this.chapters=chapters;
+  BookDetailBean({required this.id,
+    this.name,
+    this.intro,
+    this.author,
+    this.coverUrl,
+    this.kind,
+    this.lastChapter,
+    this.tocUrl,
+    this.updateAt,
+    List<BookChapterBean>? chapters,
+    required this.sourceUrl,
+    this.readChapterIndex = 0,
+    this.readPageIndex = 0,
+    this.sourceSearchResult,
+    this.totalChapterCount = 0}) {
+    this.chapters = chapters;
   }
 
   BookDetailBean copyWith({
@@ -103,6 +142,7 @@ class BookDetailBean extends BookBean {
     String? sourceUrl,
     @ignore List<BookChapterBean>? chapters,
     int? readChapterIndex,
+    String? sourceSearchResult,
     int? readPageIndex,
     int? totalChapterCount,
   }) {
@@ -117,6 +157,7 @@ class BookDetailBean extends BookBean {
       chapters: chapters ?? this.chapters,
       tocUrl: tocUrl ?? this.tocUrl,
       updateAt: updateAt ?? this.updateAt,
+      sourceSearchResult: sourceSearchResult ?? this.sourceSearchResult,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       readChapterIndex: readChapterIndex ?? this.readChapterIndex,
       readPageIndex: readPageIndex ?? this.readPageIndex,
@@ -126,9 +167,13 @@ class BookDetailBean extends BookBean {
 }
 
 @Entity(
-  foreignKeys: [
-    ForeignKey(childColumns: ['bookId'], parentColumns: ['id'], entity: BookDetailBean, onDelete: ForeignKeyAction.cascade, onUpdate: ForeignKeyAction.noAction),
-  ], indices:[Index(value: ['bookId','chapterName'],unique: true,name: 'index_chapter')]
+    foreignKeys: [
+      ForeignKey(childColumns: ['bookId'],
+          parentColumns: ['id'],
+          entity: BookDetailBean,
+          onDelete: ForeignKeyAction.cascade,
+          onUpdate: ForeignKeyAction.noAction),
+    ], indices: [Index(value: ['bookId', 'chapterName'], unique: true, name: 'index_chapter')]
 )
 class BookChapterBean {
   @PrimaryKey()
@@ -141,7 +186,7 @@ class BookChapterBean {
   @ignore
   ChapterContent? content;
 
-  BookChapterBean({required this.id,required this.bookId, this.chapterName, this.chapterUrl,required this.chapterIndex, this.content,this.cached=false});
+  BookChapterBean({required this.id, required this.bookId, this.chapterName, this.chapterUrl, required this.chapterIndex, this.content, this.cached = false});
 
   bool hasContent() {
     return content?.content.isNotEmpty == true;
@@ -149,7 +194,7 @@ class BookChapterBean {
 }
 
 @Entity(
-    indices:[Index(value: ['chapter_id'],unique: true,name: 'index_chapter_content')]
+    indices: [Index(value: ['chapter_id'], unique: true, name: 'index_chapter_content')]
 )
 class ChapterContent {
   @PrimaryKey()

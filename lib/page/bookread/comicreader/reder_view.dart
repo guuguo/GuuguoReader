@@ -22,10 +22,12 @@ class ComicReader extends StatefulWidget {
     required this.pageProgress,
     required this.showCategory,
     required this.pageSize,
+    this.sourceBuilder,
   }) : super(key: key);
   final VoidCallback showCategory;
   final Size pageSize;
   final ReaderPageProgress pageProgress;
+  final WidgetBuilder? sourceBuilder;
 
   static InheritedReader? of(BuildContext context) {
     final InheritedReader? inheritedReader = context.dependOnInheritedWidgetOfExactType<InheritedReader>();
@@ -155,6 +157,7 @@ class ComicReaderState extends State<ComicReader> {
           if (menuShow)
             ComicReaderMenu(
               chapterName: widget.pageProgress.currentChapter?.chapterName,
+              sourceBuilder: widget.sourceBuilder,
             ),
         ],
       ),

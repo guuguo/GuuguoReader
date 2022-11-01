@@ -21,7 +21,7 @@ class _DetailSmsPageState extends State<DetailSmsPage> {
   initState() {
     super.initState();
     itemBean = Get.arguments[ARG_BOOK_ITEM_BEAN];
-    Get.find<DetailLogic>().init(itemBean);
+    Get.find<DetailLogic>().init([itemBean]);
   }
 
   @override

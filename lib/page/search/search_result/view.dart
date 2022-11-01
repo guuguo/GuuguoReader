@@ -20,7 +20,7 @@ class SearchResultPage extends StatefulWidget {
   State<SearchResultPage> createState() => _SearchResultPageState();
 }
 
-class _SearchResultPageState extends State<SearchResultPage> with SingleTickerProviderStateMixin {
+class _SearchResultPageState extends State<SearchResultPage> with SingleTickerProviderStateMixin{
   TabController? _tabController;
 
   @override

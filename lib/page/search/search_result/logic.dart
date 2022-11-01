@@ -21,7 +21,7 @@ class SearchResultLogic extends GetxController {
   final novelStr="小说";
   final comicStr="漫画";
 
-  getState(int index) {
+  SearchResultState getState(int index) {
     if (tags[index] == novelStr) {
       return novelState;
     }
@@ -125,15 +125,11 @@ class SearchResultLogic extends GetxController {
     return LinkedHashMap.fromEntries(books2.entries.sorted((a, b) => calcScore(b.value.first).compareTo(calcScore(a.value.first))));
   }
 
-  var comicInLoading = false;
 
   void updateIndex(int index) async {
-    if (!comicInLoading) {
-      if (comicState.books.isEmpty) {
-        comicInLoading = true;
+    final state=getState(index);
+    if (!state.loading && state.books.isEmpty) {
         await searchBook(tags[index] == comicStr);
-        comicInLoading = false;
-      }
     }
 
     currentIndex = index;

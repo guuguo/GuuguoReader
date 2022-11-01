@@ -46,11 +46,13 @@ class InheritedReader extends InheritedWidget {
 class NovelReader extends StatefulWidget {
   const NovelReader({
     Key? key,
+    required this.sourceBuilder,
     required this.pageProgress,
     required this.showCategory,
     required this.pageSize,
   }) : super(key: key);
   final VoidCallback showCategory;
+  final WidgetBuilder sourceBuilder;
   final Size pageSize;
   final ReaderPageProgress pageProgress;
 
@@ -165,6 +167,7 @@ class NovelReaderState extends State<NovelReader> with MenuShowBehavior, TickerP
                 if (menuShow)
                   ReaderMenu(
                     config: viewModel.config,
+                    sourceBuilder:widget.sourceBuilder,
                     chapterName: widget.pageProgress.currentChapter?.chapterName,
                   ),
               ],
