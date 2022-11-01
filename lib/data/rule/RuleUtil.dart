@@ -23,11 +23,18 @@ List<Element> getElementsByIndex(List<Element> list, int? index) {
 extension ElementListExt on List<Element> {
 
   List<Element> queryCustomSelectorAllFix(String selector) {
+    var forceCss=false;
+    if (selector.startsWith("css:")) {
+      forceCss = true;
+      selector = selector.replaceFirst("css:", "");
+    }
     final splitPoint = selector.split('.');
 
-
     ///是否是  tag.a.1 的格式   或者.2 的数组格式
-    if (splitPoint.length > 1) {
+    if (!forceCss && splitPoint.length > 1) {
+      if(int.tryParse(splitPoint.last)!=null&&splitPoint.length==2){
+        splitPoint.insert(0, "tag");
+      }
       if (splitPoint[0].isNotEmpty != true) {
         if (splitPoint.length == 2) {
           ///如果是.2 数组风格
@@ -36,7 +43,6 @@ extension ElementListExt on List<Element> {
             return getElementsByIndex(this, index);
           } catch (e) {
             ///如果走到catch 说明是 .class的风格 不处理交给后续css selector
-
           }
         }
       } else {

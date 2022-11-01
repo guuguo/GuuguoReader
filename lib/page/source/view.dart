@@ -70,16 +70,15 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
       itemBuilder: (BuildContext context) => [
         popItem(
             icon: Icons.import_contacts,
-            text: "获取常用源",
+            text: "获取常用小说源",
             onTap: () async {
-              final cancel = "正在更新源".showLoading();
-              try {
-                final list = await logic.importSource();
-                cancel();
-                "更新源完成,获取到${list.length}个书源".showMessage();
-              } catch (e) {
-                cancel();
-              }
+              await uploadSource();
+            }),
+        popItem(
+            icon: Icons.import_contacts,
+            text: "获取常用漫画源",
+            onTap: () async {
+              await uploadSource("https://gist.githubusercontent.com/guuguo/4ed5b1c5f9630414680ecb31c23c96ef/raw");
             }),
         popItem(
             icon: Icons.import_contacts,
@@ -96,6 +95,18 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
         Icons.more_vert,
       ),
     );
+  }
+
+  Future<void> uploadSource([String? url]) async {
+    final logic = Get.find<SourceLogic>();
+    final cancel = "正在更新源".showLoading();
+    try {
+      final list = await logic.importSource(url:url?? defaultSourceUrl);
+      cancel();
+      "更新源完成,获取到${list.length}个书源".showMessage();
+    } catch (e) {
+      cancel();
+    }
   }
 
   PopupMenuEntry popItem({IconData? icon, String? text, VoidCallback? onTap}) {
