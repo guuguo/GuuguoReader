@@ -11,7 +11,7 @@ import '../../bean/entity/source_entity.dart';
 class ContentLogic extends GetxController {
   late BookDetailBean bookDetail;
   late SourceNetRepository repository;
-  var readChapterIndex = 0.obs;
+  var readChapterIndex = 0;
   late SourceEntity source;
 
   ContentLogic() {
@@ -22,8 +22,7 @@ class ContentLogic extends GetxController {
   void init(BookDetailBean bean) async {
     this.bookDetail = bean;
     LocalRepository.saveBookIfNone(bean);
-    readChapterIndex.value = bean.readChapterIndex;
-    // await loadContent();
+    readChapterIndex = bean.readChapterIndex;
   }
 
   BookChapterBean? getChapterByIndex(int index) {
@@ -52,7 +51,7 @@ class ContentLogic extends GetxController {
     bookDetail.readPageIndex = pageIndex;
     bookDetail.readChapterIndex = chapterIndex;
     bookDetail.updateAt=DateTime.now().millisecondsSinceEpoch;
-    readChapterIndex.value = chapterIndex;
+    readChapterIndex = chapterIndex;
     LocalRepository.updateBook(bookDetail);
   }
 
@@ -73,7 +72,8 @@ class ContentLogic extends GetxController {
     if (bookDetail == null)
       return;
     var chapters = await repository.queryBookTocs(bookDetail);
-    bookDetail = bookDetail.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0 );
+    bookDetail = bookDetail.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0);
+    LocalRepository.saveBookIfNone(bookDetail);
     update();
   }
 }

@@ -197,7 +197,6 @@ class SourceNetRepository {
     if (element == null) return null;
     debug("获取所有章节列表${source.ruleToc}");
     List<BookChapterBean> resList = getChapters(element, bean);
-
     return resList;
   }
 
@@ -212,7 +211,7 @@ class SourceNetRepository {
       var resList = list
           ?.mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
             ..chapterName = parseRuleJson(e, rule?.chapterName,attrBean)?.trim()
-            ..chapterUrl = urlFix(parseRuleJson(e, rule?.chapterUrl), source.bookSourceUrl!))
+            ..chapterUrl = urlFix(parseRuleJson(e, rule?.chapterUrl,attrBean), source.bookSourceUrl!))
           .toList();
       return resList ?? [];
     }

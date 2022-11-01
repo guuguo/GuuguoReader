@@ -284,7 +284,7 @@ List? parseRuleJsonList(dynamic jsonObj, String? rule) {
   }
 
   if(rule.contains("rawText")){
-    return [rule.split('.')[1]];
+    return [rule.substring(rule.indexOf('.')+1)];
   }
   List<dynamic> res = jsonObj is List?jsonObj:[jsonObj];
   rule.split('.').forEach((ruleE) {

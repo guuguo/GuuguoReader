@@ -134,10 +134,10 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
         width: 290,
         padding: EdgeInsets.only(bottom: 20),
         color: Theme.of(context).cardColor,
-        child: GetX<ContentLogic>(builder: (ContentLogic logic) {
+        child: GetBuilder<ContentLogic>(builder: (ContentLogic logic) {
           final itemHeight = 35.0;
-          final currentChapter = logic.bookDetail.chapters![logic.readChapterIndex.value];
-          final controller = ScrollController(initialScrollOffset: max(logic.readChapterIndex.value - 8, 0) * itemHeight);
+          final currentChapter = logic.bookDetail.chapters![logic.readChapterIndex];
+          final controller = ScrollController(initialScrollOffset: max(logic.readChapterIndex - 8, 0) * itemHeight);
           return SafeArea(
             child: Column(
               children: [
@@ -154,7 +154,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
                           itemExtent: itemHeight,
                           children: logic.bookDetail.chapters!
                               .mapIndexed(
-                                (i, e) => ChapterItem(context, i, e, i == logic.readChapterIndex.value),
+                                (i, e) => ChapterItem(context, i, e, i == logic.readChapterIndex),
                               )
                               .toList(),
                         )),
@@ -162,14 +162,14 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
                 ),
                 Row(children: [
                   SizedBox(width: 10),
-                  Text("${currentChapter.chapterName} (${logic.readChapterIndex.value}/${logic.bookDetail.totalChapterCount})", style: Theme.of(context).textTheme.caption?.copyWith(fontSize: 10)),
+                  Text("${currentChapter.chapterName} (${logic.readChapterIndex}/${logic.bookDetail.totalChapterCount})", style: Theme.of(context).textTheme.caption?.copyWith(fontSize: 10)),
                   Expanded(child: SizedBox()),
                   GestureDetector(
                     onTap: () async {
                       final cancel = "正在更新章节列表".showLoading();
                       await logic.loadChapters();
                       cancel();
-                      setState(() {});
+                      pageProgress.totalChapterCount=logic.bookDetail.totalChapterCount;
                     },
                     child: Padding(padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10), child: Text("更新", style: Theme.of(context).textTheme.caption?.copyWith(fontSize: 10))),
                   ),
