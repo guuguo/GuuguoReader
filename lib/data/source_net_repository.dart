@@ -90,49 +90,9 @@ class SourceNetRepository {
     if (searchUrl?.isNotEmpty != true) return [];
 
     searchUrl = searchUrl!.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
-    var index = -1;
-    if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {
-      index = searchUrl.indexOf(',');
-    }
-    var method = "get";
-    var charset = "utf-8";
-    String? contentType;
-    ;
-    dynamic body;
 
-    if (index >= 0) {
-      final methodJson = json.decode(searchUrl.substring(index + 1));
-      searchUrl = searchUrl.substring(0, index);
-      method = methodJson['method'] ?? "get";
-      body = methodJson['body'] ?? "";
-      charset = methodJson['charset'] ?? "";
-      contentType = methodJson['contentType'];
-      if (body is Map)
-        contentType = contentType ?? Headers.jsonContentType;
-      else
-        contentType = contentType ?? Headers.formUrlEncodedContentType;
-    }
-
-    if (charset.isNotEmpty) {
-      contentType = contentType?.replaceAll(RegExp(r"utf-8"), charset);
-    }
-
-    Response<String?> res = await getDio().request<String>(
-      searchUrl,
-      data: body,
-      queryParameters: method == "get" ? body : null,
-      options: Options(
-        method: method,
-        contentType: contentType,
-        requestEncoder: (req, option) {
-          if (option.contentType?.toLowerCase().contains(RegExp('gb')) == true) {
-            return gbk.encode(req);
-          } else {
-            return utf8.encode(req);
-          }
-        },
-      ),
-    );
+    final urlConfig=UrlConfig.fromUrl(searchUrl);
+    Response<String?> res = await urlConfig.request(getDio(),source.bookSourceUrl);
 
     //header.title@a@text
     var rule = source.ruleSearch;
@@ -250,12 +210,9 @@ class SourceNetRepository {
   Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule) async {
     if (url?.isNotEmpty != true) return "";
 
-    Response res;
-    try {
-      res = await getDio().get<dynamic>(url ?? "");
-    } catch (e) {
-      return "";
-    }
+    final urlConfig=UrlConfig.fromUrl(url!);
+    Response<dynamic> res =await urlConfig.request(getDio(),source.bookSourceUrl);
+
     var element = parse(res.data).documentElement;
     if (element == null) return "";
 
@@ -278,5 +235,58 @@ class SourceNetRepository {
     }
 
     return result ?? "";
+  }
+}
+class UrlConfig{
+  var method = "get";
+  var charset = "utf-8";
+  dynamic body;
+  String? contentType;
+  String? searchUrl;
+
+  static UrlConfig fromUrl(String searchUrl){
+    var index = -1;
+    if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {
+      index = searchUrl.indexOf(',');
+    }
+    var config=UrlConfig();
+    config.searchUrl=searchUrl;
+    if(index == -1) return config;
+    final methodJson = json.decode(searchUrl.substring(index + 1));
+    searchUrl = searchUrl.substring(0, index);
+    config.searchUrl=searchUrl;
+    config.method = methodJson['method'] ?? "get";
+    config.body = methodJson['body'];
+    config.charset = methodJson['charset'] ?? "";
+    config.contentType = methodJson['contentType'];
+    if (config.body is Map)
+      config.contentType = config.contentType ?? Headers.jsonContentType;
+    else
+      config.contentType = config.contentType ?? Headers.formUrlEncodedContentType;
+
+    if (config.charset.isNotEmpty) {
+      config. contentType = config.contentType?.replaceAll(RegExp(r"utf-8"), config.charset);
+    }
+    return config;
+  }
+  request<T>(Dio dio,String? baseUrl)async{
+    searchUrl=urlFix(searchUrl,baseUrl??"");
+   print(body);
+    return await dio.request<T>(
+      searchUrl??"",
+      data: body,
+      queryParameters: method == "get" ? body : null,
+      options: Options(
+        method: method,
+        contentType:  contentType,
+        requestEncoder: (req, option) {
+          if (option.contentType?.toLowerCase().contains(RegExp('gb')) == true) {
+            return gbk.encode(req);
+          } else {
+            return utf8.encode(req);
+          }
+        },
+      ),
+    );
   }
 }

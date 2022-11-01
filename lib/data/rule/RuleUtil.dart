@@ -8,51 +8,72 @@ String? checkUrlRule(String baseUrl, String? rule) {
   } else
     return null;
 }
-List<Element> getElementsByIndex(List<Element> list, int? index) {
-  if (index == null|| list.isEmpty) return list;
-  if (index >= 0) {
-    if (index < list.length) return [list[index]];
-    return [];
-  } else {
-    final resI = list.length - 1 + index;
-    if (resI >= 0) return [list[resI]];
-    return [];
+List<Element> getElementsByIndexAndNotIndex(List<Element> list, int? index, int? notIndex) {
+  if ((index == null && notIndex == null) || list.isEmpty) return list;
+  if(index!=null) {
+    if (index >= 0) {
+      if (index < list.length) return [list[index]];
+      return [];
+    } else {
+      final resI = list.length - 1 + index;
+      if (resI >= 0) return [list[resI]];
+      return [];
+    }
+  }else if(notIndex!=null) {
+    if (notIndex >= 0) {
+      if (notIndex < list.length) return [...list..removeAt(notIndex)];
+      return [];
+    } else {
+      final resI = list.length - 1 + notIndex;
+      if (resI >= 0) return [...list..removeAt(resI)];
+      return [];
+    }
   }
+  return [];
 }
 
 extension ElementListExt on List<Element> {
 
   List<Element> queryCustomSelectorAllFix(String selector) {
-    var forceCss=false;
-    if (selector.startsWith("css:")) {
-      forceCss = true;
-      selector = selector.replaceFirst("css:", "");
-    }
     final splitPoint = selector.split('.');
 
     ///是否是  tag.a.1 的格式   或者.2 的数组格式
-    if (!forceCss && splitPoint.length > 1) {
-      if(int.tryParse(splitPoint.last)!=null&&splitPoint.length==2){
-        splitPoint.insert(0, "tag");
-      }
+    if (splitPoint.length > 1) {
       if (splitPoint[0].isNotEmpty != true) {
         if (splitPoint.length == 2) {
-          ///如果是.2 数组风格
+          ///如果是 .2 数组风格
           try {
             final index = int.parse(splitPoint[1]);
-            return getElementsByIndex(this, index);
+            return getElementsByIndexAndNotIndex(this, index,null);
           } catch (e) {
             ///如果走到catch 说明是 .class的风格 不处理交给后续css selector
           }
+        }else{
+          if(int.tryParse(splitPoint.last)!=null&&splitPoint.length==2){
+            splitPoint.insert(0, "tag");
+          }
+          ///如果走到 else 说明是 .class.unknow 的风格 不处理交给后续css selector（异常风格）
         }
       } else {
         int? index;
+        ///不包含的索引
+        int? notIndex;
         if (splitPoint.length > 2) {
+          ///如果是tag.a.2 的风格
           try {
             index = int.parse(splitPoint[2]);
-          } catch (e) {}
+          } catch (e) {
+            ///最后一个不是数字
+            ///可能是 tag.a.a 风格（异常风格）
+          }
         }
-        final value = splitPoint[1];
+        var value = splitPoint[1];
+        if(value.contains('!')){
+          ///走到这里大概率是tag.a!1 或者  tag.a!-1的风格
+          final tttt=value.split('!');
+          value=tttt[0];
+          notIndex=int.tryParse(tttt[1]);
+        }
         if (splitPoint[0] == "tag") {
           selector = value;
         } else if (splitPoint[0] == "class") {
@@ -61,10 +82,10 @@ extension ElementListExt on List<Element> {
           selector = "#${value}";
         } else if (splitPoint[0] == "text") {
           final res = this.where((element) => element.text.contains(RegExp(value))).toList();
-          return getElementsByIndex(res, index);
+          return getElementsByIndexAndNotIndex(res, index,notIndex);
         }
         final res = querySelectorAllFix(selector);
-        return getElementsByIndex(res, index);
+        return getElementsByIndexAndNotIndex(res, index,notIndex);
       }
     }
     return querySelectorAllFix(selector);
@@ -127,6 +148,19 @@ extension ElementExt on Element {
     if(rule.isEmpty){
       rule="html";
     }
+    ///@css: 去除，本身就适配的
+    if(rule.contains("@css:")){
+      rule= rule.replaceFirst("@css:", "");
+    }
+
+    ///@js: 去除尾部的@js，不知道怎么适配
+    if (rule.contains("@js:")) {
+      rule= rule.replaceFirst(RegExp("@js:.*"), "");
+    }
+
+    ///<js></js>: 去除js标签，不清楚规则具体用法，不知道怎么适配
+    rule=rule.replaceFirst(RegExp(r"<js>.*?</js>"), "").trim();
+
     ///css selector 处理 @ 分割
     var tags = rule.split('@');
     var attr;
@@ -174,7 +208,7 @@ extension ElementExt on Element {
     var tags = rule.split('@');
     List<Element> resultElement = [this];
 
-    tags.forEachIndexed((i, selector) {
+    tags.whereNot((element) => element.isEmpty).forEachIndexed((i, selector) {
       resultElement = resultElement.queryCustomSelectorAllFix(selector);
     });
     return resultElement;
@@ -227,11 +261,11 @@ String? getJsonContent(String? httpRes,String? jsonRule){
   return null;
 }
 String? replaceContentWithRule(String resultStr, String? regex, String? replace, bool urlReplace) {
-  String? result = resultStr;
-  if (resultStr.isNotEmpty == true && regex != null) {
+  String? result = resultStr.trim();
+  if (result.isNotEmpty == true && regex != null) {
     final originReg = RegExp(regex);
     if (urlReplace) {
-      final allMatches = originReg.allMatches(resultStr);
+      final allMatches = originReg.allMatches(result);
       var s1 = allMatches.firstOrNull?.groupOrNull(1);
       var s2 = allMatches.firstOrNull?.groupOrNull(2);
       var s3 = allMatches.firstOrNull?.groupOrNull(3);
@@ -241,7 +275,7 @@ String? replaceContentWithRule(String resultStr, String? regex, String? replace,
       replace = replace?.replaceAll(RegExp(r"\$3"), s3 ?? "");
       result = replace;
     } else {
-      result = resultStr.replaceAll(originReg, replace ?? "");
+      result = result.replaceAll(originReg, replace ?? "");
     }
   }
   return result;
