@@ -39,6 +39,9 @@ class ComicLogic extends GetxController {
   }
 
   Future addNextComicChapter(double? firstColumnHeight) async{
+    if(!pageProgress.canToTargetChapter(pageProgress.currentChapterIndex+1)){
+      return;
+    }
     var removeHeight=0.0;
     ///如果当前不止一章，移除第一章
     if(comics.length>1){
@@ -46,6 +49,8 @@ class ComicLogic extends GetxController {
       debug("移除${remove.first}章 高度:${firstColumnHeight} 有${remove.seconed.length}张图片");
       removeHeight=firstColumnHeight??0;
     }
+
+
     var chapterPage=pageProgress.currentChapterIndex+1;
     await pageProgress.ensureChapterContent(chapterPage);
     final chapter = pageProgress.nextChapter;

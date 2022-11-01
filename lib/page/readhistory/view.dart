@@ -106,7 +106,6 @@ class BookReadItemWidget extends StatelessWidget {
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (bean.coverUrl?.isNotEmpty == true)
                       Container(
                           width: 40,
                           height: 60,

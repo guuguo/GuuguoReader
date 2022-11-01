@@ -102,11 +102,9 @@ class ComicReaderState extends State<ComicReader> {
   }
 
   void jumpToChapter(int chapterIndex) async {
-    final loading = "正在加载数据".showLoading();
     await widget.pageProgress.toTargetChapter(chapterIndex);
     await logic.loadCurrentPage();
     controller.jumpTo(0);
-    loading();
   }
 
   @override
@@ -143,11 +141,22 @@ class ComicReaderState extends State<ComicReader> {
                     return Column(
                       key: comicContentKey,
                       children: logic.comics
-                          .mapIndexed((i, pair) => Column(
-                                key: i == 0 ? firstColumnKey : (i == 1 ? secondColumnKey : null),
-                                children: pair.seconed.mapIndexed((i,e) => ImageItem(pair.first,i,e)).toList(),
-                              ))
-                          .toList(),
+                          .mapIndexed((i, pair) {
+                        final list = pair.seconed;
+                        return Column(
+                          key: i == 0 ? firstColumnKey : (i == 1 ? secondColumnKey : null),
+                          children: [
+                            ...list.mapIndexed((i, e) => ImageItem(pair.first, i, e)),
+                            if (list.length <= 2) ...[
+                              Container(
+                                height: 1000,
+                                alignment: Alignment.center,
+                                child: Text("本章节没有更多内容了"),
+                              )
+                            ]
+                          ],
+                        );
+                      }).toList(),
                     );
                   },
                 ),

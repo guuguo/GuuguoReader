@@ -147,31 +147,32 @@ Widget IconMenu(IconData icon, {VoidCallback? onPressed}) {
 }
 
 Widget MenuHeader(BuildContext context, String? chapterName, WidgetBuilder? sourceBuilder) {
-  return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: kToolbarHeight,
-            color: bgColor,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: MyBackButton(),
-                ),
-                Expanded(child: Text(chapterName ?? "", style: TextStyle(fontSize: 18), overflow: TextOverflow.ellipsis)),
-                menuButton(),
-              ],
-            ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Container(
+        width: double.infinity,
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+        color: bgColor,
+        child: Container(
+          height: kToolbarHeight,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: MyBackButton(),
+              ),
+              Expanded(child: Text(chapterName ?? "", style: TextStyle(fontSize: 18), overflow: TextOverflow.ellipsis)),
+              menuButton(),
+            ],
           ),
-          if (sourceBuilder != null) sourceBuilder.call(context)
-        ],
-      ));
+        ),
+      ),
+      if (sourceBuilder != null) sourceBuilder.call(context)
+    ],
+  );
 }
 
 Widget menuButton() {

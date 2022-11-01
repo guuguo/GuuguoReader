@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -9,6 +10,7 @@ import 'package:read_info/global/constant.dart';
 import 'package:read_info/global/custom/component/limit_width_box.dart';
 import 'package:read_info/global/custom/my_theme.dart';
 import 'package:read_info/page/detailsms/logic.dart';
+import 'package:read_info/page/view/bookcover.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../bean/book_item_bean.dart';
@@ -77,7 +79,7 @@ class _DetailSmsPageState extends State<DetailBookPage> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   SizedBox(height: 10),
-                  BookCover(bean, logic),
+                  SizedBox(width:75,height:100,child: BookCover(bean)),
                   SizedBox(height: 14),
                   Text(bean?.name ?? "",
                       style: MyTheme(context).textTheme.titleLarge),
@@ -163,23 +165,24 @@ class _DetailSmsPageState extends State<DetailBookPage> {
     );
   }
 
-  Container BookCover(BookDetailBean? bean, DetailLogic logic) {
-    return Container(
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-              color: Color(0x33000000), offset: Offset(0, 0), blurRadius: 3)
-        ],
-        borderRadius: BorderRadius.circular(2),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(2),
-        child: Image.network(
-            bean?.coverUrl ?? "",
-            width: 100),
-      ),
-    );
-  }
+  // Container BookCover(BookDetailBean? bean, DetailLogic logic) {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       boxShadow: [
+  //         BoxShadow(
+  //             color: Color(0x33000000), offset: Offset(0, 0), blurRadius: 3)
+  //       ],
+  //       borderRadius: BorderRadius.circular(2),
+  //     ),
+  //     child: ClipRRect(
+  //       borderRadius: BorderRadius.circular(2),
+  //       child: CachedNetworkImage(
+  //           imageUrl:bean?.coverUrl ?? "",
+  //           errorWidget: ,
+  //           width: 100),
+  //     ),
+  //   );
+  // }
 
   Center buildLoadingView() => Center(child: CupertinoActivityIndicator());
 }

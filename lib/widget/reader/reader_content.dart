@@ -108,11 +108,11 @@ class ReaderContentDrawer {
     if (bgPicture == null || forceRedraw) {
         ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
         Canvas pageCanvas = new Canvas(pageRecorder);
-        print("forceRedraw:${forceRedraw}");
+        print("${identityHashCode(model.config)} forceRedraw:${forceRedraw}");
         print("bgImageStyle:${model.config.bgImageStyle}");
         print("isDark:${model.config.isDark}");
-        print("image is nul:${ReaderConfigEntity.currentCanvasBgImage==null}");
-        final image=ReaderConfigEntity.currentCanvasBgImage;
+        print("image is nul:${model.config.currentCanvasBgImage==null}");
+        final image=model.config.currentCanvasBgImage;
         if(image!=null) {
           paintImage(
               canvas: pageCanvas,
@@ -144,6 +144,10 @@ class ReaderContentDrawer {
       return pageRecorder.endRecording();
     }
 
+    if(index>=chapterData.chapterContentConfigs.length) {
+      ///超出范围
+      return pageRecorder.endRecording();
+    }
     var pageContentConfig = chapterData.chapterContentConfigs[index];
 
     final validContentHeight = (model.config.pageSize.height - model.config.contentPaddingVertical * 2);

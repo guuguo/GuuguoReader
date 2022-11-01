@@ -9,7 +9,6 @@ import '../../bean/book_item_bean.dart';
 import '../../bean/entity/source_entity.dart';
 import '../../data/local_repository.dart';
 import '../../global/constant.dart';
-import '../search/search_result/logic.dart';
 
 class DetailLogic extends GetxController {
 
@@ -50,7 +49,7 @@ class DetailLogic extends GetxController {
     if(bookDetail!=null) {
       bean?.id = bookDetail.id;
     }
-    bean?.searchResult =(bookDetail?.searchResult?..addAll(items))??HashSet();
+    bean?.searchResult =((bookDetail?.searchResult??HashSet())..addAll(items));
 
     detail.value = bean;
     refreshing.value = false;

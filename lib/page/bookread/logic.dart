@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
 import 'package:read_info/data/source_net_repository.dart';
 import 'package:read_info/global/constant.dart';
+import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/utils/developer.dart';
 import 'package:read_info/utils/ext/list_ext.dart';
 
@@ -67,7 +68,13 @@ class ContentLogic extends GetxController {
       chapter.content = saveChapter;
     }
     if (!chapter.hasContent()) {
+      var cancel;
+      if(chapter.chapterIndex==bookDetail.readChapterIndex) {
+        cancel= "正在加载章节内容中".showLoading();
+      }
       await repository.queryBookContent(chapter);
+      cancel?.call();
+
       debug("文章内容规则：${source.ruleContent}");
       debug("加载文章内容：${chapter.content?.content ?? "没找到内容"}");
       LocalRepository.updateChapterContent(chapter);

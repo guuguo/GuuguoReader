@@ -111,6 +111,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
         child: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
+            SizedBox(width: 10),
             Expanded(
               child: GestureDetector(
                   onTap: () {
@@ -119,7 +120,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
                       mode: LaunchMode.externalApplication,
                     );
                   },
-                  child: Text(logic.currentChapter()?.chapterUrl ?? "", textAlign: TextAlign.end, overflow: TextOverflow.ellipsis, maxLines: 1)),
+                  child: Text(logic.currentChapter()?.chapterUrl ?? "", textAlign: TextAlign.start, overflow: TextOverflow.ellipsis, maxLines: 1)),
             ),
             SizedBox(width: 10),
             GestureDetector(

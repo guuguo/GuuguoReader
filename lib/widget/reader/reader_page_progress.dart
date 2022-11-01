@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/widget/reader/reader_content.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_view.dart';
@@ -39,7 +40,7 @@ class ReaderPageProgress {
 
   Future toTargetChapter(int chapterIndex, [int targetPageIndex = 0]) async {
     if (!canToTargetChapter(chapterIndex)) {
-      Get.snackbar("提示", "没有数据了", duration: Duration(milliseconds: 2000));
+      "没有数据了".showMessage();
       return;
     }
     try {
@@ -59,13 +60,13 @@ class ReaderPageProgress {
   }
 
   Pair<int, int> prePage() {
-    if (currentChapter!.canToPrePage()) {
+    if (currentChapter?.canToPrePage()==true) {
       return Pair(currentChapterIndex, currentPageIndex - 1);
     }
     return Pair(currentChapterIndex - 1, (preChapter?.chapterContentConfigs.length ?? 1) - 1);
   }
   Pair<int, int> nextPage() {
-    if (currentChapter!.canToNextPage()) {
+    if (currentChapter?.canToNextPage()==true) {
       return Pair(currentChapterIndex, currentPageIndex + 1);
     }
     return Pair(currentChapterIndex + 1,0);
