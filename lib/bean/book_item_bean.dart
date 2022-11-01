@@ -137,7 +137,7 @@ class BookChapterBean {
   String? chapterName = "";
   String? chapterUrl = "";
   int chapterIndex = 0;
-  bool cached = false;
+  bool? cached = false;
   @ignore
   ChapterContent? content;
 

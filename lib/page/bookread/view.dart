@@ -202,7 +202,7 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
               alignment: Alignment.centerLeft,
               padding: EdgeInsets.only(left: 16),
               child: Text((bean.chapterName ?? "") + (selected ? "  ✔" : ""),
-                  style: MyTheme(context).textTheme.caption?.copyWith(color: bean.cached||bean.content != null ? MyTheme(context).textTheme.bodyMedium?.color : null), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  style: MyTheme(context).textTheme.caption?.copyWith(color: bean.cached==true||bean.content != null ? MyTheme(context).textTheme.bodyMedium?.color : null), maxLines: 1, overflow: TextOverflow.ellipsis),
             )),
             DashDivider()
           ],
