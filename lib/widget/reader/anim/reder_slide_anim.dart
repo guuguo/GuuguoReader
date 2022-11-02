@@ -25,6 +25,7 @@ class ReaderSlideAnim extends NovelReaderAnim {
   @override
   drawCanvas(Canvas canvas) {
     if (deltaX == 0 ) {
+      // debug("获取当前页${pageProgress.currentChapter?.chapterIndex} : ${pageProgress.currentChapter?.currentPageIndex}") ;
       canvas.drawPicture(pageDrawer.getCurrentPagePicture());
       return;
     }
@@ -59,7 +60,6 @@ class ReaderSlideAnim extends NovelReaderAnim {
 
   @override
   Animation? onPanEnd(DragEndDetails detail) {
-    debug("页面滑动放手了");
     double begin = 0;
     double end = 0;
 

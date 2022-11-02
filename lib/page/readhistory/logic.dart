@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:read_info/bean/book_item_bean.dart';
 import 'package:read_info/config/route_config.dart';
 import 'package:read_info/global/constant.dart';
+import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/utils/developer.dart';
 
 import '../../data/local_repository.dart';
@@ -30,6 +31,10 @@ class ReadHistoryLogic extends GetxController {
   Future toReadPage(BookDetailBean item) async {
     var routeRouteConfig = RouteConfig.bookcontent;
     var source = await LocalRepository.findSource(item.sourceUrl);
+    if(source==null){
+      "找不到该书源了:${item.sourceUrl}".showMessage();
+      return;
+    }
     var chapters = await LocalRepository.findBookChapters(item);
     debug("跳转到详情页"+item.toString());
     if (chapters.isNotEmpty != true) {

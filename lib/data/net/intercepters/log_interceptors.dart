@@ -26,7 +26,7 @@ class LogsInterceptors extends InterceptorsWrapper {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    printRequest(options, null);
+    // printRequest(options, null);
     handler.next(options);
   }
 
@@ -101,8 +101,8 @@ class LogsInterceptors extends InterceptorsWrapper {
       developer.log(headers);
       developer.log(query);
       developer.log(params);
-      if (res.length > 2000)
-        developer.log(res.substring(0, 2000));
+      if (res.length > 500)
+        developer.log(res.substring(0, 500));
       else
         developer.log(res);
 

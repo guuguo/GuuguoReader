@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:read_info/page/common/widget_common.dart';
+import 'package:read_info/utils/developer.dart';
 import 'package:read_info/widget/reader/reader_content.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_view.dart';
@@ -126,6 +129,7 @@ class ReaderPageProgress {
 
   ///正在加载章节内容中
   Future<ReaderChapterData?> ensureChapterContent(int chapterIndex) async {
+    if(chapterContentReady(chapterIndex)) return getChapterFromIndex(chapterIndex);
     if (ensureChapterFuture != null) {
       return await ensureChapterFuture;
     } else {
@@ -151,21 +155,23 @@ class ReaderPageProgress {
 
   ///正在加载章节内容中,只被[ensureChapterContent]方法调用。管理同时预加载的网页只有一个
   Future<ReaderChapterData?> _ensureChapterContentPrivate(int chapterIndex) async {
+    if(chapterIndex<0) return null;
     ReaderChapterData? chapter;
     if (!chapterContentReady(chapterIndex)) {
+      debug("准备加载章节${chapterIndex}内容");
       chapter = await chapterProvider(chapterIndex);
+      // await Future.delayed(Duration(seconds: 900));
+      // debug("加载到章节${chapter.chapterIndex}内容：${chapter.content?.substring(0,min(chapter.content?.length??0, 50))}");
       chapterPrepare?.call(chapter);
     }else{
       return getChapterFromIndex(chapterIndex);
     }
-    if (chapter != null) {
-      if (chapterIndex == currentChapterIndex - 1) {
-        preChapter = chapter;
-      } else if (chapterIndex == currentChapterIndex) {
-        currentChapter = chapter;
-      } else if (chapterIndex == currentChapterIndex + 1) {
-        nextChapter = chapter;
-      }
+    if (chapterIndex == currentChapterIndex - 1) {
+      preChapter = chapter;
+    } else if (chapterIndex == currentChapterIndex) {
+      currentChapter = chapter;
+    } else if (chapterIndex == currentChapterIndex + 1) {
+      nextChapter = chapter;
     }
     return chapter;
   }

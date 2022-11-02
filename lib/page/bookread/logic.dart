@@ -58,7 +58,7 @@ class ContentLogic extends GetxController {
     bookDetail.readChapterIndex = chapterIndex;
     bookDetail.updateAt=DateTime.now().millisecondsSinceEpoch;
     readChapterIndex = chapterIndex;
-    LocalRepository.updateBook(bookDetail);
+    LocalRepository.updateBookReadProgress(bookDetail);
   }
 
   Future loadChapterContent(BookChapterBean? chapter) async {
@@ -76,7 +76,7 @@ class ContentLogic extends GetxController {
       cancel?.call();
 
       debug("文章内容规则：${source.ruleContent}");
-      debug("加载文章内容：${chapter.content?.content ?? "没找到内容"}");
+      // debug("加载文章内容：${chapter.content?.content.substring(0,min) ?? "没找到内容"}");
       LocalRepository.updateChapterContent(chapter);
     }
   }
@@ -85,7 +85,7 @@ class ContentLogic extends GetxController {
       return;
     var chapters = await repository.queryBookTocs(bookDetail);
     bookDetail = bookDetail.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0);
-    LocalRepository.saveBookIfNone(bookDetail);
+    LocalRepository.saveBook(bookDetail);
     update();
   }
 }

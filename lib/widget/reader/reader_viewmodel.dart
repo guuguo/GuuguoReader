@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:read_info/utils/developer.dart';
 import 'package:read_info/widget/reader/reader_content.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
 import 'anim/page_anim_manager.dart';
@@ -57,46 +58,48 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
   //跳转到下一页
   Future toNextPage() async {
     await pageProgress.toNextPage();
+    prepareCurrentPage();
     notifyListeners();
     if (!pageProgress.currentChapterReady()) {
       await pageProgress.ensureCurrentChapter();
       prepareCurrentPage();
       notifyListeners();
-    } else {
-      prepareCurrentPage();
     }
-    pageProgress.preloadData();
+    pageProgress.preloadNextData();
   }
 
   //跳转到前一页
   Future toPrePage() async {
     await pageProgress.toPrePage();
+    prepareCurrentPage();
     notifyListeners();
     if (!pageProgress.currentChapterReady()) {
+      debug("当前章节 ${pageProgress.currentChapterIndex} 内容未加载，开始加载");
       await pageProgress.ensureCurrentChapter();
       prepareCurrentPage();
       notifyListeners();
-    } else {
-      prepareCurrentPage();
     }
-    pageProgress.preloadData();
+    pageProgress.preloadPreData();
   }
 
   //跳转到某一页
   Future toChapter(int chapterIndex) async {
     await pageProgress.toTargetChapter(chapterIndex);
+    prepareCurrentPage();
     notifyListeners();
     if (!pageProgress.currentChapterReady()) {
       await pageProgress.ensureCurrentChapter();
       prepareCurrentPage();
       notifyListeners();
-    } else {
-      prepareCurrentPage();
     }
     pageProgress.preloadData();
   }
 
   prepareCurrentPage() {
+    if(pageProgress.currentChapter==null) {
+      debug("当前章节 ${pageProgress.currentPageIndex} 为空");
+      return;
+    }
     preparePagePicture(pageProgress.currentChapter!, pageProgress.currentChapter!.currentPageIndex);
   }
 

@@ -49,12 +49,13 @@ extension ElementListExt on List<Element> {
             ///如果走到catch 说明是 .class的风格 不处理交给后续css selector
           }
         }else{
-          if(int.tryParse(splitPoint.last)!=null&&splitPoint.length==2){
-            splitPoint.insert(0, "tag");
-          }
+
           ///如果走到 else 说明是 .class.unknow 的风格 不处理交给后续css selector（异常风格）
         }
       } else {
+        if(int.tryParse(splitPoint.last)!=null&&splitPoint.length==2){
+          splitPoint.insert(0, "tag");
+        }
         int? index;
         ///不包含的索引
         int? notIndex;

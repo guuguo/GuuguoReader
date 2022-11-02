@@ -323,14 +323,8 @@ class _$BookDao extends BookDao {
   @override
   Future<List<BookChapterBean>> findBookChapters(String bookId) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM BookChapterBean where bookId = ?1',
-        mapper: (Map<String, Object?> row) => BookChapterBean(
-            id: row['id'] as String,
-            bookId: row['bookId'] as String?,
-            chapterName: row['chapterName'] as String?,
-            chapterUrl: row['chapterUrl'] as String?,
-            chapterIndex: row['chapterIndex'] as int,
-            cached: row['cached'] == null ? null : (row['cached'] as int) != 0),
+        'SELECT * FROM BookChapterBean where bookId = ?1 order by chapterIndex asc',
+        mapper: (Map<String, Object?> row) => BookChapterBean(id: row['id'] as String, bookId: row['bookId'] as String?, chapterName: row['chapterName'] as String?, chapterUrl: row['chapterUrl'] as String?, chapterIndex: row['chapterIndex'] as int, cached: row['cached'] == null ? null : (row['cached'] as int) != 0),
         arguments: [bookId]);
   }
 
@@ -403,7 +397,7 @@ class _$BookDao extends BookDao {
   @override
   Future<List<int>> insertBookChapters(List<BookChapterBean> list) {
     return _bookChapterBeanInsertionAdapter.insertListAndReturnIds(
-        list, OnConflictStrategy.ignore);
+        list, OnConflictStrategy.replace);
   }
 
   @override

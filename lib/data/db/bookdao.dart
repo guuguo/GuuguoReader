@@ -14,13 +14,13 @@ abstract class BookDao {
   @delete
   Future<int> deleteSource(BookDetailBean bean);
 
-  @Query('SELECT * FROM BookChapterBean where bookId = :bookId')
+  @Query('SELECT * FROM BookChapterBean where bookId = :bookId order by chapterIndex asc')
   Future<List<BookChapterBean>> findBookChapters(String bookId);
 
   @Query('SELECT * FROM ChapterContent where chapter_id = :id')
   Future<ChapterContent?> findChapterContentById(String id);
 
-  @Query('DELETE FROM BookChapterBean where bookId = :bookId')
+  @Query('DELETE FROM BookChapterBean where bookId = :bookId ')
   Future<int?> deleteBookChapters(String bookId);
 
   @Query('DELETE FROM ChapterContent where bookId = :bookId')
@@ -32,7 +32,7 @@ abstract class BookDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<int> insertBookChapter(BookChapterBean ban);
 
-  @Insert(onConflict: OnConflictStrategy.ignore)
+  @Insert(onConflict: OnConflictStrategy.replace)
   Future<List<int>> insertBookChapters(List<BookChapterBean> list);
 
   @Insert(onConflict: OnConflictStrategy.replace)

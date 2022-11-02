@@ -43,7 +43,11 @@ class LocalRepository {
     if (url == null) return null;
     var myDataBase = await database();
     var source = await myDataBase.sourceDao.findSource(url);
+    try {
     return SourceEntity.fromJson(json.decode(source?.detail?.toString() ?? ""));
+    }catch (e) {
+      return null;
+    }
   }
 
   static Future<ChapterContent?> queryBookContent(String id) async {
@@ -62,12 +66,31 @@ class LocalRepository {
 
   static Future<List<BookChapterBean>> findBookChapters(BookDetailBean bean) async {
     var myDataBase = await database();
-    return await myDataBase.bookDao.findBookChapters(bean.id ?? "");
+    return await myDataBase.bookDao.findBookChapters(bean.id);
   }
-
-  static Future saveBookIfNone(BookDetailBean bean) async {
+  static Future saveBook(BookDetailBean bean) async {
     var uuid=Uuid();
     var myDataBase = await database();
+    if (bean.id == null) {
+      bean.id = uuid.v1();
+    }
+    final insertCode = await myDataBase.bookDao.insertBookDetail(bean);
+    if (insertCode == 0) return;
+    bean.chapters?.forEachIndexed((i,e) {
+      e.bookId = bean.id;
+      e.chapterIndex = i;
+      e.id = uuid.v1();
+    });
+    await myDataBase.bookDao.insertBookChapters(bean.chapters ?? []);
+  }
+  static Future saveBookIfNone(BookDetailBean bean) async {
+    var myDataBase = await database();
+    final book = await myDataBase.bookDao.queryBookDetail(bean.name!);
+    ///该阅读记录已经存在，不需要改动
+    if (book.isNotEmpty) {
+      return;
+    }
+    var uuid = Uuid();
     if (bean.id == null) {
       bean.id = uuid.v1();
     }
@@ -93,7 +116,7 @@ class LocalRepository {
     await db.bookDao.deleteChapterContent(chapterId);
   }
 
-  static Future updateBook(BookDetailBean bean) async {
+  static Future updateBookReadProgress(BookDetailBean bean) async {
     var myDataBase = await database();
     await myDataBase.bookDao.updateBook(bean);
   }
