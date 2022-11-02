@@ -26,9 +26,7 @@ class ReaderConfigEntity {
   BackgroundImage? currentCanvasBgImage;
 
   initBGImage()async {
-    print("${identityHashCode(this)} initBGImage start");
     currentCanvasBgImage= await BgImage.getBgImage(bgImageStyle,isDark);
-    print("initBGImage end ");
   }
 
   int currentPageIndex = 0;

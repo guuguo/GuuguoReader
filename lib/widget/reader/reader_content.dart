@@ -108,10 +108,6 @@ class ReaderContentDrawer {
     if (bgPicture == null || forceRedraw) {
         ui.PictureRecorder pageRecorder = new ui.PictureRecorder();
         Canvas pageCanvas = new Canvas(pageRecorder);
-        print("${identityHashCode(model.config)} forceRedraw:${forceRedraw}");
-        print("bgImageStyle:${model.config.bgImageStyle}");
-        print("isDark:${model.config.isDark}");
-        print("image is nul:${model.config.currentCanvasBgImage==null}");
         final image=model.config.currentCanvasBgImage;
         if(image!=null) {
           paintImage(
