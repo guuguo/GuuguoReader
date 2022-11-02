@@ -59,7 +59,7 @@ class DioHelper {
     _dio.options
       ..baseUrl = baseUrl
       ..connectTimeout = 20000
-      ..receiveTimeout = 8000;
+      ..receiveTimeout = 18000;
 
     applyDio?.call(_dio);
     _dio.interceptors.add(LogsInterceptors(_dio));

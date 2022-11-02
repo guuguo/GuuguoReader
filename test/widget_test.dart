@@ -9,8 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:read_info/main.dart';
-
 void main() {
+  final arrayNumsReg=RegExp(r"\[((\d+),?)+\]");
+  final res=arrayNumsReg.firstMatch(" .hot_sale[12,2,3,4,5]  AS大S大赛[1:] asdasd[:99]");
+  var i=0;
+  while(true){
+    final group=res?.group(i);
+    if(group==null) break;
+    print(group);
+    i++;
+  }
+
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(MyApp());

@@ -73,7 +73,7 @@ class SourceNetRepository {
               if (resbody.headers['content-type']?.first.toLowerCase().contains(RegExp('gb')) == true) {
                 return gbk.decode(res);
               } else {
-                return utf8.decode(res);
+                return utf8.decode(res,allowMalformed: true);
               }
             };
             if (headerStr?.isNotEmpty == true) {
@@ -91,17 +91,28 @@ class SourceNetRepository {
 
     searchUrl = searchUrl!.replaceAll(RegExp(r"{{key}}"), searchKey ?? "");
 
-    final urlConfig=UrlConfig.fromUrl(searchUrl);
-    Response<String?> res = await urlConfig.request(getDio(),source.bookSourceUrl);
+    final urlConfig = UrlConfig.fromUrl(searchUrl);
+    Response<dynamic> res = await urlConfig.request<String>(getDio(), source.bookSourceUrl);
 
     //header.title@a@text
     var rule = source.ruleSearch;
     var jsonRule = rule?.jsonContent;
 
     ///json 规则
-    final jsonContent = getJsonContent(res.data, jsonRule);
-    if (jsonContent != null) {
-      dynamic map = json.decode(jsonContent);
+    final body = res.data;
+    dynamic map;
+    if (body is String) {
+      final jsonContent = getJsonContent(res.data, jsonRule);
+      if (jsonContent != null) {
+        try {
+          map = json.decode(jsonContent);
+        } catch (e) {}
+      }
+    }
+    if (body is Map) {
+      map = body;
+    }
+    if (map != null) {
       var list = parseRuleJsonList(map, rule?.bookList);
       var bookList = list
           ?.map((e) => BookItemBean.FormSource(source)
@@ -168,7 +179,8 @@ class SourceNetRepository {
   }
 
   List<BookChapterBean> getChapters(Element element, BookDetailBean bookBean) {
-    var attrBean=AttrBean(baseUrl: bookBean.tocUrl);
+    var attrBean = AttrBean(baseUrl: bookBean.tocUrl);
+
     ///json 规则
     final jsonContent = getJsonContent(element.outerHtml, source.ruleToc?.jsonContent);
     var rule = source.ruleToc;
@@ -177,8 +189,8 @@ class SourceNetRepository {
       var list = parseRuleJsonList(map, rule?.chapterList);
       var resList = list
           ?.mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
-            ..chapterName = parseRuleJson(e, rule?.chapterName,attrBean)?.trim()
-            ..chapterUrl = urlFix(parseRuleJson(e, rule?.chapterUrl,attrBean), source.bookSourceUrl!))
+            ..chapterName = parseRuleJson(e, rule?.chapterName, attrBean)?.trim()
+            ..chapterUrl = urlFix(parseRuleJson(e, rule?.chapterUrl, attrBean), source.bookSourceUrl!))
           .toList();
       return resList ?? [];
     }
@@ -210,8 +222,8 @@ class SourceNetRepository {
   Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule) async {
     if (url?.isNotEmpty != true) return "";
 
-    final urlConfig=UrlConfig.fromUrl(url!);
-    Response<dynamic> res =await urlConfig.request(getDio(),source.bookSourceUrl);
+    final urlConfig = UrlConfig.fromUrl(url!);
+    Response<dynamic> res = await urlConfig.request(getDio(), source.bookSourceUrl);
 
     var element = parse(res.data).documentElement;
     if (element == null) return "";
@@ -231,30 +243,36 @@ class SourceNetRepository {
     });
 
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
-      result = (result ?? "") + "\n" + await queryBookContentByUrl(nextUrl, rule);
+      ///和下一页是否是正常断开？判断最后结束是不是中文结束，如果是中文非标点符号，则说明是异常断开
+      bool nomalBreak=true;
+      if(RegExp(r"[\u4e00-\u9fa5]\s*$").hasMatch(result??"")){
+        nomalBreak=false;
+      }
+      result = (result ?? "") + (nomalBreak?"\n":"") + await queryBookContentByUrl(nextUrl, rule);
     }
 
     return result ?? "";
   }
 }
-class UrlConfig{
+
+class UrlConfig {
   var method = "get";
   var charset = "utf-8";
   dynamic body;
   String? contentType;
   String? searchUrl;
 
-  static UrlConfig fromUrl(String searchUrl){
+  static UrlConfig fromUrl(String searchUrl) {
     var index = -1;
     if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {
       index = searchUrl.indexOf(',');
     }
-    var config=UrlConfig();
-    config.searchUrl=searchUrl;
-    if(index == -1) return config;
+    var config = UrlConfig();
+    config.searchUrl = searchUrl;
+    if (index == -1) return config;
     final methodJson = json.decode(searchUrl.substring(index + 1));
     searchUrl = searchUrl.substring(0, index);
-    config.searchUrl=searchUrl;
+    config.searchUrl = searchUrl;
     config.method = methodJson['method'] ?? "get";
     config.body = methodJson['body'];
     config.charset = methodJson['charset'] ?? "";
@@ -265,20 +283,21 @@ class UrlConfig{
       config.contentType = config.contentType ?? Headers.formUrlEncodedContentType;
 
     if (config.charset.isNotEmpty) {
-      config. contentType = config.contentType?.replaceAll(RegExp(r"utf-8"), config.charset);
+      config.contentType = config.contentType?.replaceAll(RegExp(r"utf-8"), config.charset);
     }
     return config;
   }
-  request<T>(Dio dio,String? baseUrl)async{
-    searchUrl=urlFix(searchUrl,baseUrl??"");
-   print(body);
+
+  request<T>(Dio dio, String? baseUrl) async {
+    searchUrl = urlFix(searchUrl, baseUrl ?? "");
+    print(body);
     return await dio.request<T>(
-      searchUrl??"",
+      searchUrl ?? "",
       data: body,
       queryParameters: method == "get" ? body : null,
       options: Options(
         method: method,
-        contentType:  contentType,
+        contentType: contentType,
         requestEncoder: (req, option) {
           if (option.contentType?.toLowerCase().contains(RegExp('gb')) == true) {
             return gbk.encode(req);

@@ -7,6 +7,7 @@ import 'package:read_info/bean/book_item_bean.dart';
 import 'package:read_info/bean/entity/source_entity.dart';
 import 'package:read_info/data/source_net_repository.dart';
 import 'package:read_info/global/constant.dart';
+import 'package:read_info/utils/developer.dart';
 
 import '../../../data/source_manager.dart';
 import 'state.dart';
@@ -85,6 +86,7 @@ class SearchResultLogic extends GetxController {
         okSourceCount++;
         callBack.call(res,sourceCount,okSourceCount+errorSourceCount);
       }).catchError((e) {
+        debug(e);
         errorSourceCount++;
         callBack.call([],sourceCount,okSourceCount+errorSourceCount);
       });
