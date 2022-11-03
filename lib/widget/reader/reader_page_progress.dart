@@ -160,8 +160,7 @@ class ReaderPageProgress {
     if (!chapterContentReady(chapterIndex)) {
       debug("准备加载章节${chapterIndex}内容");
       chapter = await chapterProvider(chapterIndex);
-      // await Future.delayed(Duration(seconds: 900));
-      // debug("加载到章节${chapter.chapterIndex}内容：${chapter.content?.substring(0,min(chapter.content?.length??0, 50))}");
+      debug("加载到章节${chapter.chapterIndex}内容：${chapter.content?.substring(0,min(chapter.content?.length??0, 50))}");
       chapterPrepare?.call(chapter);
     }else{
       return getChapterFromIndex(chapterIndex);
@@ -170,6 +169,7 @@ class ReaderPageProgress {
       preChapter = chapter;
     } else if (chapterIndex == currentChapterIndex) {
       currentChapter = chapter;
+      currentChapter?.currentPageIndex=currentPageIndex;
     } else if (chapterIndex == currentChapterIndex + 1) {
       nextChapter = chapter;
     }
