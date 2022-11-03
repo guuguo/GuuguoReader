@@ -73,7 +73,7 @@ class SourceNetRepository {
               if (resbody.headers['content-type']?.first.toLowerCase().contains(RegExp('gb')) == true) {
                 return gbk.decode(res);
               } else {
-                return utf8.decode(res,allowMalformed: true);
+                return utf8.decode(res, allowMalformed: true);
               }
             };
             if (headerStr?.isNotEmpty == true) {
@@ -158,17 +158,18 @@ class SourceNetRepository {
       ..intro = element.parseRule(rule?.intro)?.trim()
       ..tocUrl = urlFix(checkUrlRule(bean.bookUrl!, rule?.tocUrl) ?? element.parseRule(rule?.tocUrl) ?? bean.bookUrl, source.bookSourceUrl!);
     if (bookBean.tocUrl == bean.bookUrl) {
-      bookBean.chapters = getChapters(element, bookBean);
+      bookBean.chapters = await getChapters(element, bookBean);
     }
     return bookBean;
   }
 
   Future<List<BookChapterBean>?> queryBookTocs(BookDetailBean bean) async {
-    var res = await getDio().get<dynamic>(bean.tocUrl ?? "");
+    var config = UrlConfig.fromUrl(bean.tocUrl ?? "");
+    var res = await config.request<dynamic>(getDio(), source.bookSourceUrl);
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     debug("获取所有章节列表${source.ruleToc}");
-    List<BookChapterBean> resList = getChapters(element, bean);
+    List<BookChapterBean> resList = await getChapters(element, bean);
 
     HashMap<String, BookChapterBean> maps = HashMap();
     bean.chapters?.forEach((e) {
@@ -178,7 +179,7 @@ class SourceNetRepository {
     return newChapters;
   }
 
-  List<BookChapterBean> getChapters(Element element, BookDetailBean bookBean) {
+  Future<List<BookChapterBean>> getChapters(Element element, BookDetailBean bookBean) async {
     var attrBean = AttrBean(baseUrl: bookBean.tocUrl);
 
     ///json 规则
@@ -200,6 +201,15 @@ class SourceNetRepository {
           ..chapterName = e.parseRule(rule?.chapterName)?.trim()
           ..chapterUrl = urlFix(e.parseRule(rule?.chapterUrl), source.bookSourceUrl!))
         .toList();
+    if (rule?.nextTocUrl?.isNotEmpty == true) {
+      var nextTocUrl = element.parseRule(rule?.nextTocUrl);
+      if (nextTocUrl?.isNotEmpty == true) {
+        var config = UrlConfig.fromUrl(nextTocUrl ?? "");
+        var res = await config.request<dynamic>(getDio(), source.bookSourceUrl);
+        final ele = parse(res.data).documentElement;
+        if (ele != null) resList.addAll(await getChapters(ele, bookBean));
+      }
+    }
     return resList;
   }
 
@@ -244,11 +254,11 @@ class SourceNetRepository {
 
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
       ///和下一页是否是正常断开？判断最后结束是不是中文结束，如果是中文非标点符号，则说明是异常断开
-      bool nomalBreak=true;
-      if(RegExp(r"[\u4e00-\u9fa5]\s*$").hasMatch(result??"")){
-        nomalBreak=false;
+      bool nomalBreak = true;
+      if (RegExp(r"[\u4e00-\u9fa5]\s*$").hasMatch(result ?? "")) {
+        nomalBreak = false;
       }
-      result = (result ?? "") + (nomalBreak?"\n":"") + await queryBookContentByUrl(nextUrl, rule);
+      result = (result ?? "") + (nomalBreak ? "\n" : "") + await queryBookContentByUrl(nextUrl, rule);
     }
 
     return result ?? "";
@@ -263,6 +273,7 @@ class UrlConfig {
   String? searchUrl;
 
   static UrlConfig fromUrl(String searchUrl) {
+    if(searchUrl.isEmpty) throw "url为空，不做网络请求";
     var index = -1;
     if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {
       index = searchUrl.indexOf(',');

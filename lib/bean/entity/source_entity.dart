@@ -188,6 +188,7 @@ class SourceRuleToc {
   String? chapterList;
   String? chapterName;
   String? chapterUrl;
+  String? nextTocUrl;
 
   SourceRuleToc();
 

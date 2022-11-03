@@ -101,7 +101,7 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
     final logic = Get.find<SourceLogic>();
     final cancel = "正在更新源".showLoading();
     try {
-      final list = await logic.importSource(url:url?? defaultSourceUrl);
+      final list = await logic.importSource(url: url ?? defaultSourceUrl);
       cancel();
       "更新源完成,获取到${list.length}个书源".showMessage();
     } catch (e) {
@@ -119,6 +119,7 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
         ),
         onTap: onTap);
   }
+
   Widget withContextMenu(Widget child, SourceEntity bean) {
     return ContextMenu(child: child, list: [
       Pair("编辑", () {
@@ -127,7 +128,9 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
       }),
       Pair("导出到剪贴板", () {
         Get.back();
-        Clipboard.setData(ClipboardData(text: json.encode(bean.toJson())));
+        final text = json.encode(bean.toJson());
+        Clipboard.setData(ClipboardData(text: text));
+        "导出到剪贴板成功".showMessage();
       }),
       Pair("删除", () {
         Get.defaultDialog(

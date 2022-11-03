@@ -329,6 +329,10 @@ SourceRuleToc $SourceRuleTocFromJson(Map<String, dynamic> json) {
 	if (chapterUrl != null) {
 		sourceRuleToc.chapterUrl = chapterUrl;
 	}
+	final String? nextTocUrl = jsonConvert.convert<String>(json['nextTocUrl']);
+	if (nextTocUrl != null) {
+		sourceRuleToc.nextTocUrl = nextTocUrl;
+	}
 	return sourceRuleToc;
 }
 
@@ -338,5 +342,6 @@ Map<String, dynamic> $SourceRuleTocToJson(SourceRuleToc entity) {
 	data['chapterList'] = entity.chapterList;
 	data['chapterName'] = entity.chapterName;
 	data['chapterUrl'] = entity.chapterUrl;
+	data['nextTocUrl'] = entity.nextTocUrl;
 	return data;
 }

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 
@@ -40,10 +41,10 @@ List<Element> getElementsByIndexAndNotIndex(List<Element> list, int? index, int?
 }
 
 extension ElementListExt on List<Element> {
-
   List<Element> queryCustomSelectorAllFix(String selector) {
-    final arrayReg = RegExp(r"\[(\d+)?:(\d+)?\]");
-    final arrayNumsReg = RegExp(r"\[((\d+),?)+\]");
+    final arrayReg = RegExp(r"\[(\d+)?:(\d+)?:?(\d+)?\]");
+    final arrayNumsReg = RegExp(r"\[!?((\d+),?)+\]");
+    final excludeNumReg = RegExp(r"!(\d+)");
 
     final arrayNums = arrayNumsReg.firstMatch(selector);
     selector = selector.replaceFirst(arrayNumsReg, "");
@@ -51,6 +52,9 @@ extension ElementListExt on List<Element> {
     final arrayIndex = arrayReg.firstMatch(selector);
     selector = selector.replaceFirst(arrayReg, "");
     final splitPoint = selector.split('.');
+
+    final excludeNum = excludeNumReg.firstMatch(selector);
+    selector = selector.replaceFirst(excludeNumReg, "");
 
     ///是否是  tag.a.1 的格式   或者.2 的数组格式
     if (splitPoint.length > 1) {
@@ -64,7 +68,6 @@ extension ElementListExt on List<Element> {
             ///如果走到catch 说明是 .class的风格 不处理交给后续css selector
           }
         } else {
-
           ///如果走到 else 说明是 .class.unknow 的风格 不处理交给后续css selector（异常风格）
         }
       } else {
@@ -109,16 +112,51 @@ extension ElementListExt on List<Element> {
     if (arrayIndex != null) {
       final first = int.tryParse(arrayIndex.group(1) ?? "") ?? 0;
       final seconed = int.tryParse(arrayIndex.group(2) ?? "") ?? -1;
+      final step = int.tryParse(arrayIndex.group(3) ?? "") ?? 1;
       final end = seconed >= 0 ? seconed : res.length + seconed;
-      return res.sublist(first.inNum(0, res.length - 1), end.inNum(0, res.length - 1));
+      List<Element> resultList = [];
+      for (int i = first.inNum(0, res.length - 1); i < end.inNum(0, res.length - 1); i += step) {
+        resultList.add(res[i]);
+      }
+      return resultList;
     }
     if (arrayNums != null) {
+      var matched = arrayNums[0];
+      var exclude = false;
+      if (matched?.contains("!") == true) {
+        matched = matched?.replaceFirst("!", "");
+        exclude = true;
+      }
       try {
-        List<int> nums = json.decode(arrayNums[0] ?? "");
-        return nums.map<Element?>((i) {
-          return res.getOrNull(i);
-        }).whereNotNull().toList();
+        List<int> nums = json.decode(matched ?? "");
+        HashSet<int> numsSet = HashSet();
+        for (var value in nums) {
+          numsSet.add(value);
+        }
+        for (int i = 0; i < res.length - 1; i++) {
+          List<Element> resultList = [];
+          if (!exclude) {
+            if (numsSet.contains(i)) {
+              resultList.add(res[i]);
+            }
+          } else {
+            if (!numsSet.contains(i)) {
+              resultList.add(res[i]);
+            }
+          }
+        }
+        return nums
+            .map<Element?>((i) {
+              return res.getOrNull(i);
+            })
+            .whereNotNull()
+            .toList();
       } catch (e) {}
+    }
+
+    if (excludeNum != null) {
+      final num = int.tryParse(excludeNum.group(1) ?? "");
+      if (num != null) res.removeAt(num.inNum(0, res.length - 1));
     }
     return res;
   }
@@ -127,13 +165,15 @@ extension ElementListExt on List<Element> {
     return fold([], (List previousValue, element) => [...(previousValue), ...element.querySelectorAllFix(selector)]);
   }
 }
-extension numExt on int{
+
+extension numExt on int {
   int inNum(int min, int max) {
     if (this < min) return min;
     if (this > max) return max;
     return this;
   }
 }
+
 extension ElementExt on Element {
   ///[rule] 匹配规则
   ///当前支持
@@ -233,10 +273,7 @@ extension ElementExt on Element {
     ///处理 && 分割
     if (rule.contains('&&')) {
       var rules = rule.split('&&');
-      return rules
-          .map((e) => parseRuleWithoutAttr(e))
-          .flattened
-          .toList();
+      return rules.map((e) => parseRuleWithoutAttr(e)).flattened.toList();
     }
 
     ///处理 || 分割
@@ -353,7 +390,6 @@ String? parseRuleJson(dynamic jsonObj, String? rule, [AttrBean? attrBean = null]
 }
 
 class AttrBean {
-
   String? baseUrl = "";
 
   AttrBean({this.baseUrl = ""});
@@ -371,11 +407,7 @@ List? parseRuleJsonList(dynamic jsonObj, String? rule) {
   ///处理 && 分割
   if (rule!.contains('&&')) {
     var rules = rule.split('&&');
-    return rules
-        .map((e) => parseRuleJsonList(jsonObj, e))
-        .whereNotNull()
-        .flattened
-        .toList();
+    return rules.map((e) => parseRuleJsonList(jsonObj, e)).whereNotNull().flattened.toList();
   }
 
   if (rule.contains("rawText")) {
@@ -383,14 +415,17 @@ List? parseRuleJsonList(dynamic jsonObj, String? rule) {
   }
   List<dynamic> res = jsonObj is List ? jsonObj : [jsonObj];
   rule.split('.').forEach((ruleE) {
-    res = res.fold<List<dynamic>>([], (previousValue, element) {
-      final newEle = element[ruleE];
-      if (newEle is List) {
-        return [...previousValue, ...newEle];
-      } else {
-        return [...previousValue, newEle];
-      }
-    }).whereNotNull().toList();
+    res = res
+        .fold<List<dynamic>>([], (previousValue, element) {
+          final newEle = element[ruleE];
+          if (newEle is List) {
+            return [...previousValue, ...newEle];
+          } else {
+            return [...previousValue, newEle];
+          }
+        })
+        .whereNotNull()
+        .toList();
   });
   return res;
 }
