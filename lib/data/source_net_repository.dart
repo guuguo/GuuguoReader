@@ -205,7 +205,7 @@ class SourceNetRepository {
       var nextTocUrl = element.parseRule(rule?.nextTocUrl);
       if (nextTocUrl?.isNotEmpty == true) {
         var config = UrlConfig.fromUrl(nextTocUrl ?? "");
-        var res = await config.request<dynamic>(getDio(), source.bookSourceUrl);
+        var res = await config.request<dynamic>(getDio(), bookBean.tocUrl);
         final ele = parse(res.data).documentElement;
         if (ele != null) resList.addAll(await getChapters(ele, bookBean));
       }
@@ -214,7 +214,7 @@ class SourceNetRepository {
   }
 
   Future<BookChapterBean?> queryBookContent(BookChapterBean bean) async {
-    var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent);
+    var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent,bean.chapterUrl);
     result = dealHtmlContentResult(result) ?? "";
 
     if (result.isEmpty) {
@@ -229,18 +229,21 @@ class SourceNetRepository {
     return bean;
   }
 
-  Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule) async {
+  Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule,String? baseUrl) async {
     if (url?.isNotEmpty != true) return "";
 
     final urlConfig = UrlConfig.fromUrl(url!);
-    Response<dynamic> res = await urlConfig.request(getDio(), source.bookSourceUrl);
-
+    Response<dynamic> res;
+    try{
+      res = await urlConfig.request(getDio(), baseUrl);
+    }catch (e) {
+      return "";
+    }
     var element = parse(res.data).documentElement;
     if (element == null) return "";
 
     var originContent = element.parseRule("${rule?.content}");
     var result = originContent;
-    var nextUrl = element.parseRule("${rule?.nextContentUrl}")?.trim();
 
     rule?.replaceRegex?.split('&&').forEach((element) {
       var replaces = element.split('##').where((element) => element.isNotEmpty).toList();
@@ -252,13 +255,14 @@ class SourceNetRepository {
       result = result?.replaceAll(RegExp(reg), replace);
     });
 
+    var nextUrl = element.parseRule("${rule?.nextContentUrl}")?.trim();
     if (nextUrl?.isNotEmpty == true && result?.isNotEmpty == true) {
       ///和下一页是否是正常断开？判断最后结束是不是中文结束，如果是中文非标点符号，则说明是异常断开
       bool nomalBreak = true;
       if (RegExp(r"[\u4e00-\u9fa5]\s*$").hasMatch(result ?? "")) {
         nomalBreak = false;
       }
-      result = (result ?? "") + (nomalBreak ? "\n" : "") + await queryBookContentByUrl(nextUrl, rule);
+      result = (result ?? "") + (nomalBreak ? "\n" : "") + await queryBookContentByUrl(nextUrl, rule,urlConfig.searchUrl);
     }
 
     return result ?? "";

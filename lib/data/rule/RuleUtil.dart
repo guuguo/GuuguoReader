@@ -101,7 +101,7 @@ extension ElementListExt on List<Element> {
         } else if (splitPoint[0] == "id") {
           selector = "#${value}";
         } else if (splitPoint[0] == "text") {
-          final res = this.where((element) => element.text.contains(RegExp(value))).toList();
+          final res = [[...this,...querySelectorAllFix("a")].where((element) => element.text==value).firstOrNull].whereNotNull().toList();
           return getElementsByIndexAndNotIndex(res, index, notIndex);
         }
         final res = querySelectorAllFix(selector);

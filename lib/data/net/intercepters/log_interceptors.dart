@@ -26,7 +26,7 @@ class LogsInterceptors extends InterceptorsWrapper {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // printRequest(options, null);
+    printRequest(options, null);
     handler.next(options);
   }
 
