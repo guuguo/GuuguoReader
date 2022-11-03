@@ -14,7 +14,6 @@ import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/page/view/dash_divider.dart';
 import 'package:read_info/utils/developer.dart';
 import 'package:read_info/utils/utils_screen.dart';
-import 'package:read_info/widget/container.dart';
 import 'package:read_info/widget/reader/reader_content.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
 import 'package:url_launcher/url_launcher.dart';

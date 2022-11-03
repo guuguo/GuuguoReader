@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
@@ -35,12 +36,17 @@ class SourceManager {
   }
 
   Future<List<SourceEntity>> ensureSources() async {
-    if (sources.isEmpty) sourcesRx.value = await LocalRepository.getSourceList();
+    if (sources.isEmpty) sourcesRx.value = (await LocalRepository.getSourceList())..sortBy<num>((e){
+      if(e.bookSourceType==source_type_sms) return 0;
+      if(e.bookSourceType==source_type_comic) return 1;
+      if(e.bookSourceType==source_type_novel) return 2;
+      return 3;
+    });
     return sources;
   }
 
   Future<List<SourceEntity>> refreshSources() async {
-    sourcesRx.value = await LocalRepository.getSourceList();
+    sourcesRx.value = (await LocalRepository.getSourceList())..sortBy<num>((e)=>e.bookSourceType??0);
     return sources;
   }
 
