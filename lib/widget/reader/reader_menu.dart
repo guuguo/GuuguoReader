@@ -236,10 +236,10 @@ class ReplaceDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Material(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 30, horizontal: 24),
+          padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30),
           width: 350,
           child: Column(
             mainAxisSize: MainAxisSize.min,
