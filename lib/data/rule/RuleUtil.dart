@@ -256,15 +256,30 @@ extension ElementExt on Element {
       resultStr = resultElement.map((e) => e.innerHtml).whereNotNull().join('\n');
     } else if (attr == "outerHtml") {
       resultStr = resultElement.map((e) => e.outerHtml).whereNotNull().join('\n');
-    } else if (attr == "text" || attr == "textNodes") {
+    } else if (attr == "text") {
       resultStr = resultElement.map((e) => e.text).whereNotNull().join('\n');
-    } else {
+    } else if( attr == "textNodes"){
+      resultStr = findTextNodesFromElements(resultElement).map((e) => e.text).whereNotNull().join('\n');
+    }else {
       resultStr = resultElement.map((e) => e.attributes[attr]).whereNotNull().join('\n');
     }
 
     resultStr = replaceContentWithRule(resultStr, regex, replace, urlReplace);
     if (resultStr?.isEmpty == true) return null;
     return resultStr;
+  }
+
+  List<Node> findTextNodesFromElements(List<Element> nodes) {
+    List<Node> list = nodes.fold([], (previousValue, element) => previousValue..addAll(findFromNodes(element.nodes)));
+    return list;
+  }
+  List<Node> findFromNodes(List<Node> nodes) {
+    List<Node> list = nodes.fold([], (previousValue, element) => previousValue..addAll(element.nodes.isNotEmpty?[] :(validateText(element)?[element]:[])));
+    return list;
+  }
+
+  validateText(Node node) {
+    return node.nodes.isEmpty && node.nodeType == Node.TEXT_NODE && node.text?.trim().isNotEmpty == true ? true : false;
   }
 
   List<Element> parseRuleWithoutAttr(String? rule) {

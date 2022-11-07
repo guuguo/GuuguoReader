@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:get/get.dart';
 import 'package:read_info/data/local_repository.dart';
+import 'package:read_info/data/source_manager.dart';
 import 'package:read_info/data/source_net_repository.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/page/common/widget_common.dart';
@@ -18,7 +19,7 @@ class ContentLogic extends GetxController {
   late SourceEntity source;
 
   ContentLogic() {
-    source=Get.arguments[ARG_ITEM_SOURCE_BEAN];
+    source = Get.arguments[ARG_ITEM_SOURCE_BEAN];
     repository = SourceNetRepository(source);
   }
 
@@ -39,6 +40,7 @@ class ContentLogic extends GetxController {
   int currentChapterIndex() {
     return bookDetail.readChapterIndex;
   }
+
   BookChapterBean? currentChapter() {
     return bookDetail.chapters?[bookDetail.readChapterIndex];
   }
@@ -56,7 +58,9 @@ class ContentLogic extends GetxController {
     debug("更新当前页面chapterIndex:${chapterIndex}  pageIndex:${pageIndex} chapterTotal:${bookDetail.totalChapterCount}");
     bookDetail.readPageIndex = pageIndex;
     bookDetail.readChapterIndex = chapterIndex;
-    bookDetail.updateAt=DateTime.now().millisecondsSinceEpoch;
+    bookDetail.updateAt = DateTime
+        .now()
+        .millisecondsSinceEpoch;
     readChapterIndex = chapterIndex;
     LocalRepository.updateBookReadProgress(bookDetail);
   }
@@ -69,8 +73,8 @@ class ContentLogic extends GetxController {
     }
     if (!chapter.hasContent()) {
       var cancel;
-      if(chapter.chapterIndex==bookDetail.readChapterIndex) {
-        cancel= "正在加载章节内容中".showLoading();
+      if (chapter.chapterIndex == bookDetail.readChapterIndex) {
+        cancel = "正在加载章节内容中".showLoading();
       }
       await repository.queryBookContent(chapter);
       cancel?.call();
@@ -80,12 +84,25 @@ class ContentLogic extends GetxController {
       LocalRepository.updateChapterContent(chapter);
     }
   }
+
   loadChapters() async {
     if (bookDetail == null)
       return;
     var chapters = await repository.queryBookTocs(bookDetail);
-    bookDetail = bookDetail.copyWith(chapters:chapters,totalChapterCount:chapters?.length??0);
+    bookDetail = bookDetail.copyWith(chapters: chapters, totalChapterCount: chapters?.length ?? 0);
     LocalRepository.saveBook(bookDetail);
     update();
+  }
+
+  void onReplaceConfirm(String reg, String replace) {
+    StringBuffer sb = StringBuffer();
+    if (reg.isNotEmpty) {
+      sb.write("##$reg");
+    }
+    if (replace.isNotEmpty) {
+      sb.write("##$replace");
+    }
+    source.ruleContent?.replaceRegex =sb.toString();
+    SourceManager.instance.insertOrUpdateSources([source]);
   }
 }

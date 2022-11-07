@@ -30,7 +30,8 @@ class SourceNetRepository {
 
   ///发现页
   Future<List<BookItemBean>> exploreBookList({required SourceExploreUrl explore, pageNum = 1}) async {
-    var res = await getDio().get<String>(explore.url!.replaceAll('{{page}}', "${pageNum}"));
+    final urlConfig = UrlConfig.fromUrl(explore.url!.replaceAll('{{page}}', "${pageNum}"));
+    var res = await urlConfig.request<String>(getDio(), source.bookSourceUrl);
     var document = parse(res.data);
     //header.title@a@text
     var rule = source.ruleExplore;
@@ -67,20 +68,33 @@ class SourceNetRepository {
   Dio getDio() => _dio != null
       ? _dio!
       : DioHelper.dio(source.bookSourceUrl ?? "", (dio) {
-          var headerStr = source.header;
-          dio.interceptors.add(new InterceptorsWrapper(onRequest: (o, h) {
-            o.responseDecoder = (res, opt, resbody) {
-              if (resbody.headers['content-type']?.first.toLowerCase().contains(RegExp('gb')) == true) {
-                return gbk.decode(res);
+          dio.options = BaseOptions(
+            requestEncoder: (req, option) {
+              if (option.contentType?.toLowerCase().contains(RegExp('gb')) == true) {
+                return gbk.encode(req);
               } else {
-                return utf8.decode(res, allowMalformed: true);
+                return utf8.encode(req);
               }
-            };
-            if (headerStr?.isNotEmpty == true) {
-              o.headers.addAll(json.decode(headerStr!));
-            }
-            h.next(o);
-          }));
+            },
+            responseDecoder: (rep, option, repBody) {
+              if (repBody.headers['content-type']?.first.toLowerCase().contains(RegExp('gb')) == true) {
+                return gbk.decode(rep,allowInvalid: true);
+              }
+              final key=repBody.headers.keys.firstWhere((element) => element.toLowerCase()=="content-type");
+              if (repBody.headers[key]?.contains("text/html") == true) {
+                var res = utf8.decode(rep, allowMalformed: true);
+                final doc = parse(res);
+                final docContentType = doc.querySelector('meta[http-equiv="Content-Type"]');
+                if (docContentType != null) {
+                  if (docContentType.attributes['content']?.contains("charset=gb") == true) {
+                    return gbk.decode(rep,allowInvalid: true);
+                  }
+                }
+                return res;
+              }
+              return utf8.decode(rep, allowMalformed: true);
+            },
+          );
         });
 
   ///发现页
@@ -145,7 +159,9 @@ class SourceNetRepository {
   }
 
   Future<BookDetailBean?> queryBookDetail(BookItemBean bean) async {
-    var res = await getDio().get<dynamic>(bean.bookUrl ?? "");
+    final urlConfig = UrlConfig.fromUrl(bean.bookUrl ?? "");
+    var res = await urlConfig.request<dynamic>(getDio(), source.bookSourceUrl);
+
     var element = parse(res.data).documentElement;
     if (element == null) return null;
     var rule = source.ruleBookInfo;
@@ -214,7 +230,7 @@ class SourceNetRepository {
   }
 
   Future<BookChapterBean?> queryBookContent(BookChapterBean bean) async {
-    var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent,bean.chapterUrl);
+    var result = await queryBookContentByUrl(bean.chapterUrl, source.ruleContent, bean.chapterUrl);
     result = dealHtmlContentResult(result) ?? "";
 
     if (result.isEmpty) {
@@ -229,14 +245,14 @@ class SourceNetRepository {
     return bean;
   }
 
-  Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule,String? baseUrl) async {
+  Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule, String? baseUrl) async {
     if (url?.isNotEmpty != true) return "";
 
     final urlConfig = UrlConfig.fromUrl(url!);
     Response<dynamic> res;
-    try{
+    try {
       res = await urlConfig.request(getDio(), baseUrl);
-    }catch (e) {
+    } catch (e) {
       return "";
     }
     var element = parse(res.data).documentElement;
@@ -262,7 +278,7 @@ class SourceNetRepository {
       if (RegExp(r"[\u4e00-\u9fa5]\s*$").hasMatch(result ?? "")) {
         nomalBreak = false;
       }
-      result = (result ?? "") + (nomalBreak ? "\n" : "") + await queryBookContentByUrl(nextUrl, rule,urlConfig.searchUrl);
+      result = (result ?? "") + (nomalBreak ? "\n" : "") + await queryBookContentByUrl(nextUrl, rule, urlConfig.searchUrl);
     }
 
     return result ?? "";
@@ -277,7 +293,7 @@ class UrlConfig {
   String? searchUrl;
 
   static UrlConfig fromUrl(String searchUrl) {
-    if(searchUrl.isEmpty) throw "url为空，不做网络请求";
+    if (searchUrl.isEmpty) throw "url为空，不做网络请求";
     var index = -1;
     if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {
       index = searchUrl.indexOf(',');
@@ -306,21 +322,12 @@ class UrlConfig {
   request<T>(Dio dio, String? baseUrl) async {
     searchUrl = urlFix(searchUrl, baseUrl ?? "");
     print(body);
-    return await dio.request<T>(
-      searchUrl ?? "",
-      data: body,
-      queryParameters: method == "get" ? body : null,
-      options: Options(
-        method: method,
-        contentType: contentType,
-        requestEncoder: (req, option) {
-          if (option.contentType?.toLowerCase().contains(RegExp('gb')) == true) {
-            return gbk.encode(req);
-          } else {
-            return utf8.encode(req);
-          }
-        },
-      ),
-    );
+    return await dio.request<T>(searchUrl ?? "",
+        data: body,
+        queryParameters: method == "get" ? body : null,
+        options: Options(
+          method: method,
+          contentType: contentType,
+        ));
   }
 }

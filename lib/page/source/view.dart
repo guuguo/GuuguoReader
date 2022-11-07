@@ -15,6 +15,7 @@ import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/page/view/context_menu.dart';
 import 'package:read_info/page/view/icon.dart';
 import 'package:read_info/page/view/my_appbar.dart';
+import 'package:read_info/page/view/popmenuubutton.dart';
 import 'package:read_info/widget/container.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
 
@@ -109,16 +110,6 @@ class _SourcePageState extends State<SourcePage> with AutomaticKeepAliveClientMi
     }
   }
 
-  PopupMenuEntry popItem({IconData? icon, String? text, VoidCallback? onTap}) {
-    return PopupMenuItem(
-        child: Row(
-          children: [
-            Icon(icon),
-            if (text != null) ...[SizedBox(width: 10), Text(text)]
-          ],
-        ),
-        onTap: onTap);
-  }
 
   Widget withContextMenu(Widget child, SourceEntity bean) {
     return ContextMenu(child: child, list: [

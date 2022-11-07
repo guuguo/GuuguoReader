@@ -1,18 +1,7 @@
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:html/dom.dart';
-import 'package:html/parser.dart';
-import 'package:read_info/bean/entity/source_header_entity.dart';
-import 'package:read_info/data/net/dio_helper.dart';
-import 'package:read_info/data/rule/RuleUtil.dart';
-import 'package:read_info/data/rule/app_helper.dart';
-import 'package:read_info/data/source_net_repository.dart';
-import 'package:read_info/generated/json/base/json_convert_content.dart';
 import 'package:read_info/global/constant.dart';
 
 import '../bean/book_item_bean.dart';

@@ -60,7 +60,7 @@ MapEntry<String?,String> getChapterIndexName(String? chapter){
   var index=reg.firstMatch(chapter);
   if(index!=null) return MapEntry(index[0],chapter.replaceAll(reg, ""));
 
-  reg=RegExp(r'\([一|二|三|四|五|六|七|八|九|十|百]+?\)');
+  reg=RegExp(r'\([一|二|三|四|五|六|七|八|九|十|百|千]+?\)');
   index=reg.firstMatch(chapter);
   if(index!=null) return MapEntry(index[0],chapter.replaceAll(reg, ""));
 
@@ -77,7 +77,11 @@ MapEntry<String?,String> getChapterIndexNameWithSeparated(String chapter,String 
     if(index!=null){
       return MapEntry("第${ConvertNumberToChineseMoneyWords.toChinese(index)}章",name);
     }
+    if(splits[0].contains(RegExp(r'([0-9]+)|(一|二|三|四|五|六|七|八|九|十|百|千)+')))
     return MapEntry(splits[0], splits[1]);
+    else{
+      return MapEntry("", chapter);
+    }
   }
   else return MapEntry(null, chapter);
 }
