@@ -107,7 +107,7 @@ class _ReaderMenuState extends State<ReaderMenu> {
                 children: [
                   CircleButton(Text("A-"), onPressed: () {
                     final newFontSize = fontSize - 2;
-                    NovelReader.of(context)?.onConfigChange?.call(widget.config.copyWith(fontSize: newFontSize));
+                    changeFontSize(newFontSize);
                     setState(() {
                       fontSize = newFontSize;
                     });
@@ -118,7 +118,7 @@ class _ReaderMenuState extends State<ReaderMenu> {
                   ),
                   CircleButton(Text("A+"), onPressed: () {
                     final newFontSize = fontSize + 2;
-                    NovelReader.of(context)?.onConfigChange?.call(widget.config.copyWith(fontSize: newFontSize));
+                    changeFontSize(newFontSize);
                     setState(() {
                       fontSize = newFontSize;
                     });
@@ -131,6 +131,15 @@ class _ReaderMenuState extends State<ReaderMenu> {
         ),
       ),
     );
+  }
+
+  void changeFontSize(int newFontSize) {
+    NovelReader.of(context)?.onConfigChange?.call(widget.config.copyWith(
+          fontSize: newFontSize,
+          lineHeight: (newFontSize * 1.5).toInt(),
+          contentPaddingHorizontal: (newFontSize * 1.2).toInt(),
+          paragraphSpacing: (newFontSize * 1.5).toInt(),
+        ));
   }
 }
 
