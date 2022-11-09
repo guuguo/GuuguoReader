@@ -64,6 +64,10 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
     detailBean = Get.arguments[ARG_BOOK_DETAIL_BEAN];
     final logic = Get.find<ContentLogic>();
     logic.init(detailBean);
+    initProgress();
+  }
+  initProgress(){
+    final logic = Get.find<ContentLogic>();
     pageProgress = ReaderPageProgress(
       logic.currentChapterIndex(),
       logic.bookDetail.readPageIndex,
@@ -96,6 +100,12 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
     );
   }
 
+  void refreshSource() {
+    initProgress();
+    readerKey.currentState?.refreshPageProgress(pageProgress);
+    // setState(() {});
+  }
+
   GlobalKey<NovelReaderState> readerKey = GlobalKey();
   GlobalKey<ComicReaderState> comicKey = GlobalKey();
 
@@ -124,7 +134,16 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
             SizedBox(width: 10),
             GestureDetector(
               onTap: () {
-                Get.dialog(SourceSelectDialog());
+                Get.dialog(SourceSelectDialog(
+                  bookDetail: logic.bookDetail,
+                  currentSourceUrl: logic.source.bookSourceUrl,
+                  sourceChange: (bean) async {
+                    final cancel="正则切换到书源:${bean.source?.bookSourceName}".showLoading();
+                    await logic.sourceChange(bean);
+                    refreshSource();
+                    cancel.call();
+                  },
+                ));
               },
               child: Text(logic.source.bookSourceName ?? ""),
             ),
@@ -247,12 +266,20 @@ class _BookContentPageState extends State<BookContentPage> with WidgetsBindingOb
       );
     });
   }
+
+
 }
 
 class SourceSelectDialog extends StatefulWidget {
   const SourceSelectDialog({
+    required this.bookDetail,
+    required this.currentSourceUrl,
+    this.sourceChange,
     Key? key,
   }) : super(key: key);
+  final BookDetailBean bookDetail;
+  final String? currentSourceUrl;
+  final ValueChanged<BookItemBean>? sourceChange;
 
   @override
   State<SourceSelectDialog> createState() => _SourceSelectDialogState();
@@ -262,13 +289,13 @@ class _SourceSelectDialogState extends State<SourceSelectDialog> {
   @override
   void initState() {
     super.initState();
+    selectedSourceBookItem = widget.bookDetail.searchResult.firstWhere((element) => element.sourceUrl==widget.currentSourceUrl);
     init();
   }
 
   Future<void> init() async {
-    final logic = Get.find<ContentLogic>();
     var hasChange = false;
-    for (var e in logic.bookDetail.searchResult) {
+    for (var e in widget.bookDetail.searchResult) {
       if (e.source == null) {
         e.source = await SourceManager.instance.getSourceFromUrl(e.sourceUrl);
         hasChange = true;
@@ -277,9 +304,10 @@ class _SourceSelectDialogState extends State<SourceSelectDialog> {
     if (hasChange) setState(() {});
   }
 
+  late BookItemBean selectedSourceBookItem;
+
   @override
   Widget build(BuildContext context) {
-    final logic = Get.find<ContentLogic>();
     return Center(
       child: Container(
         width: 300,
@@ -291,22 +319,33 @@ class _SourceSelectDialogState extends State<SourceSelectDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text("选择书源", style: Theme.of(context).textTheme.titleLarge),
-                SizedBox(height:10),
-                ...logic.bookDetail.searchResult.map((e) {
+                SizedBox(height: 10),
+                ...widget.bookDetail.searchResult.map((e) {
                   return RadioListTile(
-                    value: e.source?.bookSourceUrl??"",
-                    title:  Text(e.source?.bookSourceName ?? ""),
-                    groupValue: logic.source.bookSourceUrl,
-                    onChanged: (v) {},
+                    value: e,
+                    title: Text(e.source?.bookSourceName ?? ""),
+                    groupValue:selectedSourceBookItem ,
+                    onChanged: (BookItemBean? bean) {
+                      if(bean==null) return;
+                      selectedSourceBookItem = bean;
+                      setState(() {});
+                    },
                   );
                 }),
-                SizedBox(height:10),
+                SizedBox(height: 10),
                 Row(
                   children: [
                     TextButton(child: Text("重新搜索"), onPressed: () {}),
                     Expanded(child: SizedBox()),
                     TextButton(child: Text("扫描"), onPressed: () {}),
-                    TextButton(child: Text("确定"), onPressed: () {})
+                    TextButton(child: Text("确定"), onPressed: () {
+                      Get.back();
+                      if(selectedSourceBookItem.sourceUrl==widget.currentSourceUrl){
+                        print("没有修改书源");
+                        return;
+                      }
+                      widget.sourceChange?.call(selectedSourceBookItem);
+                    })
                   ],
                 )
               ],

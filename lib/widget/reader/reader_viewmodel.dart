@@ -30,7 +30,7 @@ class ReaderViewModel extends ChangeNotifier implements IReaderPageVm {
     prepareNextAndPrePage();
   }
 
-  final ReaderPageProgress pageProgress;
+  ReaderPageProgress pageProgress;
 
   //第一次加载阅读器
   var firstLoad = true;

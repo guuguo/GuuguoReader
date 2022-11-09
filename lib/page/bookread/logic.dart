@@ -6,6 +6,7 @@ import 'package:read_info/data/source_manager.dart';
 import 'package:read_info/data/source_net_repository.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/page/common/widget_common.dart';
+import 'package:read_info/page/detailsms/logic.dart';
 import 'package:read_info/utils/developer.dart';
 import 'package:read_info/utils/ext/list_ext.dart';
 
@@ -104,5 +105,17 @@ class ContentLogic extends GetxController {
     }
     source.ruleContent?.replaceRegex =sb.toString();
     SourceManager.instance.insertOrUpdateSources([source]);
+  }
+
+  Future sourceChange(BookItemBean bean)async {
+    if (bean.source == null) return;
+    source = bean.source!;
+    final detailLogic = DetailLogic(bean.source!);
+    await detailLogic.initFromDetail(bookDetail, bean);
+    bookDetail = detailLogic.detail.value!;
+    bookDetail.sourceUrl=source.bookSourceUrl;
+    repository = SourceNetRepository(source);
+    readChapterIndex = bookDetail.readChapterIndex;
+    LocalRepository.saveBook(bookDetail);
   }
 }

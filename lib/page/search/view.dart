@@ -71,7 +71,7 @@ class SearchPage extends StatelessWidget {
         child: Container(
           alignment: Alignment.center,
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Text(his, style: Theme.of(context).textTheme.caption?.copyWith(height: 1)),
+          child: Text(his, style: Theme.of(context).textTheme.caption?.copyWith(height: 1),maxLines: 1,overflow: TextOverflow.ellipsis),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
             border: Border.all(color: MyTheme.of(context).hintTextColor, width: 0.5),

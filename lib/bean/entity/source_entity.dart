@@ -45,6 +45,13 @@ class SourceEntity {
     return jsonEncode(this);
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SourceEntity && runtimeType == other.runtimeType && bookSourceName == other.bookSourceName && bookSourceUrl == other.bookSourceUrl;
+
+  @override
+  int get hashCode => bookSourceName.hashCode ^ bookSourceUrl.hashCode;
+
   Source toSource() {
     return Source(bookSourceUrl: bookSourceUrl!, detail: json.encode(toJson()));
   }
@@ -113,8 +120,6 @@ class SourceRuleBookInfo {
   String? name;
   String? tocUrl;
 
-  SourceRuleBookInfo();
-
   factory SourceRuleBookInfo.fromJson(Map<String, dynamic> json) => $SourceRuleBookInfoFromJson(json);
 
   Map<String, dynamic> toJson() => $SourceRuleBookInfoToJson(this);
@@ -122,6 +127,44 @@ class SourceRuleBookInfo {
   @override
   String toString() {
     return jsonEncode(this);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SourceRuleBookInfo &&
+          runtimeType == other.runtimeType &&
+          author == other.author &&
+          coverUrl == other.coverUrl &&
+          intro == other.intro &&
+          kind == other.kind &&
+          lastChapter == other.lastChapter &&
+          name == other.name &&
+          tocUrl == other.tocUrl;
+
+  @override
+  int get hashCode => author.hashCode ^ coverUrl.hashCode ^ intro.hashCode ^ kind.hashCode ^ lastChapter.hashCode ^ name.hashCode ^ tocUrl.hashCode;
+
+  SourceRuleBookInfo({this.author, this.coverUrl, this.intro, this.kind, this.lastChapter, this.name, this.tocUrl});
+
+  SourceRuleBookInfo copyWith({
+    String? author,
+    String? coverUrl,
+    String? intro,
+    String? kind,
+    String? lastChapter,
+    String? name,
+    String? tocUrl,
+  }) {
+    return SourceRuleBookInfo(
+      author: author ?? this.author,
+      coverUrl: coverUrl ?? this.coverUrl,
+      intro: intro ?? this.intro,
+      kind: kind ?? this.kind,
+      lastChapter: lastChapter ?? this.lastChapter,
+      name: name ?? this.name,
+      tocUrl: tocUrl ?? this.tocUrl,
+    );
   }
 }
 

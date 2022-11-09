@@ -34,7 +34,7 @@ class _DetailSmsPageState extends State<DetailSmsPage> {
   Widget build(BuildContext context) {
     final logic = Get.find<DetailLogic>();
     return Scaffold(
-      appBar: MyAppBar(middle: Text("${itemBean.name}")),
+      appBar: MyAppBar(middle: Text("${itemBean.name}",overflow: TextOverflow.ellipsis)),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: GetX<DetailLogic>(

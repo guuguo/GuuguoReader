@@ -66,12 +66,12 @@ class LocalRepository {
 
   static Future<List<BookChapterBean>> findBookChapters(BookDetailBean bean) async {
     var myDataBase = await database();
-    return await myDataBase.bookDao.findBookChapters(bean.id);
+    return await myDataBase.bookDao.findBookChapters(bean.id!);
   }
   static Future saveBook(BookDetailBean bean) async {
     var uuid=Uuid();
     var myDataBase = await database();
-    if (bean.id == null) {
+    if (bean.id?.isNotEmpty!=true) {
       bean.id = uuid.v1();
     }
     final insertCode = await myDataBase.bookDao.insertBookDetail(bean);
@@ -106,8 +106,8 @@ class LocalRepository {
 
   static Future deleteBook(BookDetailBean bean) async {
     final db = await LocalRepository.database();
-    await db.bookDao.deleteBookContents(bean.id);
-    await db.bookDao.deleteBookChapters(bean.id);
+    await db.bookDao.deleteBookContents(bean.id!);
+    await db.bookDao.deleteBookChapters(bean.id!);
     await db.bookDao.deleteBook(bean);
   }
 

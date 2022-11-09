@@ -73,7 +73,7 @@ class BookItemBean extends BookBean {
 ])
 class BookDetailBean extends BookBean {
   @PrimaryKey()
-  String id;
+  String? id;
   String? name = "";
   String? intro = "";
   String? author = "";

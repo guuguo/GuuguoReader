@@ -19,7 +19,6 @@ import 'package:uuid/uuid.dart';
 
 import '../bean/book_item_bean.dart';
 import '../bean/entity/source_entity.dart';
-import '../config/config.dart';
 
 const int pageLimited = 20;
 
@@ -293,6 +292,7 @@ class UrlConfig {
   String? searchUrl;
 
   static UrlConfig fromUrl(String searchUrl) {
+    searchUrl=Uri.decodeComponent(searchUrl);
     if (searchUrl.isEmpty) throw "url为空，不做网络请求";
     var index = -1;
     if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {
