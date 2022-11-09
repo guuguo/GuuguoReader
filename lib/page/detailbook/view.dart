@@ -148,19 +148,19 @@ class _DetailSmsPageState extends State<DetailBookPage> {
                 ),
               ),
             ),
-            if (logic.refreshTocs.value == true)
+            if (logic.refreshTocs.value != true)
               SliverPadding(
                 sliver: SliverGrid.count(
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
                   childAspectRatio: 3,
                   crossAxisCount: 3,
-                  children: logic.detail.value!.chapters!.map((e) => ChapterItem(e)).toList(),
+                  children: (logic.detail.value!.chapters??[]).map((e) => ChapterItem(e)).toList(),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: max((MediaQuery.of(context).size.width - MyTheme.contentMaxWidth) / 2, 0)),
               )
             else
-              SliverToBoxAdapter(child: SizedBox(height:50,child: CircularProgressIndicator())),
+              SliverToBoxAdapter(child: Center(child: SizedBox(height:25,width:25,child: CircularProgressIndicator()))),
             SliverPadding(padding: EdgeInsets.all(20)),
           ],
         ),

@@ -75,6 +75,7 @@ class DetailLogic extends GetxController {
   loadTocs() async {
     if (detail.value == null) return;
     refreshTocs.value=true;
+    update();
     var chapters = await repository.queryBookTocs(detail.value!);
     refreshTocs.value=false;
     detail.value = detail.value!.copyWith(chapters: chapters, totalChapterCount: chapters?.length ?? 0);
