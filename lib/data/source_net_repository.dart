@@ -7,12 +7,10 @@ import 'package:dio/dio.dart';
 import 'package:enough_convert/enough_convert.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
-import 'package:read_info/bean/entity/source_header_entity.dart';
 import 'package:read_info/data/net/dio_helper.dart';
 import 'package:read_info/data/rule/RuleUtil.dart';
 import 'package:read_info/data/rule/app_helper.dart';
 import 'package:read_info/data/rule/novel_string_deal.dart';
-import 'package:read_info/generated/json/base/json_convert_content.dart';
 import 'package:read_info/global/constant.dart';
 import 'package:read_info/utils/developer.dart';
 import 'package:uuid/uuid.dart';
@@ -24,6 +22,11 @@ const int pageLimited = 20;
 
 class SourceNetRepository {
   SourceEntity source;
+  var _disposed = false;
+
+  dispose() {
+    _disposed = true;
+  }
 
   SourceNetRepository(this.source);
 
@@ -31,27 +34,30 @@ class SourceNetRepository {
   Future<List<BookItemBean>> exploreBookList({required SourceExploreUrl explore, pageNum = 1}) async {
     final urlConfig = UrlConfig.fromUrl(explore.url!.replaceAll('{{page}}', "${pageNum}"));
     var res = await urlConfig.request<String>(getDio(), source.bookSourceUrl);
-    var document = parse(res.data);
     //header.title@a@text
     var rule = source.ruleExplore;
     if (rule?.bookList?.isNotEmpty != true) {
       rule = source.ruleSearch;
     }
+    var jsonMap = getJsonContent(res.data, rule?.jsonContent);
+    var document = getDocumentContent(res.data);
     print("发现页:$rule");
-    var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
+    var list = _parseList(jsonMap,document,rule?.bookList);
     var bookList = list?.map((e) {
       return BookItemBean.FormSource(source)
-        ..name = e.parseRule(rule?.name)?.trim()
-        ..intro = e.parseRule(rule?.intro)?.trim()
-        ..author = e.parseRule(rule?.author)
-        ..lastChapter = e.parseRule(rule?.lastChapter)
-        ..coverUrl = urlFix(e.parseRule(rule?.coverUrl), source.bookSourceUrl!)
-        ..bookUrl = e.parseRule(rule?.bookUrl);
+        ..name = _parseRule(e,rule?.name)?.trim()
+        ..intro = _parseRule(e,rule?.intro)?.trim()
+        ..author = _parseRule(e,rule?.author)
+        ..lastChapter = _parseRule(e,rule?.lastChapter)
+        ..coverUrl = urlFix(_parseRule(e,rule?.coverUrl), source.bookSourceUrl!)
+        ..bookUrl = _parseRule(e,rule?.bookUrl);
     }).toList();
 
     return bookList ?? [];
   }
+parseRule(dynamic e,String rule,bool isJson){
 
+}
   SourceExploreUrl? getSourceExplore([String? title = null]) {
     SourceExploreUrl? explore;
     if (title == null) {
@@ -112,49 +118,31 @@ class SourceNetRepository {
     var jsonRule = rule?.jsonContent;
 
     ///json 规则
-    final body = res.data;
-    dynamic map;
-    if (body is String) {
-      final jsonContent = getJsonContent(res.data, jsonRule);
-      if (jsonContent != null) {
-        try {
-          map = json.decode(jsonContent);
-        } catch (e) {}
-      }
-    }
-    if (body is Map) {
-      map = body;
-    }
-    if (map != null) {
-      var list = parseRuleJsonList(map, rule?.bookList);
-      var bookList = list
-          ?.map((e) => BookItemBean.FormSource(source)
-            ..name = parseRuleJson(e, rule?.name)?.trim()
-            ..intro = parseRuleJson(e, rule?.intro)?.trim()
-            ..author = parseRuleJson(e, rule?.author)
-            ..lastChapter = parseRuleJson(e, rule?.lastChapter)
-            ..coverUrl = urlFix(parseRuleJson(e, rule?.coverUrl), source.bookSourceUrl!)
-            ..bookUrl = parseRuleJson(e, rule?.bookUrl))
-          .toList();
-
-      return bookList ?? [];
-    }
-
-    var document = parse(res.data);
-
-    /// css selector 规则
-    var list = document.documentElement?.parseRuleWithoutAttr(rule?.bookList);
+    var jsonMap = getJsonContent(res.data, jsonRule);
+    var document = getDocumentContent(res.data);
+    var list = _parseList(jsonMap,document, rule?.bookList);
     var bookList = list
         ?.map((e) => BookItemBean.FormSource(source)
-          ..name = e.parseRule(rule?.name)?.trim()
-          ..intro = e.parseRule(rule?.intro)?.trim()
-          ..author = e.parseRule(rule?.author)
-          ..lastChapter = e.parseRule(rule?.lastChapter)
-          ..coverUrl = urlFix(e.parseRule(rule?.coverUrl), source.bookSourceUrl!)
-          ..bookUrl = e.parseRule(rule?.bookUrl))
+      ..name = _parseRule(e, rule?.name)?.trim()
+      ..intro = _parseRule(e, rule?.intro)?.trim()
+      ..author = _parseRule(e, rule?.author)
+      ..lastChapter = _parseRule(e, rule?.lastChapter)
+      ..coverUrl = urlFix(_parseRule(e, rule?.coverUrl), source.bookSourceUrl!)
+      ..bookUrl = _parseRule(e, rule?.bookUrl))
         .toList();
 
     return bookList ?? [];
+  }
+
+  List? _parseList(dynamic jsonMap, Element? document, String? rule) {
+    if (jsonMap != null) return parseRuleJsonList(jsonMap, rule);
+    return document?.parseRuleWithoutAttr(rule);
+  }
+  String? _parseRule(dynamic dynamic, String? rule,[AttrBean? attrBean=null]) {
+    if(dynamic is Element){
+      return dynamic.parseRule(rule,attrBean)?.trim();
+    }
+    return parseRuleJson(dynamic, rule,attrBean)?.trim();
   }
 
   Future<BookDetailBean?> queryBookDetail(BookItemBean bean) async {
@@ -179,6 +167,8 @@ class SourceNetRepository {
   }
 
   Future<List<BookChapterBean>?> queryBookTocs(BookDetailBean bean) async {
+    if(_disposed) return null;
+
     var config = UrlConfig.fromUrl(bean.tocUrl ?? "");
     var res = await config.request<dynamic>(getDio(), source.bookSourceUrl);
     var element = parse(res.data).documentElement;
@@ -198,26 +188,18 @@ class SourceNetRepository {
     var attrBean = AttrBean(baseUrl: bookBean.tocUrl);
 
     ///json 规则
-    final jsonContent = getJsonContent(element.outerHtml, source.ruleToc?.jsonContent);
+    var jsonMap = getJsonContent(element.outerHtml, source.ruleToc?.jsonContent);
+    var document = element;
+
     var rule = source.ruleToc;
-    if (jsonContent != null) {
-      dynamic map = json.decode(jsonContent);
-      var list = parseRuleJsonList(map, rule?.chapterList);
-      var resList = list
-          ?.mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
-            ..chapterName = parseRuleJson(e, rule?.chapterName, attrBean)?.trim()
-            ..chapterUrl = urlFix(parseRuleJson(e, rule?.chapterUrl, attrBean), source.bookSourceUrl!))
-          .toList();
-      return resList ?? [];
-    }
-    var list = element.parseRuleWithoutAttr(rule?.chapterList);
+    var list = _parseList(jsonMap, document, rule?.chapterList);
     var resList = list
-        .mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
-          ..chapterName = e.parseRule(rule?.chapterName)?.trim()
-          ..chapterUrl = urlFix(e.parseRule(rule?.chapterUrl), source.bookSourceUrl!))
-        .toList();
+        ?.mapIndexed((i, e) => BookChapterBean(id: Uuid().v1(), bookId: bookBean.id, chapterIndex: i)
+          ..chapterName = _parseRule(e, rule?.chapterName, attrBean)?.trim()
+          ..chapterUrl = urlFix(_parseRule(e, rule?.chapterUrl, attrBean), source.bookSourceUrl!))
+        .toList()??[];
     if (rule?.nextTocUrl?.isNotEmpty == true) {
-      var nextTocUrl = element.parseRule(rule?.nextTocUrl);
+      var nextTocUrl = _parseRule(element,rule?.nextTocUrl);
       if (nextTocUrl?.isNotEmpty == true) {
         var config = UrlConfig.fromUrl(nextTocUrl ?? "");
         var res = await config.request<dynamic>(getDio(), bookBean.tocUrl);
@@ -245,6 +227,7 @@ class SourceNetRepository {
   }
 
   Future<String> queryBookContentByUrl(String? url, SourceRuleContent? rule, String? baseUrl) async {
+    if(_disposed) return "";
     if (url?.isNotEmpty != true) return "";
 
     final urlConfig = UrlConfig.fromUrl(url!);
@@ -292,7 +275,9 @@ class UrlConfig {
   String? searchUrl;
 
   static UrlConfig fromUrl(String searchUrl) {
-    searchUrl=Uri.decodeComponent(searchUrl);
+    try {
+      searchUrl = Uri.decodeComponent(searchUrl);
+    }catch (e) {}
     if (searchUrl.isEmpty) throw "url为空，不做网络请求";
     var index = -1;
     if (searchUrl.contains(RegExp(r'{[\s\S]*}'))) {

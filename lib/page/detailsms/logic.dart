@@ -50,7 +50,9 @@ class DetailLogic extends GetxController {
     detail.value=null;
     update();
     if (!forceNet) {
-      bookDetail = await LocalRepository.queryBookDetail(item);
+      bookDetail = (await LocalRepository.queryBookDetail(item))
+        ?..searchResult= ((bookDetail?.searchResult ?? HashSet())..addAll(items))
+      ;
       if (bookDetail != null) {
         detail.value = bookDetail;
         refreshing.value = false;
@@ -87,6 +89,7 @@ class DetailLogic extends GetxController {
     if (value!.source == source) return;
     detail.value?.sourceUrl = value.source?.bookSourceUrl;
     source = value.source!;
+    repository.dispose();
     repository = SourceNetRepository(source);
     item=value;
     loadDetail(true);
@@ -99,5 +102,10 @@ class DetailLogic extends GetxController {
     source.ruleBookInfo = rule;
     SourceManager.instance.insertOrUpdateSources([source]);
     loadDetail();
+  }
+  @override
+  void dispose() {
+    super.dispose();
+    repository.dispose();
   }
 }

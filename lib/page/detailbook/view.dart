@@ -172,7 +172,6 @@ class _DetailSmsPageState extends State<DetailBookPage> {
     return FutureBuilder<HashSet<BookItemBean>?>(
         future: loadSources(logic),
         builder: (context, snap) {
-          print(snap.data);
           return snap.data?.isNotEmpty != true
               ? SizedBox()
               : DropdownButton(

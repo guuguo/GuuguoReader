@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:html/dom.dart';
+import 'package:html/parser.dart';
 import 'package:read_info/utils/ext/list_ext.dart';
 import 'package:read_info/utils/ext/match_ext.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
@@ -342,7 +343,10 @@ extension ElementExt on Element {
   }
 }
 
-String? getJsonContent(dynamic httpRes, String? jsonRule) {
+dynamic getJsonContent(dynamic httpRes, String? jsonRule) {
+  if(httpRes is Map) return httpRes;
+  if(httpRes is List) return httpRes;
+  if(!(httpRes is String))return null;
   if (jsonRule?.isNotEmpty != true) return null;
 
   ///正则 处理 ##分割
@@ -356,10 +360,15 @@ String? getJsonContent(dynamic httpRes, String? jsonRule) {
     replace = regexSpan[2];
   }
   final jsonContent = replaceContentWithRule(httpRes ?? "", regex, replace, jsonRule.endsWith('###'));
-  if (jsonContent?.isNotEmpty == true) return jsonContent;
-  return null;
+  try {
+    return json.decode(jsonContent!);
+  } catch (e) {
+    return null;
+  }
 }
-
+Element? getDocumentContent(dynamic httpRes) {
+    return parse(httpRes).documentElement;
+}
 String? replaceContentWithRule(String resultStr, String? regex, String? replace, bool urlReplace) {
   String? result = resultStr.trim();
   if (result.isNotEmpty == true && regex != null) {

@@ -114,8 +114,14 @@ class ContentLogic extends GetxController {
     await detailLogic.initFromDetail(bookDetail, bean);
     bookDetail = detailLogic.detail.value!;
     bookDetail.sourceUrl=source.bookSourceUrl;
+    repository.dispose();
     repository = SourceNetRepository(source);
     readChapterIndex = bookDetail.readChapterIndex;
     LocalRepository.saveBook(bookDetail);
+  }
+  @override
+  void dispose() {
+    super.dispose();
+    repository.dispose();
   }
 }

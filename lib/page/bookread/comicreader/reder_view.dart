@@ -1,14 +1,19 @@
+import 'dart:async';
+import 'package:octo_image/octo_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'dart:ui' as ui;
 import 'package:get/get.dart';
+import 'package:read_info/page/bookread/comicreader/MySliverList.dart';
 import 'package:read_info/page/bookread/comicreader/logic.dart';
 import 'package:read_info/page/bookread/comicreader/reader_menu.dart';
 import 'package:read_info/page/common/widget_common.dart';
 import 'package:read_info/utils/developer.dart';
+import 'package:read_info/utils/ext/scroll_ext.dart';
 import 'package:read_info/widget/reader/reader_page_progress.dart';
 import 'package:read_info/widget/reader/reader_viewmodel.dart';
 import 'package:read_info/widget/reader/reder_gesture.dart';
@@ -48,15 +53,20 @@ class ComicReaderState extends State<ComicReader> {
 
   late ComicLogic logic;
 
-  double? getOffsetYFromKey(GlobalKey key){
-   final render= secondColumnKey.currentContext?.findRenderObject() as RenderBox?;
-   return  render?.localToGlobal(Offset.zero).dy;
+  double? getOffsetYFromKey(GlobalKey key) {
+    final render = secondColumnKey.currentContext?.findRenderObject() as RenderBox?;
+    return render
+        ?.localToGlobal(Offset.zero)
+        .dy;
   }
-  double? getHeightFromKey(GlobalKey key){
-    final render= key.currentContext?.findRenderObject() as RenderBox?;
-    return  render?.size.height;
+
+  double? getHeightFromKey(GlobalKey key) {
+    final render = key.currentContext?.findRenderObject() as RenderBox?;
+    return render?.size.height;
   }
+
   var loadingMore = false;
+
   @override
   initState() {
     super.initState();
@@ -67,28 +77,25 @@ class ComicReaderState extends State<ComicReader> {
       hideMenu();
 
       // controller.
-      final render = comicContentKey.currentContext?.findRenderObject() as RenderFlex?;
-      final height = render?.size.height;
-      final dy=getOffsetYFromKey(secondColumnKey);
+      // final render = comicContentKey.currentContext?.findRenderObject() as RenderFlex?;
 
-      ///滚动到下一页
-      if(dy!=null && dy<0 ) {
-        try {
-          final currentPage = logic.comics[1].first;
-          if (currentPage != widget.pageProgress.currentChapterIndex) await widget.pageProgress.toNextPage();
-        } catch(e){}
-      }
-
-      if (height == null) return;
-
+      // final dy=getOffsetYFromKey(secondColumnKey);
+      //
+      // ///滚动到下一页
+      // if(dy!=null && dy<0 ) {
+      //   try {
+      //     final currentPage = controller.;
+      //     if (currentPage != widget.pageProgress.currentChapterIndex) await widget.pageProgress.toNextPage();
+      //   } catch(e){}
+      // }
       ///离底部还有200距离的时候，加载下一章的数据
-      if (controller.offset > height - widget.pageSize.height-200) {
+      if (controller.offset >= controller.position.maxScrollExtent) {
         if (!loadingMore) {
           loadingMore = true;
           try {
-          debug("第${logic.comics[0].first}章高度：${getHeightFromKey(firstColumnKey)}");
-          debug("第${logic.comics[1].first}章高度：${getHeightFromKey(secondColumnKey)}");
-          }catch(e){}
+            // debug("第${logic.comics[0].first}章高度：${getHeightFromKey(firstColumnKey)}");
+            // debug("第${logic.comics[1].first}章高度：${getHeightFromKey(secondColumnKey)}");
+          } catch (e) {}
           await logic.addNextComicChapter(getHeightFromKey(firstColumnKey));
           loadingMore = false;
         }
@@ -122,46 +129,31 @@ class ComicReaderState extends State<ComicReader> {
         children: [
           Positioned.fill(
             child: ReaderGesture(
-              onNextTap: () {
-                hideMenu();
-              },
-              onPreTap: () {
-                hideMenu();
-              },
-              onCenterTap: () {
-                changeMenuShow();
-              },
-              child: SingleChildScrollView(
-                controller: controller,
-                child: GetBuilder<ComicLogic>(
-                  assignId: true,
-                  builder: (logic) {
-                    // final comics = logic.comics.fold<List<String>>([], (List<String> pre,Pair<int,List<String>> ele) => pre..addAll(ele.seconed));
-
-                    return Column(
-                      key: comicContentKey,
-                      children: logic.comics
-                          .mapIndexed((i, pair) {
-                        final list = pair.seconed;
-                        return Column(
-                          key: i == 0 ? firstColumnKey : (i == 1 ? secondColumnKey : null),
-                          children: [
-                            ...list.mapIndexed((i, e) => ImageItem(pair.first, i, e)),
-                            if (list.length <= 2) ...[
-                              Container(
-                                height: 1000,
-                                alignment: Alignment.center,
-                                child: Text("本章节没有更多内容了"),
-                              )
-                            ]
-                          ],
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              ),
-            ),
+                onNextTap: () {
+                  hideMenu();
+                },
+                onPreTap: () {
+                  hideMenu();
+                },
+                onCenterTap: () {
+                  changeMenuShow();
+                },
+                child: CustomScrollView(
+                  controller: controller,
+                  slivers: [
+                    GetBuilder<ComicLogic>(builder: (logic) {
+                      return SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context,index){
+                              try {
+                                return ImageItem(logic.comics[index], index);
+                              }catch (e) {return SizedBox(height:100);}
+                            },
+                              childCount:logic.comics.length,
+                          ));
+                    }),
+                  ],
+                )),
           ),
           if (menuShow)
             ComicReaderMenu(
@@ -169,23 +161,6 @@ class ComicReaderState extends State<ComicReader> {
               sourceBuilder: widget.sourceBuilder,
             ),
         ],
-      ),
-    );
-  }
-
-  Widget ImageItem(int chapterIndex,int index,String url) {
-    final dealUrl = url.replaceAll(RegExp("\/\/\/+"), '//');
-    return Container(
-      constraints: BoxConstraints(minHeight: 200),
-      child: CachedNetworkImage(
-        progressIndicatorBuilder: (c, u, p) => Center(
-          child: Text("加载中(${chapterIndex+1}-${index+1})"),
-        ),
-        errorWidget: (c, u, e) {
-          // debug("$index $dealUrl 出错了-url:${u}");
-          return Center(child: Text("该图片无法加载(${chapterIndex+1}-${index+1})"));
-        },
-        imageUrl: dealUrl,
       ),
     );
   }
@@ -211,4 +186,90 @@ class ComicReaderState extends State<ComicReader> {
   void hideMenu() {
     changeMenuShow(false);
   }
+}
+
+Widget ImageItem(ComicItem comic, int index) {
+  final dealUrl = comic.url.replaceAll(RegExp("\/\/\/+"), '//');
+
+  return Container(
+    child: CachedNetworkImage(
+      imageBuilder: (c,provider){
+        provider.resolve(ImageConfiguration()).addListener(ImageStreamListener((img,call){
+          comic.height =  img.image.height/img.image.width*MediaQuery.of(c).size.width;
+        }));
+        return Image(image: provider);
+      },
+      imageUrl: dealUrl,
+      progressIndicatorBuilder: (c, u, p) =>
+          Container(
+            color: Colors.black,
+            height: comic.height??comicImageDefaultHeight,
+            child: Center(
+              child: Text("谷果阅读",style: TextStyle(color: Colors.white38,fontSize: 20),),
+            ),
+          ),
+      errorWidget: (c, u, e) {
+        return SizedBox(height: 400, child: Center(child: Text("无法加载(${comic.index + 1}-${index + 1})")));
+      },
+    ),
+  );
+  ;
+}
+
+Future<Size> _calculateImageDimension(String url) {
+  Completer<Size> completer = Completer();
+  Image image = new Image(image: CachedNetworkImageProvider(url)); // I modified this line
+  image.image.resolve(ImageConfiguration()).addListener(
+    ImageStreamListener(
+          (ImageInfo image, bool synchronousCall) {
+        var myImage = image.image;
+        Size size = Size(myImage.width.toDouble(), myImage.height.toDouble());
+        completer.complete(size);
+      },
+    ),
+  );
+  return completer.future;
+}
+
+class ComicDelegate extends SliverChildDelegate {
+  late List<ComicItem> list;
+
+  @override
+  Widget? build(BuildContext context, int index) {
+    final comic = list[index];
+    var child = ImageItem(comic, index);
+    child = RepaintBoundary(child: child);
+    child = IndexedSemantics(index: index, child: child);
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverChildDelegate oldDelegate) {
+    return false;
+  }
+
+  @override
+  double? estimateMaxScrollOffset(int firstIndex, int lastIndex, double leadingScrollOffset, double trailingScrollOffset) {
+    var sum = 0.0;
+    for (int i = lastIndex; i < list.length; i++) {
+      sum += list[i].height??comicImageDefaultHeight;
+    }
+    return sum;
+  }
+
+  @override
+  int get estimatedChildCount => list.length;
+
+  ComicDelegate(this.list);
+
+  @override
+  void didFinishLayout(int firstIndex, int lastIndex) {
+    super.didFinishLayout(firstIndex, lastIndex);
+  }
+
+// @override
+// int findIndexByKey(Key key) {
+//   return super.findIndexByKey(key);
+// }
+
 }

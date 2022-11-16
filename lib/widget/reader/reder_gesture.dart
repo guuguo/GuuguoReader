@@ -38,6 +38,7 @@ class ReaderGesture extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTapUp: (detail) {
         final size = (context.findRenderObject() as RenderBox).size;
         if (detail.localPosition.dy > size.height / 4 && detail.localPosition.dy < size.height * 3 / 4 && detail.localPosition.dx > size.width / 3 && detail.localPosition.dx < size.width * 2 / 3) {
